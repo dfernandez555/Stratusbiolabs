@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAQ — Stratus Biolabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
+  --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
+  --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
+  --border: rgba(93,141,217,0.12);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 4rem; background: rgba(11,15,26,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+.logo span { color: var(--cirrus); }
+nav ul { list-style: none; display: flex; gap: 2.5rem; }
+nav ul a { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+nav ul a:hover, nav ul a.active { color: var(--cirrus); }
+.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.5rem 1.2rem; text-decoration: none; transition: all 0.3s; }
+.nav-cta:hover { background: var(--cirrus); color: var(--ink); }
+
+/* DISCLAIMER */
+.disclaimer { margin-top: 80px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.75rem 4rem; display: flex; align-items: center; gap: 1rem; }
+.disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+.disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
+
+/* HEADER */
+.faq-header { padding: 5rem 4rem 4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+.faq-header::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 50% 100% at 80% 50%, rgba(46,74,122,0.18) 0%, transparent 70%); }
+.header-inner { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.2rem; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 300; color: var(--white); line-height: 1.05; }
+.page-title em { font-style: italic; color: var(--cirrus); }
+.faq-search-wrap { position: relative; width: 320px; }
+.faq-search-wrap input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 0.75rem 1rem 0.75rem 2.5rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--fog); outline: none; transition: border-color 0.3s; }
+.faq-search-wrap input::placeholder { color: var(--mist); }
+.faq-search-wrap input:focus { border-color: var(--cirrus); }
+.faq-search-wrap svg { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+
+/* BODY */
+.faq-body { display: grid; grid-template-columns: 220px 1fr; min-height: 70vh; }
+
+/* SIDEBAR NAV */
+.faq-nav { padding: 3rem 2rem; border-right: 1px solid var(--border); position: sticky; top: 80px; align-self: start; }
+.faq-nav-title { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); margin-bottom: 1.2rem; }
+.faq-nav a { display: block; font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.5rem 0; border-left: 2px solid transparent; padding-left: 0.75rem; transition: all 0.2s; }
+.faq-nav a:hover, .faq-nav a.active { color: var(--cirrus); border-left-color: var(--cirrus); }
+
+/* CONTENT */
+.faq-content { padding: 3rem 5rem; }
+.faq-section { margin-bottom: 4rem; }
+.section-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+
+/* ACCORDION */
+.accordion { display: flex; flex-direction: column; }
+.acc-item { border-bottom: 1px solid var(--border); }
+.acc-item.hidden { display: none; }
+.acc-trigger {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem 0; cursor: pointer; gap: 2rem;
+  transition: color 0.2s;
+}
+.acc-trigger:hover .acc-q { color: var(--white); }
+.acc-q { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 300; color: var(--silver); line-height: 1.4; }
+.acc-icon { width: 24px; height: 24px; border: 1px solid rgba(93,141,217,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.3s; }
+.acc-icon svg { transition: transform 0.3s; }
+.acc-item.open .acc-icon { border-color: var(--cirrus); background: rgba(93,141,217,0.08); }
+.acc-item.open .acc-icon svg { transform: rotate(45deg); }
+.acc-item.open .acc-q { color: var(--white); }
+.acc-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1); }
+.acc-body-inner { padding: 0 0 1.5rem; font-size: 0.9rem; font-weight: 200; color: var(--mist); line-height: 1.9; }
+.acc-body-inner a { color: var(--cirrus); }
+.acc-body-inner strong { color: var(--silver); font-weight: 400; }
+
+/* CTA STRIP */
+.cta-strip { margin: 4rem 0 0; padding: 3rem; border: 1px solid var(--border); background: rgba(93,141,217,0.03); display: flex; justify-content: space-between; align-items: center; gap: 2rem; flex-wrap: wrap; }
+.cta-strip-text h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 0.3rem; }
+.cta-strip-text p { font-size: 0.85rem; font-weight: 200; color: var(--mist); }
+.btn-primary { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; background: var(--cirrus); color: var(--ink); text-decoration: none; display: inline-block; transition: all 0.3s; white-space: nowrap; }
+.btn-primary:hover { background: var(--white); }
+
+footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-logo span { color: var(--cirrus); }
+.footer-links { display: flex; gap: 2.5rem; list-style: none; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.footer-links a:hover { color: var(--cirrus); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(141,152,179,0.4); letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul>
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html" class="active">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a href="contact.html" class="nav-cta">Request Quote</a>
+</nav>
+
+<div class="disclaimer">
+  <div class="disclaimer-dot"></div>
+  <p>All products are for research use only — not for human or veterinary use.</p>
+</div>
+
+<div class="faq-header">
+  <div class="header-inner">
+    <div>
+      <p class="eyebrow">Support</p>
+      <h1 class="page-title">Frequently asked<br><em>questions.</em></h1>
+    </div>
+    <div class="faq-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="faq-search" placeholder="Search questions..."/>
+    </div>
+  </div>
+</div>
+
+<div class="faq-body">
+  <nav class="faq-nav">
+    <div class="faq-nav-title">Categories</div>
+    <a href="#ordering" class="active">Ordering</a>
+    <a href="#quality">Quality & Testing</a>
+    <a href="#shipping">Shipping</a>
+    <a href="#products">Products</a>
+    <a href="#custom">Custom Synthesis</a>
+    <a href="#compliance">Compliance & Legal</a>
+  </nav>
+
+  <div class="faq-content">
+
+    <!-- ORDERING -->
+    <div class="faq-section" id="ordering">
+      <div class="section-label">Ordering</div>
+      <div class="accordion">
+        <div class="acc-item open">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">How do I place an order?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">
+              Submit a quote request via our <a href="contact.html">Contact page</a> or email us directly at <a href="mailto:info@stratusbiolabs.com">info@stratusbiolabs.com</a>. Include the peptide name(s), desired quantity, and any purity or format specifications. A member of our team will respond with pricing and availability within one business day.
+            </div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Do you require institutional verification?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes. All purchases require verification of researcher or institutional credentials. We accept orders from academic institutions, licensed research facilities, pharmaceutical companies, and credentialed independent researchers. We reserve the right to decline orders that cannot be verified or that fall outside appropriate research contexts.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What payment methods do you accept?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">We accept institutional purchase orders (net 30 for approved accounts), wire transfers, and major credit cards. For first-time orders, prepayment is required. Volume customers and research institutions may apply for a net-30 account after their initial order.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Can I get a bulk or institutional discount?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes. Volume pricing is available for orders exceeding 50mg of any single peptide, and institutional agreements are available for labs ordering regularly. Contact us to discuss your needs and we'll work out a pricing structure that works for your research program.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUALITY -->
+    <div class="faq-section" id="quality">
+      <div class="section-label">Quality & Testing</div>
+      <div class="accordion">
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What does "≥98% purity" actually mean?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">This refers to the percentage of the target peptide as measured by <strong>HPLC peak area at 214nm</strong> (or 220nm for peptides lacking aromatic residues). A ≥98% purity designation means that at least 98% of the UV-absorbing material in the sample is the desired sequence. We report the actual measured purity on each Certificate of Analysis.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Do all products come with a Certificate of Analysis?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes — always. Every shipment includes a batch-specific Certificate of Analysis (CoA) with: HPLC chromatogram and purity percentage, MS confirmation of molecular weight (ESI-MS or MALDI-TOF), calculated and observed molecular weight, lot number and synthesis date, and storage recommendations. Digital copies are also available on request.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What quality controls are applied to every batch?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Every batch goes through: <strong>(1)</strong> in-process monitoring during SPPS to track coupling efficiency, <strong>(2)</strong> preparative HPLC purification targeting ≥95% minimum (with higher grades available), <strong>(3)</strong> analytical HPLC to confirm final purity, and <strong>(4)</strong> mass spectrometry to verify the correct molecular weight and structural integrity. Batches that fail any step are discarded — not relabeled.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Can I request a higher purity grade?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes. Standard catalog items are typically supplied at ≥98% purity, but ≥99% lots are available for most sequences at a modest premium. If your research requires a specific purity threshold, note it in your quote request and we'll accommodate where feasible.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHIPPING -->
+    <div class="faq-section" id="shipping">
+      <div class="section-label">Shipping & Storage</div>
+      <div class="accordion">
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">How are peptides shipped?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">All peptides are shipped as lyophilized powder in sealed, clearly labeled vials with lot numbers and the CoA. Orders are packed with appropriate insulating materials. For temperature-sensitive sequences, we ship with dry ice at no additional charge. International orders are shipped with all required customs documentation.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What is the standard turnaround time?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">In-stock catalog items ship within <strong>72 hours</strong> of order confirmation. Custom synthesis is typically completed in <strong>5–10 business days</strong> depending on sequence complexity. Rush processing is available — contact us to discuss your timeline and we'll do our best to accommodate.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">How should I store my peptides upon arrival?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">As a general rule: store lyophilized peptides at <strong>-20°C</strong> in a desiccated, dark environment. Avoid repeated freeze-thaw cycles — aliquot before first reconstitution. Specific storage recommendations for each peptide are provided on the CoA. If you're unsure, our team is happy to advise on optimal storage and reconstitution for your specific sequence.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Do you ship internationally?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes, we ship to most countries worldwide. International orders may be subject to additional import duties, customs fees, or regulatory restrictions depending on the destination country. We provide accurate product descriptions and HS codes on all customs documentation. The buyer is responsible for compliance with local import regulations.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="faq-section" id="products">
+      <div class="section-label">Products</div>
+      <div class="accordion">
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Are Stratus Biolabs peptides suitable for human use?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner"><strong>No.</strong> All products sold by Stratus Biolabs are strictly for <strong>research use only</strong> and are not approved, manufactured, tested, or intended for human or veterinary use. They are not pharmaceutical-grade products. Use outside of a proper research context is a violation of our Terms of Sale.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What formats are available — lyophilized vs. solution?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Most catalog items are available as lyophilized powder, which offers the longest shelf life and most stable format for most research applications. Certain peptides can be provided in solution upon request — specify preferred solvent, concentration, and volume when ordering. Additional lead time may apply for solution format.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Are fluorescent-labeled or biotinylated variants available?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes — as custom orders. We can synthesize peptides with N- or C-terminal modifications including FITC, TAMRA, Cy3/Cy5, biotin, and PEG conjugates. Modification placement and linker chemistry can be specified. Contact us with your sequence and modification requirements for a quote.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM SYNTHESIS -->
+    <div class="faq-section" id="custom">
+      <div class="section-label">Custom Synthesis</div>
+      <div class="accordion">
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What information do I need to provide for a custom order?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">To generate an accurate quote for custom synthesis, we'll need: <strong>(1)</strong> the full peptide sequence in single-letter or three-letter amino acid code, <strong>(2)</strong> any desired modifications (N/C-terminal caps, unnatural amino acids, disulfide bonds, labels), <strong>(3)</strong> required quantity in milligrams, and <strong>(4)</strong> minimum acceptable purity. Email this information to <a href="mailto:synthesis@stratusbiolabs.com">synthesis@stratusbiolabs.com</a>.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What is the maximum length peptide you can synthesize?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">We routinely synthesize peptides from 2 to 50 residues. Sequences above 30–35 residues may require native chemical ligation or other advanced strategies, and lead times and pricing will reflect that complexity. Contact us to discuss your specific sequence and we'll advise on feasibility and approach.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Do you synthesize peptides with unnatural amino acids?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Yes. We have experience incorporating a wide range of non-standard residues including D-amino acids, N-methyl amino acids, beta-amino acids, Aib, ornithine, norleucine, and others. Availability depends on building block sourcing — contact us with your specific requirements and we'll confirm feasibility.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="faq-section" id="compliance">
+      <div class="section-label">Compliance & Legal</div>
+      <div class="accordion">
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">Are your products FDA approved?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">No. Our products are research-grade biochemical reagents, not pharmaceuticals, and are not FDA approved for any therapeutic use. They are sold strictly under research use exemptions and must not be used as drugs, supplements, or in any clinical application without appropriate regulatory approval from the relevant authorities.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What are my responsibilities as a buyer?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">By purchasing from Stratus Biolabs, you agree that: products will be used for legitimate research purposes only; you are a qualified researcher or authorized institutional agent; you will handle, store, and dispose of materials in compliance with all applicable local, national, and institutional regulations; and products will not be resold, redistributed, or used in human subjects without appropriate approvals.</div>
+          </div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-trigger" onclick="toggleAcc(this)">
+            <span class="acc-q">What is your return and refund policy?</span>
+            <div class="acc-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          </div>
+          <div class="acc-body">
+            <div class="acc-body-inner">Due to the nature of biochemical reagents, we do not accept returns. However, if a product fails to meet the purity specifications stated on the CoA, or if a shipment is damaged in transit, we will replace the product at no cost. Contact us within 7 days of receipt with documentation and we'll resolve the issue promptly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-strip">
+      <div class="cta-strip-text">
+        <h3>Still have questions?</h3>
+        <p>Our scientific team is happy to help with technical or order-related inquiries.</p>
+      </div>
+      <a href="contact.html" class="btn-primary">Contact Our Team →</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+function toggleAcc(trigger) {
+  const item = trigger.closest('.acc-item');
+  const body = item.querySelector('.acc-body');
+  const isOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.acc-item.open').forEach(el => {
+    el.classList.remove('open');
+    el.querySelector('.acc-body').style.maxHeight = '0';
+  });
+
+  if (!isOpen) {
+    item.classList.add('open');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+
+// Init open items
+document.querySelectorAll('.acc-item.open').forEach(item => {
+  const body = item.querySelector('.acc-body');
+  body.style.maxHeight = body.scrollHeight + 'px';
+});
+
+// Search
+const faqSearch = document.getElementById('faq-search');
+faqSearch.addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.acc-item').forEach(item => {
+    const text = item.querySelector('.acc-q').textContent.toLowerCase()
+                + item.querySelector('.acc-body-inner').textContent.toLowerCase();
+    item.classList.toggle('hidden', q && !text.includes(q));
+  });
+  // Hide empty sections
+  document.querySelectorAll('.faq-section').forEach(section => {
+    const visible = [...section.querySelectorAll('.acc-item')].some(i => !i.classList.contains('hidden'));
+    section.style.display = visible ? '' : 'none';
+  });
+});
+
+// Sidebar active nav
+const navLinks = document.querySelectorAll('.faq-nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  document.querySelectorAll('.faq-section').forEach(s => {
+    if (s.getBoundingClientRect().top < 200) current = s.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Catalog — Stratus Biolabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
+  --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
+  --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
+  --border: rgba(93,141,217,0.12);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; max-width: 100vw; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(11,15,26,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+.logo span { color: var(--cirrus); }
+.nav-links { list-style: none; display: flex; gap: 2rem; }
+.nav-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.nav-links a:hover, .nav-links a.active { color: var(--cirrus); }
+.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.45rem 1rem; text-decoration: none; transition: all 0.3s; white-space: nowrap; }
+.nav-cta:hover { background: var(--cirrus); color: var(--ink); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+.hamburger span { width: 22px; height: 2px; background: var(--mist); display: block; }
+.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 1rem 2rem; z-index: 99; flex-direction: column; }
+.mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
+.mobile-nav.open { display: flex; }
+
+.disclaimer { margin-top: 60px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
+.disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+.disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
+
+.catalog-header { padding: 2.5rem 2rem 2rem; border-bottom: 1px solid var(--border); }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.8rem; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 6vw, 4rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 0.4rem; }
+.page-title em { font-style: italic; color: var(--cirrus); }
+.header-sub { font-size: 0.82rem; font-weight: 200; color: var(--mist); }
+
+.filters { padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 50; background: rgba(11,15,26,0.97); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 0.7rem; }
+.search-wrap { position: relative; }
+.search-wrap input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 0.65rem 0.9rem 0.65rem 2.3rem; font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--fog); outline: none; transition: border-color 0.3s; }
+.search-wrap input::placeholder { color: var(--mist); }
+.search-wrap input:focus { border-color: var(--cirrus); }
+.search-wrap svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+.filter-row { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.filter-btn { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.75rem; border: 1px solid var(--border); color: var(--mist); background: none; cursor: pointer; transition: all 0.25s; white-space: nowrap; }
+.filter-btn:hover, .filter-btn.active { border-color: var(--cirrus); color: var(--cirrus); background: rgba(93,141,217,0.06); }
+.count-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--mist); margin-left: auto; white-space: nowrap; }
+#count-num { color: var(--cirrus); }
+
+.catalog-main { padding: 1.5rem 2rem; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.product-card { background: var(--ink); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; position: relative; transition: background 0.3s; }
+.product-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg,transparent,var(--cirrus),transparent); transform:scaleX(0); transition:transform 0.3s; }
+.product-card:hover { background: rgba(26,42,74,0.55); }
+.product-card:hover::before { transform: scaleX(1); }
+.product-card.hidden { display: none; }
+
+/* ── PHOTOREALISTIC VIAL ── */
+.prod-vial {
+  display: flex; justify-content: center; align-items: flex-end;
+  padding: 1.5rem 0 0.8rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(93,141,217,0.06) 0%, transparent 70%);
+}
+.vial-wrap {
+  position: relative; width: 64px;
+  filter: drop-shadow(2px 6px 14px rgba(0,0,0,0.6)) drop-shadow(-1px -1px 3px rgba(255,255,255,0.04));
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.product-card:hover .vial-wrap { transform: translateY(-6px) rotate(-1deg); }
+
+/* Crimp aluminum cap */
+.vial-cap {
+  width: 42px; height: 18px;
+  margin: 0 auto;
+  border-radius: 5px 5px 0 0;
+  position: relative; z-index: 3;
+  overflow: hidden;
+}
+.vial-cap::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(255,255,255,0.25) 30%, rgba(255,255,255,0.05) 60%, rgba(0,0,0,0.2) 100%);
+}
+.vial-cap::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 5px;
+  background: rgba(0,0,0,0.25);
+}
+/* Rubber septum ring */
+.vial-septum {
+  width: 42px; height: 6px; margin: 0 auto;
+  background: linear-gradient(180deg, #1a1a1a, #2a2a2a);
+  position: relative; z-index: 3;
+  border-left: 2px solid rgba(255,255,255,0.05);
+  border-right: 2px solid rgba(255,255,255,0.05);
+}
+/* Crimp ring - aluminum band */
+.vial-crimp {
+  width: 46px; height: 7px; margin: 0 auto;
+  background: linear-gradient(180deg, #9aa8bc, #6a7a90, #8d9db2);
+  border-radius: 0;
+  position: relative; z-index: 3;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+/* Glass body */
+.vial-body {
+  width: 46px; height: 90px;
+  margin: 0 auto;
+  border-radius: 0 0 6px 6px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(90deg,
+    rgba(180,200,230,0.08) 0%,
+    rgba(255,255,255,0.12) 15%,
+    rgba(200,220,250,0.04) 30%,
+    rgba(255,255,255,0.02) 50%,
+    rgba(180,200,230,0.06) 80%,
+    rgba(140,160,200,0.1) 100%
+  );
+  border-left: 1px solid rgba(200,220,255,0.18);
+  border-right: 1px solid rgba(100,130,180,0.12);
+  border-bottom: 1px solid rgba(150,170,210,0.2);
+}
+/* Left glass edge highlight */
+.vial-body::before {
+  content: ''; position: absolute;
+  left: 2px; top: 0; bottom: 0; width: 5px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.18), transparent);
+  border-radius: 0 0 0 5px;
+}
+/* Right glass edge */
+.vial-body::after {
+  content: ''; position: absolute;
+  right: 2px; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(90deg, transparent, rgba(140,160,200,0.12));
+}
+/* Powder at bottom */
+.vial-powder {
+  position: absolute; bottom: 0; left: 1px; right: 1px;
+  height: 22px; border-radius: 0 0 5px 5px;
+  opacity: 0.55;
+}
+.vial-powder::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
+}
+
+/* THE LABEL - matches your actual label design */
+.vial-label {
+  position: absolute; left: 3px; right: 3px;
+  top: 6px; height: 58px;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+/* Navy label */
+.label-navy { background: linear-gradient(135deg, #0b0f1a 0%, #1a2a4a 60%, #0f1828 100%); border: 0.5px solid rgba(93,141,217,0.25); }
+.label-navy .lbl-grid { position:absolute; inset:0; background-image: linear-gradient(rgba(93,141,217,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(93,141,217,0.07) 1px, transparent 1px); background-size:5px 5px; }
+.label-navy .lbl-bar { position:absolute; left:0; top:0; bottom:0; width:3px; background: linear-gradient(180deg, #5b8dd9, #2e4a7a); }
+.label-navy .lbl-inner { position:absolute; left:6px; top:4px; right:3px; bottom:4px; display:flex; flex-direction:column; justify-content:space-between; z-index:1; }
+.label-navy .lbl-brand { font-family:'DM Mono',monospace; font-size:4px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(93,141,217,0.7); line-height:1; }
+.label-navy .lbl-name { font-family:'Cormorant Garamond',serif; font-size:10px; font-weight:400; color:#fff; line-height:1.1; }
+.label-navy .lbl-dose { font-family:'DM Mono',monospace; font-size:5px; color:#5b8dd9; letter-spacing:0.05em; }
+.label-navy .lbl-ruo { font-family:'DM Mono',monospace; font-size:3px; color:#c9a84c; border:0.5px solid rgba(201,168,76,0.5); padding:1px 2px; letter-spacing:0.1em; align-self:flex-start; }
+
+/* Copper label */
+.label-copper { background: linear-gradient(135deg, #1a1008 0%, #2a1a06 50%, #1a1008 100%); border: 0.5px solid rgba(180,110,40,0.35); }
+.label-copper .lbl-lines { position:absolute; inset:0; background-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(180,110,40,0.05) 5px, rgba(180,110,40,0.05) 6px); }
+.label-copper .lbl-bar { position:absolute; left:0; top:0; bottom:0; width:3px; background: linear-gradient(180deg, #c9a84c, #b46e28, #c9a84c); }
+.label-copper .lbl-inner { position:absolute; left:6px; top:4px; right:3px; bottom:4px; display:flex; flex-direction:column; justify-content:space-between; z-index:1; }
+.label-copper .lbl-brand { font-family:'DM Mono',monospace; font-size:4px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(201,168,76,0.65); line-height:1; }
+.label-copper .lbl-name { font-family:'Cormorant Garamond',serif; font-size:10px; font-weight:400; color:#f5e6c8; line-height:1.1; }
+.label-copper .lbl-dose { font-family:'DM Mono',monospace; font-size:5px; color:#c9a84c; letter-spacing:0.05em; }
+.label-copper .lbl-ruo { font-family:'DM Mono',monospace; font-size:3px; color:#c9a84c; border:0.5px solid rgba(201,168,76,0.4); padding:1px 2px; letter-spacing:0.1em; align-self:flex-start; }
+
+/* Purple label */
+.label-purple { background: linear-gradient(135deg, #0f0b1a 0%, #1e1040 60%, #0f0b1a 100%); border: 0.5px solid rgba(140,93,217,0.25); }
+.label-purple .lbl-grid { position:absolute; inset:0; background-image: linear-gradient(rgba(140,93,217,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,93,217,0.07) 1px, transparent 1px); background-size:5px 5px; }
+.label-purple .lbl-bar { position:absolute; left:0; top:0; bottom:0; width:3px; background: linear-gradient(180deg, #8c5dd9, #5a2e7a); }
+.label-purple .lbl-inner { position:absolute; left:6px; top:4px; right:3px; bottom:4px; display:flex; flex-direction:column; justify-content:space-between; z-index:1; }
+.label-purple .lbl-brand { font-family:'DM Mono',monospace; font-size:4px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(140,93,217,0.7); line-height:1; }
+.label-purple .lbl-name { font-family:'Cormorant Garamond',serif; font-size:10px; font-weight:400; color:#fff; line-height:1.1; }
+.label-purple .lbl-dose { font-family:'DM Mono',monospace; font-size:5px; color:#8c5dd9; letter-spacing:0.05em; }
+.label-purple .lbl-ruo { font-family:'DM Mono',monospace; font-size:3px; color:#c9a84c; border:0.5px solid rgba(201,168,76,0.5); padding:1px 2px; letter-spacing:0.1em; align-self:flex-start; }
+
+.prod-id { font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.15em; color: var(--mist); }
+.prod-name { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--white); line-height: 1.1; }
+.prod-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.tag { font-family: 'DM Mono', monospace; font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.4rem; border: 1px solid rgba(93,141,217,0.2); color: rgba(93,141,217,0.55); }
+.prod-desc { font-size: 0.8rem; font-weight: 200; color: var(--mist); line-height: 1.7; flex: 1; }
+.prod-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.7rem; border-top: 1px solid var(--border); margin-top: auto; }
+.prod-price { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: var(--white); }
+.prod-price span { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); display: block; margin-top: 1px; }
+.order-btn { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1rem; background: var(--cirrus); color: var(--ink); text-decoration: none; transition: background 0.25s; white-space: nowrap; }
+.order-btn:hover { background: var(--white); }
+
+.custom-card { background: rgba(26,42,74,0.1); border: 1px dashed rgba(93,141,217,0.2); padding: 2.5rem 2rem; text-align: center; grid-column: 1 / -1; }
+.custom-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 0.4rem; }
+.custom-card p { font-size: 0.82rem; font-weight: 200; color: var(--mist); margin-bottom: 1.2rem; }
+.btn-primary { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.8rem 1.8rem; background: var(--cirrus); color: var(--ink); text-decoration: none; display: inline-block; transition: background 0.3s; }
+.btn-primary:hover { background: var(--white); }
+
+.no-results { padding: 4rem 2rem; text-align: center; display: none; }
+.no-results h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--mist); margin-bottom: 0.4rem; }
+
+footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-logo span { color: var(--cirrus); }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-links a:hover { color: var(--cirrus); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.35); }
+
+@media (max-width: 768px) {
+  .nav-links, .nav-cta { display: none !important; }
+  .hamburger { display: flex !important; }
+  .products-grid { grid-template-columns: 1fr !important; }
+  .catalog-main { padding: 1rem; }
+  .filters { padding: 0.8rem 1rem; }
+  footer { flex-direction: column; padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul class="nav-links">
+    <li><a href="catalog.html" class="active">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a href="contact.html" class="nav-cta">Order Now</a>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html" class="active">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Order / Contact</a>
+</div>
+
+<div class="disclaimer">
+  <div class="disclaimer-dot"></div>
+  <p>All products for research use only — not for human or veterinary use.</p>
+</div>
+
+<div class="catalog-header">
+  <p class="eyebrow">Product Catalog</p>
+  <h1 class="page-title">Research-grade<br><em>peptide library.</em></h1>
+  <p class="header-sub">46 products · ≥99% purity · COA with every order · Free shipping over $150</p>
+</div>
+
+<div class="filters">
+  <div class="search-wrap">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="Search peptides..."/>
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="glp1">GLP-1</button>
+    <button class="filter-btn" data-cat="recovery">Recovery</button>
+    <button class="filter-btn" data-cat="antiaging">Anti-Aging</button>
+    <button class="filter-btn" data-cat="brain">Brain</button>
+    <button class="filter-btn" data-cat="sexual">Sexual</button>
+    <button class="filter-btn" data-cat="immune">Immune</button>
+    <button class="filter-btn" data-cat="muscle">Muscle</button>
+    <button class="filter-btn" data-cat="skin">Skin</button>
+    <span class="count-label"><span id="count-num">46</span> products</span>
+  </div>
+</div>
+
+<div class="catalog-main">
+  <div class="products-grid" id="product-grid">
+
+    <div class="product-card" data-cat="glp1" data-name="5-amino-1mq obesity metabolism nnmt">
+      <div class="prod-id">SB-001</div><div class="prod-name">5-Amino-1MQ</div>
+      <div class="prod-tags"><span class="tag">Obesity</span><span class="tag">Metabolism</span></div>
+      <p class="prod-desc">NNMT inhibitor studied for fat cell reduction and metabolic regulation research. 5mg vial.</p>
+      <div class="prod-footer"><div class="prod-price">$63<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-1 C semaglutide obesity weight loss">
+      <div class="prod-id">SB-002</div><div class="prod-name">GLP-1 C (Semaglutide)</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Obesity</span></div>
+      <p class="prod-desc">Semaglutide analog. GLP-1 receptor agonist for metabolic and appetite regulation research.</p>
+      <div class="prod-footer"><div class="prod-price">$72–$132<span>10mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-1 S semaglutide variant obesity">
+      <div class="prod-id">SB-003</div><div class="prod-name">GLP-1 S</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Obesity</span></div>
+      <p class="prod-desc">Semaglutide variant. Available in multiple concentrations for dose-response research.</p>
+      <div class="prod-footer"><div class="prod-price">$59–$152<span>5mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-1 T tirzepatide dual agonist GIP obesity">
+      <div class="prod-id">SB-004</div><div class="prod-name">GLP-1 T (Tirzepatide)</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Dual Agonist</span></div>
+      <p class="prod-desc">Tirzepatide analog. Dual GIP/GLP-1 receptor co-agonist for metabolic syndrome research.</p>
+      <div class="prod-footer"><div class="prod-price">$52–$375<span>10mg–60mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-3 R retatrutide triple agonist obesity glucagon">
+      <div class="prod-id">SB-005</div><div class="prod-name">GLP-3 R (Retatrutide)</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Triple Agonist</span></div>
+      <p class="prod-desc">Retatrutide analog. Triple GIP/GLP-1/glucagon receptor agonist. Next-gen obesity research compound.</p>
+      <div class="prod-footer"><div class="prod-price">$72–$425<span>10mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-3 RC retatrutide semaglutide combo obesity">
+      <div class="prod-id">SB-006</div><div class="prod-name">GLP-3 R+C</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Combination</span></div>
+      <p class="prod-desc">Retatrutide + Semaglutide combination for combined GLP receptor pathway research.</p>
+      <div class="prod-footer"><div class="prod-price">$164–$260<span>12.5mg–25mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="GLP-1 C GLP-1 S combo semaglutide obesity">
+      <div class="prod-id">SB-007</div><div class="prod-name">GLP-1 C + GLP-1 S</div>
+      <div class="prod-tags"><span class="tag">GLP-1</span><span class="tag">Combo</span></div>
+      <p class="prod-desc">Dual semaglutide variant combination for comparative GLP-1 receptor binding studies.</p>
+      <div class="prod-footer"><div class="prod-price">$102<span>5mg+5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="MOTS-c obesity mitochondria metabolism insulin">
+      <div class="prod-id">SB-008</div><div class="prod-name">MOTS-c</div>
+      <div class="prod-tags"><span class="tag">Obesity</span><span class="tag">Mitochondrial</span></div>
+      <p class="prod-desc">Mitochondria-derived peptide for insulin sensitivity, metabolic regulation, and exercise mimicry research.</p>
+      <div class="prod-footer"><div class="prod-price">$65–$197<span>10mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="B12 vitamin obesity energy methylcobalamin">
+      <div class="prod-id">SB-009</div><div class="prod-name">B12 10mg</div>
+      <div class="prod-tags"><span class="tag">Obesity</span><span class="tag">Energy</span></div>
+      <p class="prod-desc">High-dose methylcobalamin for metabolic support and energy pathway research. 10mL solution.</p>
+      <div class="prod-footer"><div class="prod-price">$44<span>10mg/10mL · Solution</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1" data-name="Lipo-C lipotropic fat loss obesity liver">
+      <div class="prod-id">SB-010</div><div class="prod-name">Lipo-C</div>
+      <div class="prod-tags"><span class="tag">Obesity</span><span class="tag">Lipotropic</span></div>
+      <p class="prod-desc">Lipotropic compound blend for fat metabolism and liver function research.</p>
+      <div class="prod-footer"><div class="prod-price">$55<span>10mL · Solution</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="glp1 recovery" data-name="CJC-1295 No DAC growth hormone GHRH obesity">
+      <div class="prod-id">SB-011</div><div class="prod-name">CJC-1295 No DAC</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Obesity</span></div>
+      <p class="prod-desc">GHRH analog without drug affinity complex. Short-acting pulsatile GH secretion research.</p>
+      <div class="prod-footer"><div class="prod-price">$55<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="BPC-157 body protection compound repair tissue">
+      <div class="prod-id">SB-012</div><div class="prod-name">BPC-157</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">Repair</span></div>
+      <p class="prod-desc">15-residue body protection compound. Gastric and musculoskeletal tissue research.</p>
+      <div class="prod-footer"><div class="prod-price">$42–$62<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="BPC-157 TB-500 combo recovery repair stack">
+      <div class="prod-id">SB-013</div><div class="prod-name">BPC-157 + TB-500</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">Combo</span></div>
+      <p class="prod-desc">Synergistic combination of BPC-157 and TB-500 for tissue repair research.</p>
+      <div class="prod-footer"><div class="prod-price">$58–$100<span>5mg+5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="TB-500 thymosin beta-4 repair actin">
+      <div class="prod-id">SB-014</div><div class="prod-name">TB-500</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">Cytoskeletal</span></div>
+      <p class="prod-desc">Synthetic Thymosin Beta-4 analog for cellular migration and actin-binding research.</p>
+      <div class="prod-footer"><div class="prod-price">$30–$70<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="CJC-1295 DAC growth hormone long acting GHRH">
+      <div class="prod-id">SB-015</div><div class="prod-name">CJC-1295 (DAC)</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Recovery</span></div>
+      <p class="prod-desc">Long-acting GHRH analog with drug affinity complex for extended GH secretion studies.</p>
+      <div class="prod-footer"><div class="prod-price">$57<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="CJC no DAC ipamorelin combo growth hormone stack">
+      <div class="prod-id">SB-016</div><div class="prod-name">CJC no DAC + Ipamorelin</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Combo</span></div>
+      <p class="prod-desc">Classic dual receptor GH release combination. Synergistic GHRH + secretagogue research.</p>
+      <div class="prod-footer"><div class="prod-price">$72<span>5mg+5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="Ipamorelin GHRP growth hormone secretagogue">
+      <div class="prod-id">SB-017</div><div class="prod-name">Ipamorelin</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Secretagogue</span></div>
+      <p class="prod-desc">Selective pentapeptide GH secretagogue with minimal cortisol or prolactin off-target activity.</p>
+      <div class="prod-footer"><div class="prod-price">$42–$74<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="AOD9604 GH fragment fat loss lipolysis">
+      <div class="prod-id">SB-018</div><div class="prod-name">AOD9604</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">GH Fragment</span></div>
+      <p class="prod-desc">GH fragment 176-191. Lipolytic activity research without elevation of IGF-1 levels.</p>
+      <div class="prod-footer"><div class="prod-price">$42<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="Ara-290 erythropoietin neuroprotection inflammation">
+      <div class="prod-id">SB-019</div><div class="prod-name">Ara-290</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">Neuroprotection</span></div>
+      <p class="prod-desc">EPO-derived peptide for tissue protection, neuropathy, and anti-inflammatory research.</p>
+      <div class="prod-footer"><div class="prod-price">$62<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery muscle" data-name="IGF-1 LR3 insulin growth factor muscle hypertrophy">
+      <div class="prod-id">SB-020</div><div class="prod-name">IGF-1 LR3</div>
+      <div class="prod-tags"><span class="tag">Recovery</span><span class="tag">Growth Factor</span></div>
+      <p class="prod-desc">Long R3 IGF-1 analog with extended half-life for muscle hypertrophy and proliferation research.</p>
+      <div class="prod-footer"><div class="prod-price">$67<span>1mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="Sermorelin GHRH growth hormone pituitary">
+      <div class="prod-id">SB-021</div><div class="prod-name">Sermorelin</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Recovery</span></div>
+      <p class="prod-desc">GHRH(1-29) analog stimulating pituitary GH secretion for anti-aging and recovery research.</p>
+      <div class="prod-footer"><div class="prod-price">$67<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery" data-name="Tesamorelin GHRH visceral fat growth hormone">
+      <div class="prod-id">SB-022</div><div class="prod-name">Tesamorelin</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Recovery</span></div>
+      <p class="prod-desc">Stabilized GHRH analog for visceral adiposity reduction and GH deficiency research.</p>
+      <div class="prod-footer"><div class="prod-price">$45–$75<span>2mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="recovery muscle" data-name="Hexarelin GHRP growth hormone cardiac muscle">
+      <div class="prod-id">SB-023</div><div class="prod-name">Hexarelin Acetate</div>
+      <div class="prod-tags"><span class="tag">GH Axis</span><span class="tag">Muscle</span></div>
+      <p class="prod-desc">Potent synthetic GHRP hexapeptide for GH secretion and cardiac research applications.</p>
+      <div class="prod-footer"><div class="prod-price">$76<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging" data-name="Epithalon epitalon telomerase anti-aging longevity">
+      <div class="prod-id">SB-024</div><div class="prod-name">Epithalon</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Telomere</span></div>
+      <p class="prod-desc">Synthetic tetrapeptide Ala-Glu-Asp-Gly for telomerase activation and pineal gland research.</p>
+      <div class="prod-footer"><div class="prod-price">$52<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging skin" data-name="GHK-Cu copper peptide anti-aging collagen skin hair">
+      <div class="prod-id">SB-025</div><div class="prod-name">GHK-Cu</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Skin</span></div>
+      <p class="prod-desc">Copper-binding tripeptide for collagen synthesis, wound healing, and skin biology research.</p>
+      <div class="prod-footer"><div class="prod-price">$54–$74<span>50mg–100mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging brain" data-name="NAD+ nicotinamide anti-aging energy DNA longevity">
+      <div class="prod-id">SB-026</div><div class="prod-name">NAD+</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Brain</span></div>
+      <p class="prod-desc">Nicotinamide adenine dinucleotide for cellular energy metabolism, DNA repair, and longevity research.</p>
+      <div class="prod-footer"><div class="prod-price">$30–$65<span>500mg–1000mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging immune" data-name="Glutathione antioxidant anti-aging detox immune">
+      <div class="prod-id">SB-027</div><div class="prod-name">Glutathione</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Antioxidant</span></div>
+      <p class="prod-desc">Master antioxidant tripeptide for oxidative stress, detoxification, and immune function research.</p>
+      <div class="prod-footer"><div class="prod-price">$47–$72<span>600mg–1500mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging skin" data-name="GLOW blend skin hair nail anti-aging recovery">
+      <div class="prod-id">SB-028</div><div class="prod-name">GLOW 70mg</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Skin Blend</span></div>
+      <p class="prod-desc">Proprietary multi-peptide blend for skin, hair, and nail research applications.</p>
+      <div class="prod-footer"><div class="prod-price">$124<span>70mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="antiaging skin" data-name="KLOW blend skin hair nail anti-aging GHK">
+      <div class="prod-id">SB-029</div><div class="prod-name">KLOW 80mg</div>
+      <div class="prod-tags"><span class="tag">Anti-Aging</span><span class="tag">Skin Blend</span></div>
+      <p class="prod-desc">Advanced GHK-Cu-based longevity and skin blend combining complementary anti-aging peptides.</p>
+      <div class="prod-footer"><div class="prod-price">$134<span>80mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="brain" data-name="Selank anxiolytic cognitive nootropic anxiety brain">
+      <div class="prod-id">SB-030</div><div class="prod-name">Selank</div>
+      <div class="prod-tags"><span class="tag">Brain</span><span class="tag">Anxiolytic</span></div>
+      <p class="prod-desc">Tuftsin-derived heptapeptide for anxiety, cognitive enhancement, and immune modulation research.</p>
+      <div class="prod-footer"><div class="prod-price">$52–$85<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="brain" data-name="Semax ACTH neuroprotective BDNF cognitive brain">
+      <div class="prod-id">SB-031</div><div class="prod-name">Semax</div>
+      <div class="prod-tags"><span class="tag">Brain</span><span class="tag">Neuroprotective</span></div>
+      <p class="prod-desc">ACTH(4-7) Pro-Gly-Pro analog for BDNF pathway and neuroprotective research.</p>
+      <div class="prod-footer"><div class="prod-price">$55–$85<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="brain" data-name="DSIP delta sleep inducing peptide brain sleep stress">
+      <div class="prod-id">SB-032</div><div class="prod-name">DSIP</div>
+      <div class="prod-tags"><span class="tag">Brain</span><span class="tag">Sleep</span></div>
+      <p class="prod-desc">Delta sleep-inducing peptide for sleep regulation and neuroendocrine research.</p>
+      <div class="prod-footer"><div class="prod-price">$40<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual" data-name="PT-141 bremelanotide sexual function melanocortin">
+      <div class="prod-id">SB-033</div><div class="prod-name">PT-141</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">Melanocortin</span></div>
+      <p class="prod-desc">Bremelanotide melanocortin receptor agonist for sexual function and appetite research.</p>
+      <div class="prod-footer"><div class="prod-price">$55<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual" data-name="KissPeptin kisspeptin reproductive GnRH hormone sexual">
+      <div class="prod-id">SB-034</div><div class="prod-name">KissPeptin</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">Reproductive</span></div>
+      <p class="prod-desc">Hypothalamic neuropeptide regulating GnRH. Reproductive endocrinology and fertility research.</p>
+      <div class="prod-footer"><div class="prod-price">$52–$72<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual" data-name="HCG human chorionic gonadotropin testosterone fertility">
+      <div class="prod-id">SB-035</div><div class="prod-name">HCG 5000iu</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">Hormone</span></div>
+      <p class="prod-desc">Human chorionic gonadotropin for testosterone production and LH receptor research.</p>
+      <div class="prod-footer"><div class="prod-price">$87<span>5000iu · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual" data-name="HMG menotropin FSH LH fertility sexual ovarian">
+      <div class="prod-id">SB-036</div><div class="prod-name">HMG 75iu</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">FSH/LH</span></div>
+      <p class="prod-desc">Human menopausal gonadotropin (FSH + LH) for ovarian stimulation and fertility research.</p>
+      <div class="prod-footer"><div class="prod-price">$60<span>75iu · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual skin" data-name="MT-2 melanotan melanocortin tanning sexual skin">
+      <div class="prod-id">SB-037</div><div class="prod-name">MT-2 (Melanotan 2)</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">Skin</span></div>
+      <p class="prod-desc">Melanocortin analog for skin pigmentation, sexual function, and appetite suppression research.</p>
+      <div class="prod-footer"><div class="prod-price">$52<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="sexual" data-name="Oxytocin acetate bonding social trust sexual">
+      <div class="prod-id">SB-038</div><div class="prod-name">Oxytocin-Acetate</div>
+      <div class="prod-tags"><span class="tag">Sexual</span><span class="tag">Social Bonding</span></div>
+      <p class="prod-desc">Neuropeptide for social bonding, trust, sexual behavior, and stress response research.</p>
+      <div class="prod-footer"><div class="prod-price">$42<span>2mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="immune" data-name="Thymosin Alpha-1 thymus immune T-cell modulation">
+      <div class="prod-id">SB-039</div><div class="prod-name">Thymosin Alpha-1</div>
+      <div class="prod-tags"><span class="tag">Immune</span><span class="tag">Thymic</span></div>
+      <p class="prod-desc">Thymic peptide for T-cell modulation and immune system enhancement research.</p>
+      <div class="prod-footer"><div class="prod-price">$59–$97<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="immune" data-name="LL37 cathelicidin antimicrobial innate immunity wound healing">
+      <div class="prod-id">SB-040</div><div class="prod-name">LL37</div>
+      <div class="prod-tags"><span class="tag">Immune</span><span class="tag">Antimicrobial</span></div>
+      <p class="prod-desc">Human cathelicidin for innate immunity, wound healing, and anti-biofilm research.</p>
+      <div class="prod-footer"><div class="prod-price">$92<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="immune antiaging" data-name="Thymalin thymus immune aging restoration">
+      <div class="prod-id">SB-041</div><div class="prod-name">Thymalin</div>
+      <div class="prod-tags"><span class="tag">Immune</span><span class="tag">Anti-Aging</span></div>
+      <p class="prod-desc">Thymus-derived peptide complex for immune restoration and thymic function research.</p>
+      <div class="prod-footer"><div class="prod-price">$45<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="immune" data-name="KPV anti-inflammatory gut skin alpha-MSH">
+      <div class="prod-id">SB-042</div><div class="prod-name">KPV 10mg</div>
+      <div class="prod-tags"><span class="tag">Inflammation</span><span class="tag">Gut</span></div>
+      <p class="prod-desc">α-MSH-derived tripeptide Lys-Pro-Val for anti-inflammatory gut and skin research.</p>
+      <div class="prod-footer"><div class="prod-price">$69<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="muscle" data-name="L-Carnitine muscle fat metabolism energy mitochondria">
+      <div class="prod-id">SB-043</div><div class="prod-name">L-Carnitine 6000mg</div>
+      <div class="prod-tags"><span class="tag">Muscle</span><span class="tag">Metabolism</span></div>
+      <p class="prod-desc">Amino acid derivative for mitochondrial fatty acid transport and energy metabolism research.</p>
+      <div class="prod-footer"><div class="prod-price">$45<span>6000mg/10mL · Solution</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="skin" data-name="Snap-8 anti-wrinkle skin botox neurotransmitter">
+      <div class="prod-id">SB-044</div><div class="prod-name">Snap-8</div>
+      <div class="prod-tags"><span class="tag">Skin</span><span class="tag">Anti-Wrinkle</span></div>
+      <p class="prod-desc">Octapeptide for neurotransmitter release inhibition and facial muscle relaxation research.</p>
+      <div class="prod-footer"><div class="prod-price">$40<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="all" data-name="bacteriostatic water reconstitution BAC water supplies">
+      <div class="prod-id">SB-045</div><div class="prod-name">Reconstitution Water</div>
+      <div class="prod-tags"><span class="tag">Supplies</span><span class="tag">BAC Water</span></div>
+      <p class="prod-desc">Bacteriostatic water with 0.9% benzyl alcohol for safe peptide reconstitution.</p>
+      <div class="prod-footer"><div class="prod-price">$10–$15<span>3mL–10mL</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="all" data-name="acetic acid reconstitution solution supplies">
+      <div class="prod-id">SB-046</div><div class="prod-name">Acetic Acid 0.6%</div>
+      <div class="prod-tags"><span class="tag">Supplies</span><span class="tag">Reconstitution</span></div>
+      <p class="prod-desc">0.6% acetic acid solution for peptides requiring acidic reconstitution conditions.</p>
+      <div class="prod-footer"><div class="prod-price">$15<span>3mL</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="custom-card">
+      <h3>Need a custom sequence?</h3>
+      <p>Our team synthesizes custom peptides from 2 to 50+ residues. Contact us for pricing.</p>
+      <a href="contact.html" class="btn-primary">Request Custom Synthesis</a>
+    </div>
+
+  </div>
+  <div class="no-results" id="no-results">
+    <h3>No peptides found</h3>
+    <p>Try a different search or filter.</p>
+  </div>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+function toggleMenu() { document.getElementById('mob-nav').classList.toggle('open'); }
+
+function makeVial(name, dose, labelStyle, capColor, powderColor) {
+  const shortName = name.length > 11 ? name.substring(0, 11) : name;
+  const shortDose = dose ? dose.split('·')[0].trim() : '';
+  const gridEl = labelStyle === 'label-copper' ? `<div class="lbl-lines"></div>` : `<div class="lbl-grid"></div>`;
+  return `<div class="prod-vial"><div class="vial-wrap">
+    <div class="vial-cap" style="background:${capColor};"></div>
+    <div class="vial-septum"></div>
+    <div class="vial-crimp"></div>
+    <div class="vial-body">
+      <div class="vial-label ${labelStyle}">
+        ${gridEl}
+        <div class="lbl-bar"></div>
+        <div class="lbl-inner">
+          <div class="lbl-brand">Stratus Biolabs</div>
+          <div class="lbl-name">${shortName}</div>
+          <div class="lbl-dose">${shortDose}</div>
+          <div class="lbl-ruo">RUO</div>
+        </div>
+      </div>
+      <div class="vial-powder" style="background:${powderColor};"></div>
+    </div>
+  </div></div>`;
+}
+
+const catStyles = {
+  glp1:     { style:'label-navy',   cap:'#5b8dd9', powder:'#5b8dd9' },
+  recovery: { style:'label-navy',   cap:'#4a9a6a', powder:'#4a9a6a' },
+  antiaging:{ style:'label-copper', cap:'#c9a84c', powder:'#c9a84c' },
+  brain:    { style:'label-purple', cap:'#8c5dd9', powder:'#8c5dd9' },
+  sexual:   { style:'label-purple', cap:'#d95b8d', powder:'#d95b8d' },
+  immune:   { style:'label-navy',   cap:'#5bd9c9', powder:'#5bd9c9' },
+  muscle:   { style:'label-navy',   cap:'#d97a5b', powder:'#d97a5b' },
+  skin:     { style:'label-copper', cap:'#d9a85b', powder:'#d9a85b' },
+  all:      { style:'label-navy',   cap:'#8d98b3', powder:'#8d98b3' },
+};
+
+document.querySelectorAll('.product-card').forEach(card => {
+  const cat = (card.dataset.cat || 'all').split(' ')[0];
+  const cfg = catStyles[cat] || catStyles['all'];
+  const name = card.querySelector('.prod-name')?.textContent.trim() || '';
+  const dose = card.querySelector('.prod-price span')?.textContent.trim() || '';
+  card.insertAdjacentHTML('afterbegin', makeVial(name, dose, cfg.style, cfg.cap, cfg.powder));
+});
+const cards = document.querySelectorAll('.product-card');
+const searchInput = document.getElementById('search');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const countNum = document.getElementById('count-num');
+const noResults = document.getElementById('no-results');
+let activeCategory = 'all';
+function updateDisplay() {
+  const q = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+  cards.forEach(card => {
+    const name = (card.dataset.name || '').toLowerCase();
+    const cat = card.dataset.cat || '';
+    const matchSearch = !q || name.includes(q);
+    const matchCat = activeCategory === 'all' || cat.includes(activeCategory);
+    if (matchSearch && matchCat) { card.classList.remove('hidden'); visible++; }
+    else card.classList.add('hidden');
+  });
+  countNum.textContent = visible;
+  noResults.style.display = visible === 0 ? 'block' : 'none';
+}
+searchInput.addEventListener('input', updateDisplay);
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = btn.dataset.cat;
+    updateDisplay();
+  });
+});
+</script>
+</body>
+</html>

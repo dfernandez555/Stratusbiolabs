@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stratus Biolabs — Precision Peptide Science</title>
+
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://stratusbiolabs.com/"/>
+<meta property="og:title" content="Stratus Biolabs — Precision Peptide Science"/>
+<meta property="og:description" content="Research-grade peptides synthesized to the highest standards of purity. 46+ compounds. ≥99% purity. COA with every order."/>
+<meta property="og:image" content="https://stratusbiolabs.com/preview.jpg"/>
+<meta property="og:site_name" content="Stratus Biolabs"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="description" content="Stratus Biolabs delivers research-grade peptides — GLP-1, BPC-157, TB-500, Retatrutide and 46+ more. ≥99% purity, COA with every order."/>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
+  --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
+  --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
+  --border: rgba(93,141,217,0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--ink);
+  color: var(--fog);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 3rem;
+  background: rgba(11,15,26,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; color:var(--white); text-decoration:none; }
+.logo span { color:var(--cirrus); }
+.nav-links { list-style:none; display:flex; gap:2.5rem; }
+.nav-links a { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--mist); text-decoration:none; transition:color 0.3s; }
+.nav-links a:hover { color:var(--cirrus); }
+.nav-cta { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--cirrus); border:1px solid var(--cirrus); padding:0.45rem 1rem; text-decoration:none; transition:all 0.3s; }
+.nav-cta:hover { background:var(--cirrus); color:var(--ink); }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; }
+.hamburger span { display:block; width:22px; height:2px; background:var(--mist); }
+.mobile-nav { display:none; position:fixed; top:58px; left:0; right:0; background:rgba(11,15,26,0.98); border-bottom:1px solid var(--border); padding:0.5rem 2rem 1rem; z-index:99; flex-direction:column; }
+.mobile-nav a { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--mist); text-decoration:none; padding:0.75rem 0; border-bottom:1px solid rgba(93,141,217,0.08); display:block; }
+.mobile-nav.open { display:flex; }
+
+/* ── HERO ── */
+.hero {
+  width: 100%;
+  padding: 9rem 3rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position:absolute; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 65% 40%, rgba(46,74,122,0.35) 0%, transparent 70%),
+    linear-gradient(160deg, #0b0f1a 0%, #0f1828 50%, #0b0f1a 100%);
+}
+.hero-bg::before {
+  content:''; position:absolute; inset:0;
+  background-image: linear-gradient(rgba(93,141,217,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(93,141,217,0.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image: radial-gradient(ellipse 60% 70% at 65% 40%, black 0%, transparent 80%);
+}
+.hero-content { position:relative; z-index:1; max-width:620px; }
+.hero-eyebrow { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.35em; text-transform:uppercase; color:var(--cirrus); margin-bottom:1.5rem; }
+.hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2.8rem,5.5vw,5.2rem); font-weight:300; color:var(--white); line-height:1.05; margin-bottom:1.5rem; }
+.hero-title em { font-style:italic; color:var(--cirrus); }
+.hero-sub { font-size:1rem; font-weight:200; color:var(--silver); line-height:1.85; max-width:500px; margin-bottom:2.5rem; }
+.hero-actions { display:flex; gap:1.5rem; align-items:center; flex-wrap:wrap; }
+
+.btn-primary { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; padding:0.9rem 2.2rem; background:var(--cirrus); color:var(--ink); text-decoration:none; display:inline-block; transition:background 0.3s; }
+.btn-primary:hover { background:var(--white); }
+.btn-ghost { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--mist); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.3s; }
+.btn-ghost:hover { color:var(--white); }
+
+/* ── STATS ── */
+.stats { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.stat { padding:2rem 3rem; border-right:1px solid var(--border); }
+.stat:last-child { border-right:none; }
+.stat-number { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:300; color:var(--white); line-height:1; margin-bottom:0.4rem; }
+.stat-number sup { font-size:1rem; color:var(--cirrus); }
+.stat-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--mist); }
+
+/* ── SECTIONS ── */
+.section { padding:6rem 3rem; }
+.section-eyebrow { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.35em; text-transform:uppercase; color:var(--cirrus); margin-bottom:1.2rem; }
+.section-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,3.5vw,3rem); font-weight:300; color:var(--white); line-height:1.1; margin-bottom:1.2rem; }
+.section-title em { font-style:italic; color:var(--cirrus); }
+.section-body { font-size:0.92rem; font-weight:200; color:var(--silver); line-height:1.9; max-width:500px; }
+.section-body a { color:var(--cirrus); text-decoration:none; }
+
+/* ── PRODUCTS ── */
+.products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); margin-top:4rem; }
+.product-card { background:var(--ink); padding:2.5rem; transition:background 0.3s; cursor:pointer; position:relative; overflow:hidden; }
+.product-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--cirrus),transparent); transform:scaleX(0); transition:transform 0.4s; }
+.product-card:hover { background:rgba(26,42,74,0.6); }
+.product-card:hover::before { transform:scaleX(1); }
+.prod-seq { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.15em; color:var(--mist); margin-bottom:1.5rem; }
+.prod-name { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:300; color:var(--white); margin-bottom:0.3rem; line-height:1.1; }
+.prod-dose { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--cirrus); margin-bottom:1rem; }
+.prod-desc { font-size:0.82rem; font-weight:200; color:var(--mist); line-height:1.8; margin-bottom:1.5rem; }
+.prod-footer { display:flex; justify-content:space-between; align-items:center; padding-top:1rem; border-top:1px solid var(--border); }
+.prod-purity { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--gold); }
+.prod-link { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); text-decoration:none; transition:color 0.2s; }
+.prod-link:hover { color:var(--cirrus); }
+
+.catalog-cta-card { background:rgba(26,42,74,0.15); border:1px dashed rgba(93,141,217,0.2); padding:3rem; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+.catalog-cta-card h3 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:300; color:var(--white); margin-bottom:0.5rem; }
+.catalog-cta-card p { font-size:0.82rem; font-weight:200; color:var(--mist); margin-bottom:1.5rem; line-height:1.7; }
+
+/* ── PROCESS ── */
+.process { background:rgba(26,42,74,0.1); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.process-inner { display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start; }
+.steps { display:flex; flex-direction:column; gap:2rem; margin-top:2.5rem; }
+.step { display:flex; gap:1.5rem; }
+.step-num { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--cirrus); min-width:1.5rem; padding-top:0.1rem; }
+.step-content h4 { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:400; color:var(--white); margin-bottom:0.3rem; }
+.step-content p { font-size:0.82rem; font-weight:200; color:var(--mist); line-height:1.75; }
+.helix-wrap { display:flex; justify-content:center; align-items:center; padding-top:4rem; }
+.helix-svg { width:100%; max-width:240px; }
+
+/* ── CTA ── */
+.cta-section { text-align:center; padding:8rem 3rem; position:relative; overflow:hidden; }
+.cta-section::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 50% 60% at 50% 50%, rgba(46,74,122,0.25) 0%, transparent 70%); }
+.cta-section .section-eyebrow { text-align:center; }
+.cta-section .section-title { text-align:center; margin:0 auto 1.2rem; max-width:520px; }
+.cta-section .section-body { text-align:center; margin:0 auto 2.5rem; }
+.cta-actions { display:flex; gap:1.2rem; justify-content:center; flex-wrap:wrap; position:relative; z-index:1; }
+.btn-outline { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; padding:0.9rem 2.2rem; border:1px solid rgba(93,141,217,0.4); color:var(--silver); text-decoration:none; transition:all 0.3s; display:inline-block; }
+.btn-outline:hover { border-color:var(--cirrus); color:var(--cirrus); }
+
+/* ── FOOTER ── */
+footer { border-top:1px solid var(--border); padding:2.5rem 3rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; }
+.footer-logo { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; color:var(--mist); text-decoration:none; }
+.footer-logo span { color:var(--cirrus); }
+.footer-links { display:flex; gap:2rem; list-style:none; flex-wrap:wrap; }
+.footer-links a { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--mist); text-decoration:none; transition:color 0.3s; }
+.footer-links a:hover { color:var(--cirrus); }
+.footer-copy { font-family:'DM Mono',monospace; font-size:0.55rem; color:rgba(141,152,179,0.4); letter-spacing:0.08em; }
+
+/* ── DIVIDER ── */
+.divider { height:1px; background:linear-gradient(90deg,transparent,var(--nimbus),transparent); margin:0 3rem; }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  nav { padding:0.9rem 1.2rem; }
+  .nav-links, .nav-cta { display:none !important; }
+  .hamburger { display:flex !important; }
+
+  .hero { padding:5rem 1.2rem 3rem !important; }
+  .hero-title { font-size:2.3rem !important; }
+  .hero-sub { font-size:0.88rem !important; max-width:100% !important; }
+  .hero-actions { flex-direction:column !important; align-items:stretch !important; gap:0.8rem !important; }
+  .btn-primary, .btn-ghost { text-align:center !important; justify-content:center !important; }
+
+  .stats { grid-template-columns:1fr 1fr !important; }
+  .stat { padding:1.2rem 1rem !important; }
+  .stat:nth-child(2) { border-right:none !important; }
+  .stat:nth-child(3) { border-right:1px solid var(--border) !important; }
+  .stat-number { font-size:2rem !important; }
+
+  .section { padding:3rem 1.2rem !important; }
+  .section-title { font-size:1.9rem !important; }
+  .section-body { max-width:100% !important; }
+
+  .products-grid { grid-template-columns:1fr !important; }
+  .product-card { padding:1.5rem !important; }
+
+  .process-inner { grid-template-columns:1fr !important; gap:2rem !important; }
+  .helix-wrap { display:none !important; }
+
+  .cta-section { padding:4rem 1.2rem !important; }
+  .cta-actions { flex-direction:column !important; align-items:stretch !important; }
+  .btn-outline { text-align:center !important; }
+
+  .divider { margin:0 1.2rem !important; }
+  footer { flex-direction:column !important; padding:1.5rem 1.2rem !important; gap:1rem !important; align-items:flex-start !important; }
+  .footer-links { gap:1rem !important; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul class="nav-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a href="contact.html" class="nav-cta">Request Quote</a>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact / Quote</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Precision Peptide Science</p>
+    <h1 class="hero-title">Where <em>molecular</em><br>precision meets<br>possibility.</h1>
+    <p class="hero-sub">Stratus Biolabs delivers research-grade peptides synthesized to the highest standards of purity and structural fidelity — enabling the science that shapes tomorrow.</p>
+    <div class="hero-actions">
+      <a href="catalog.html" class="btn-primary">View Catalog</a>
+      <a href="#process" class="btn-ghost">Our Process →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-number">46<sup>+</sup></div>
+    <div class="stat-label">Catalog Products</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">99<sup>%</sup></div>
+    <div class="stat-label">Avg. Purity Grade</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">72<sup>h</sup></div>
+    <div class="stat-label">Standard Turnaround</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">3rd</div>
+    <div class="stat-label">Party Lab Verified</div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="section" id="products">
+  <p class="section-eyebrow">Product Catalog</p>
+  <h2 class="section-title">Engineered for<br><em>exactitude.</em></h2>
+  <p class="section-body">A selection from our 46-product catalog — all synthesized under rigorous QC protocols with full CoA documentation. <a href="catalog.html">View full catalog →</a></p>
+
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="prod-seq">SB-002</div>
+      <div class="prod-name">GLP-1 S</div>
+      <div class="prod-dose">Semaglutide · from $59</div>
+      <p class="prod-desc">GLP-1 receptor agonist. Metabolic and appetite regulation research. Multiple concentrations available.</p>
+      <div class="prod-footer"><span class="prod-purity">≥99% Purity</span><a href="catalog.html" class="prod-link">View →</a></div>
+    </div>
+    <div class="product-card">
+      <div class="prod-seq">SB-005</div>
+      <div class="prod-name">GLP-3 R</div>
+      <div class="prod-dose">Retatrutide · from $72</div>
+      <p class="prod-desc">Triple GIP/GLP-1/glucagon receptor agonist. Next-generation obesity research compound.</p>
+      <div class="prod-footer"><span class="prod-purity">≥99% Purity</span><a href="catalog.html" class="prod-link">View →</a></div>
+    </div>
+    <div class="product-card">
+      <div class="prod-seq">SB-012</div>
+      <div class="prod-name">BPC-157</div>
+      <div class="prod-dose">Body Protection Compound · from $42</div>
+      <p class="prod-desc">15-residue body protection compound. Gastric and musculoskeletal tissue research applications.</p>
+      <div class="prod-footer"><span class="prod-purity">≥99% Purity</span><a href="catalog.html" class="prod-link">View →</a></div>
+    </div>
+    <div class="product-card">
+      <div class="prod-seq">SB-014</div>
+      <div class="prod-name">TB-500</div>
+      <div class="prod-dose">Thymosin Beta-4 · from $30</div>
+      <p class="prod-desc">Synthetic Thymosin Beta-4 analog for cellular migration and actin-binding research.</p>
+      <div class="prod-footer"><span class="prod-purity">≥99% Purity</span><a href="catalog.html" class="prod-link">View →</a></div>
+    </div>
+    <div class="product-card">
+      <div class="prod-seq">SB-025</div>
+      <div class="prod-name">GHK-Cu</div>
+      <div class="prod-dose">Copper Peptide · from $54</div>
+      <p class="prod-desc">Copper-binding tripeptide for collagen synthesis, wound healing, and skin biology research.</p>
+      <div class="prod-footer"><span class="prod-purity">≥99% Purity</span><a href="catalog.html" class="prod-link">View →</a></div>
+    </div>
+    <div class="catalog-cta-card">
+      <h3>46 products total</h3>
+      <p>GLP-1s, recovery, anti-aging, brain, immune, sexual health and more — all with full CoA documentation.</p>
+      <a href="catalog.html" class="btn-primary">Browse Full Catalog</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROCESS -->
+<section class="section process" id="process">
+  <div class="process-inner">
+    <div>
+      <p class="section-eyebrow">Methodology</p>
+      <h2 class="section-title">Built on<br><em>rigorous science.</em></h2>
+      <p class="section-body">Every batch synthesized at Stratus Biolabs undergoes a multi-stage quality verification pipeline before it ever reaches a researcher's bench.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Solid-Phase Synthesis</h4>
+            <p>Fmoc SPPS methodology with real-time coupling monitoring to ensure sequence fidelity at every residue.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>HPLC Purification</h4>
+            <p>Preparative reverse-phase HPLC targeting ≥99% purity, verified by analytical HPLC on every batch.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Mass Spectrometry</h4>
+            <p>Each lot confirmed by ESI-MS or MALDI-TOF to verify molecular weight and structural integrity.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h4>CoA & Lyophilization</h4>
+            <p>Full Certificate of Analysis with every order. Shipped as lyophilized powder for maximum stability.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="helix-wrap">
+      <svg class="helix-svg" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="hg1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5b8dd9" stop-opacity="0.8"/>
+            <stop offset="50%" stop-color="#2e4a7a" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#5b8dd9" stop-opacity="0.8"/>
+          </linearGradient>
+          <linearGradient id="hg2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.6"/>
+            <stop offset="50%" stop-color="#c9a84c" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#c9a84c" stop-opacity="0.6"/>
+          </linearGradient>
+        </defs>
+        <path d="M100 10 C140 30,160 70,100 90 C40 110,60 150,100 170 C140 190,160 230,100 250 C40 270,60 310,100 330 C140 350,160 370,100 390" stroke="url(#hg1)" stroke-width="2" fill="none"/>
+        <path d="M100 10 C60 30,40 70,100 90 C160 110,140 150,100 170 C60 190,40 230,100 250 C160 270,140 310,100 330 C60 350,40 370,100 390" stroke="url(#hg2)" stroke-width="2" fill="none"/>
+        <g opacity="0.35" stroke="#5b8dd9" stroke-width="0.8">
+          <line x1="119" y1="28" x2="81" y2="28"/><line x1="135" y1="50" x2="65" y2="50"/>
+          <line x1="130" y1="73" x2="70" y2="73"/><line x1="110" y1="90" x2="90" y2="90"/>
+          <line x1="79" y1="108" x2="121" y2="108"/><line x1="65" y1="130" x2="135" y2="130"/>
+          <line x1="70" y1="152" x2="130" y2="152"/><line x1="90" y1="170" x2="110" y2="170"/>
+          <line x1="119" y1="188" x2="81" y2="188"/><line x1="135" y1="210" x2="65" y2="210"/>
+          <line x1="130" y1="233" x2="70" y2="233"/><line x1="110" y1="250" x2="90" y2="250"/>
+          <line x1="79" y1="268" x2="121" y2="268"/><line x1="65" y1="290" x2="135" y2="290"/>
+          <line x1="70" y1="312" x2="130" y2="312"/><line x1="90" y1="330" x2="110" y2="330"/>
+          <line x1="119" y1="348" x2="81" y2="348"/><line x1="135" y1="370" x2="65" y2="370"/>
+        </g>
+        <g fill="#5b8dd9">
+          <circle cx="100" cy="10" r="3"/><circle cx="100" cy="90" r="3" opacity="0.7"/>
+          <circle cx="100" cy="170" r="3"/><circle cx="100" cy="250" r="3" opacity="0.7"/>
+          <circle cx="100" cy="330" r="3"/><circle cx="100" cy="390" r="3" opacity="0.7"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <p class="section-eyebrow">Get Started</p>
+  <h2 class="section-title">Ready to elevate<br>your research?</h2>
+  <p class="section-body">Contact our team for catalog pricing, custom synthesis inquiries, or volume agreements.</p>
+  <div class="cta-actions">
+    <a href="contact.html" class="btn-primary">Contact Our Team</a>
+    <a href="catalog.html" class="btn-outline">Browse Catalog</a>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+  // Close mobile menu when link clicked
+  document.querySelectorAll('.mobile-nav a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('mob-nav').classList.remove('open'));
+  });
+</script>
+</body>
+</html>

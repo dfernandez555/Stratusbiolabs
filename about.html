@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>About Us — Stratus Biolabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #0b0f1a; --fog: #f2f4f8; --cloud: #dde3ee; --mist: #8d98b3;
+  --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
+  --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
+  --border: rgba(93,141,217,0.12);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem 4rem;
+  background: rgba(11,15,26,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+.logo span { color: var(--cirrus); }
+nav ul { list-style: none; display: flex; gap: 2.5rem; }
+nav ul a { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+nav ul a:hover, nav ul a.active { color: var(--cirrus); }
+.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.5rem 1.2rem; text-decoration: none; transition: all 0.3s; }
+.nav-cta:hover { background: var(--cirrus); color: var(--ink); }
+
+/* HERO */
+.page-hero {
+  min-height: 60vh; display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 12rem 4rem 6rem; position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 70% 80% at 75% 40%, rgba(46,74,122,0.3) 0%, transparent 70%),
+              linear-gradient(160deg, #0b0f1a 0%, #0f1828 60%, #0b0f1a 100%);
+}
+.hero-bg::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(93,141,217,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(93,141,217,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 60% 70% at 80% 50%, black, transparent 80%);
+}
+.hero-content { position: relative; z-index: 1; max-width: 750px; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s 0.2s both; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 6vw, 5rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s 0.4s both; }
+.page-title em { font-style: italic; color: var(--cirrus); }
+.page-sub { font-size: 1rem; font-weight: 200; color: var(--silver); line-height: 1.85; max-width: 560px; opacity: 0; animation: fadeUp 1s 0.6s both; }
+@keyframes fadeUp { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: none; } }
+
+/* MISSION */
+.mission { padding: 8rem 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 8rem; align-items: center; border-bottom: 1px solid var(--border); }
+.mission-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 2rem; }
+.mission-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 2rem; }
+.mission-title em { font-style: italic; color: var(--cirrus); }
+.mission-body { font-size: 0.95rem; font-weight: 200; color: var(--silver); line-height: 1.95; margin-bottom: 1.5rem; }
+.mission-visual { position: relative; height: 380px; display: flex; align-items: center; justify-content: center; }
+.mission-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(93,141,217,0.15);
+  animation: spin 20s linear infinite;
+}
+.mission-ring:nth-child(1) { width: 320px; height: 320px; }
+.mission-ring:nth-child(2) { width: 220px; height: 220px; border-style: dashed; animation-direction: reverse; animation-duration: 14s; }
+.mission-ring:nth-child(3) { width: 120px; height: 120px; animation-duration: 8s; }
+.mission-core { position: relative; z-index: 1; text-align: center; }
+.mission-core-num { font-family: 'Cormorant Garamond', serif; font-size: 4rem; font-weight: 300; color: var(--cirrus); line-height: 1; }
+.mission-core-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); margin-top: 0.3rem; }
+.ring-dot { position: absolute; width: 8px; height: 8px; background: var(--cirrus); border-radius: 50%; top: -4px; left: 50%; transform: translateX(-50%); }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* VALUES */
+.values { padding: 8rem 4rem; border-bottom: 1px solid var(--border); }
+.values-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem; }
+.values-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; }
+.values-title em { font-style: italic; color: var(--cirrus); }
+.values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.value-card { background: var(--ink); padding: 3rem 2.5rem; transition: background 0.3s; }
+.value-card:hover { background: rgba(26,42,74,0.5); }
+.value-icon { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: rgba(93,141,217,0.3); line-height: 1; margin-bottom: 1.5rem; }
+.value-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 1rem; }
+.value-desc { font-size: 0.85rem; font-weight: 200; color: var(--mist); line-height: 1.8; }
+
+/* TEAM */
+.team { padding: 8rem 4rem; border-bottom: 1px solid var(--border); }
+.team-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; }
+.team-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 5rem; }
+.team-title em { font-style: italic; color: var(--cirrus); }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
+.team-card { }
+.team-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--stratus), var(--nimbus));
+  border: 1px solid rgba(93,141,217,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--cirrus);
+  margin-bottom: 1.5rem;
+}
+.team-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: var(--white); margin-bottom: 0.3rem; }
+.team-role { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.team-bio { font-size: 0.85rem; font-weight: 200; color: var(--mist); line-height: 1.8; }
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-logo span { color: var(--cirrus); }
+.footer-links { display: flex; gap: 2.5rem; list-style: none; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.footer-links a:hover { color: var(--cirrus); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(141,152,179,0.4); letter-spacing: 0.1em; }
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+.reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul>
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a href="contact.html" class="nav-cta">Request Quote</a>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="eyebrow">Our Story</p>
+    <h1 class="page-title">Science without<br><em>compromise.</em></h1>
+    <p class="page-sub">Stratus Biolabs was founded on a single conviction: that researchers deserve peptide products held to the same rigorous standards they apply to their own work.</p>
+  </div>
+</section>
+
+<!-- MISSION -->
+<section class="mission">
+  <div class="reveal">
+    <p class="mission-label">Our Mission</p>
+    <h2 class="mission-title">Accelerating discovery through <em>precision synthesis.</em></h2>
+    <p class="mission-body">At Stratus Biolabs, we exist to eliminate the variables that don't belong in your research. Impure reagents, inconsistent batches, and inadequate documentation introduce noise into experiments that can take months or years to untangle.</p>
+    <p class="mission-body">We're built around a simple promise: every peptide we produce will be exactly what it says it is, at the purity we claim, backed by full analytical data.</p>
+  </div>
+  <div class="mission-visual reveal">
+    <div class="mission-ring"><div class="ring-dot"></div></div>
+    <div class="mission-ring"><div class="ring-dot"></div></div>
+    <div class="mission-ring"><div class="ring-dot"></div></div>
+    <div class="mission-core">
+      <div class="mission-core-num">≥98%</div>
+      <div class="mission-core-label">Guaranteed Purity</div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section class="values">
+  <div class="values-header reveal">
+    <div>
+      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--cirrus);margin-bottom:1rem;">What We Stand For</p>
+      <h2 class="values-title">Principles that guide<br>every <em>synthesis.</em></h2>
+    </div>
+  </div>
+  <div class="values-grid">
+    <div class="value-card reveal">
+      <div class="value-icon">Ι</div>
+      <div class="value-name">Analytical Rigor</div>
+      <p class="value-desc">Every batch undergoes HPLC and mass spectrometry verification. We never ship without data we'd stake our reputation on — because we do.</p>
+    </div>
+    <div class="value-card reveal">
+      <div class="value-icon">ΙΙ</div>
+      <div class="value-name">Full Transparency</div>
+      <p class="value-desc">Complete Certificates of Analysis ship with every order. We document what we find — including any deviation — because researchers deserve the truth.</p>
+    </div>
+    <div class="value-card reveal">
+      <div class="value-icon">ΙΙΙ</div>
+      <div class="value-name">Reproducibility</div>
+      <p class="value-desc">Our synthesis protocols are written to be replicated. Consistent methodology means your results hold up batch to batch, experiment to experiment.</p>
+    </div>
+    <div class="value-card reveal">
+      <div class="value-icon">ΙV</div>
+      <div class="value-name">Researcher Partnership</div>
+      <p class="value-desc">We treat scientists as collaborators, not just customers. Our technical team is available to discuss your project and help select the right product or custom sequence.</p>
+    </div>
+    <div class="value-card reveal">
+      <div class="value-icon">V</div>
+      <div class="value-name">Speed Without Sacrifice</div>
+      <p class="value-desc">72-hour standard turnaround on catalog items because great science shouldn't wait. Rush synthesis available — quality controls remain non-negotiable.</p>
+    </div>
+    <div class="value-card reveal">
+      <div class="value-icon">VI</div>
+      <div class="value-name">Responsible Practice</div>
+      <p class="value-desc">All products are sold strictly for research use only. We maintain thorough customer verification and comply with all applicable regulations.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="team">
+  <p class="team-eyebrow reveal">The People</p>
+  <h2 class="team-title reveal">Built by scientists,<br>for <em>scientists.</em></h2>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="team-avatar">DR</div>
+      <div class="team-name">Dr. Daniel Reeves</div>
+      <div class="team-role">Co-Founder & Chief Scientific Officer</div>
+      <p class="team-bio">PhD in biochemistry with 15 years in peptide synthesis research. Formerly Principal Investigator at a leading academic medical center. Leads all synthesis protocols and QC methodology at Stratus.</p>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-avatar">SE</div>
+      <div class="team-name">Sarah Ellison, MS</div>
+      <div class="team-role">Co-Founder & Chief Operating Officer</div>
+      <p class="team-bio">Masters in Pharmaceutical Sciences. 10+ years in biotech operations and supply chain. Ensures every order meets our quality standards from synthesis bench to delivery.</p>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-avatar">MK</div>
+      <div class="team-name">Marcus Kim, PhD</div>
+      <div class="team-role">Director of Analytical Chemistry</div>
+      <p class="team-bio">Analytical chemistry specialist with deep expertise in HPLC method development and mass spectrometric characterization of complex peptide sequences. Heads our QC laboratory.</p>
+    </div>
+  </div>
+</section>
+
+<div style="height:1px;background:linear-gradient(90deg,transparent,var(--nimbus),transparent);margin:0 4rem;"></div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting) { setTimeout(()=>e.target.classList.add('visible'), i*80); } });
+}, { threshold: 0.1 });
+reveals.forEach(r => obs.observe(r));
+</script>
+</body>
+</html>
