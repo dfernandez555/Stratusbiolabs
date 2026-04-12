@@ -194,8 +194,11 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .prod-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.7rem; border-top: 1px solid var(--border); margin-top: auto; }
 .prod-price { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: var(--white); }
 .prod-price span { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); display: block; margin-top: 1px; }
-.order-btn { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1rem; background: var(--cirrus); color: var(--ink); text-decoration: none; transition: background 0.25s; white-space: nowrap; }
+.order-btn { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.25s; white-space: nowrap; }
 .order-btn:hover { background: var(--white); }
+.cart-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; background: var(--cirrus); color: var(--ink); border: none; border-radius: 50px; padding: 0.85rem 1.5rem; font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; display: none; align-items: center; gap: 0.5rem; box-shadow: 0 4px 20px rgba(93,141,217,0.4); transition: all 0.3s; }
+.cart-btn:hover { background: var(--white); transform: translateY(-2px); }
+.cart-btn.show { display: flex; }
 
 .custom-card { background: rgba(26,42,74,0.1); border: 1px dashed rgba(93,141,217,0.2); padding: 2.5rem 2rem; text-align: center; grid-column: 1 / -1; }
 .custom-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 0.4rem; }
@@ -627,6 +630,11 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
 </footer>
 
+<!-- Floating Cart Button -->
+<button class="cart-btn" id="float-cart-btn" onclick="window.location.href='checkout.html'">
+  🛒 <span id="float-cart-count">0</span> items — Checkout
+</button>
+
 <script>
 function toggleMenu() { document.getElementById('mob-nav').classList.toggle('open'); }
 
@@ -673,7 +681,41 @@ document.querySelectorAll('.product-card').forEach(card => {
   const dose = card.querySelector('.prod-price span')?.textContent.trim() || '';
   card.insertAdjacentHTML('afterbegin', makeVial(name, dose, cfg.style, cfg.cap, cfg.powder));
 });
-const cards = document.querySelectorAll('.product-card');
+// Cart
+let cart = JSON.parse(localStorage.getItem('sb-cart') || '[]');
+function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
+function updateFloatCart() {
+  const total = cart.reduce((s,i) => s+i.qty, 0);
+  const btn = document.getElementById('float-cart-btn');
+  const countEl = document.getElementById('float-cart-count');
+  if (countEl) countEl.textContent = total;
+  if (btn) btn.classList.toggle('show', total > 0);
+}
+function addToCart(name, variant, price) {
+  const existing = cart.find(i => i.name === name && i.variant === variant);
+  if (existing) existing.qty++;
+  else cart.push({ name, variant, price, qty: 1 });
+  saveCart();
+  updateFloatCart();
+  // Flash button
+  const btn = document.getElementById('float-cart-btn');
+  if (btn) { btn.style.transform = 'scale(1.1) translateY(-2px)'; setTimeout(() => btn.style.transform = '', 200); }
+}
+updateFloatCart();
+
+// Update all order buttons
+document.querySelectorAll('.product-card').forEach(card => {
+  const btn = card.querySelector('.order-btn');
+  if (!btn) return;
+  const name = card.querySelector('.prod-name')?.textContent.trim() || '';
+  const priceEl = card.querySelector('.prod-price');
+  const variant = priceEl?.querySelector('span')?.textContent.trim() || '';
+  const priceText = priceEl?.childNodes[0]?.textContent?.trim() || '0';
+  const price = parseFloat(priceText.replace(/[^0-9.]/g,'').split('–')[0]) || 0;
+  btn.removeAttribute('href');
+  btn.onclick = () => addToCart(name, variant, price);
+  btn.textContent = 'Add to Cart';
+});
 const searchInput = document.getElementById('search');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const countNum = document.getElementById('count-num');

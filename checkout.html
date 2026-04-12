@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Checkout — Stratus Biolabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
+  --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
+  --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
+  --border: rgba(93,141,217,0.12); --green: #4a9a6a;
+}
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; width: 100%; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(11,15,26,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+.logo span { color: var(--cirrus); }
+.nav-links { list-style: none; display: flex; gap: 2rem; }
+.nav-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.nav-links a:hover { color: var(--cirrus); }
+.cart-icon { position: relative; cursor: pointer; background: none; border: none; color: var(--fog); }
+.cart-count { position: absolute; top: -6px; right: -8px; background: var(--cirrus); color: var(--ink); font-family: 'DM Mono', monospace; font-size: 0.55rem; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--mist); }
+.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem 1rem; z-index: 99; flex-direction: column; }
+.mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
+.mobile-nav.open { display: flex; }
+
+/* DISCLAIMER */
+.disclaimer { margin-top: 60px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
+.disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+.disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
+
+/* CART DRAWER */
+.cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.cart-overlay.open { opacity: 1; pointer-events: all; }
+.cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100vw; background: #0d1526; border-left: 1px solid var(--border); z-index: 201; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1); display: flex; flex-direction: column; }
+.cart-drawer.open { transform: translateX(0); }
+.cart-header { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.cart-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--white); }
+.cart-close { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 1.2rem; }
+.cart-items { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.cart-empty { text-align: center; padding: 3rem 1rem; color: var(--mist); font-size: 0.9rem; font-weight: 200; }
+.cart-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; color: var(--white); margin-bottom: 0.2rem; }
+.cart-item-variant { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--mist); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.cart-item-price { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--cirrus); }
+.cart-item-remove { background: none; border: none; color: rgba(141,152,179,0.4); cursor: pointer; font-size: 0.7rem; transition: color 0.2s; padding: 0; }
+.cart-item-remove:hover { color: #e05a5a; }
+.qty-control { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.qty-btn { width: 22px; height: 22px; background: rgba(93,141,217,0.1); border: 1px solid var(--border); color: var(--fog); cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.qty-btn:hover { background: rgba(93,141,217,0.2); border-color: var(--cirrus); }
+.qty-num { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--fog); min-width: 20px; text-align: center; }
+.cart-footer { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+.cart-subtotal { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.cart-subtotal-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
+.cart-subtotal-value { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); }
+.btn-checkout { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; font-weight: 400; }
+.btn-checkout:hover { background: var(--white); }
+.cart-note { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); text-align: center; margin-top: 0.75rem; letter-spacing: 0.08em; }
+
+/* PAGE */
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.8rem; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; color: var(--white); margin-bottom: 0.5rem; line-height: 1.05; }
+.page-title em { font-style: italic; color: var(--cirrus); }
+
+/* CHECKOUT LAYOUT */
+.checkout-grid { display: grid; grid-template-columns: 1fr 420px; gap: 2rem; margin-top: 2.5rem; }
+
+/* ORDER SUMMARY */
+.order-summary { background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+.section-head { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cirrus); }
+.order-lines { padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.order-line { display: flex; justify-content: space-between; align-items: flex-start; }
+.order-line-name { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; color: var(--white); }
+.order-line-variant { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); margin-top: 0.15rem; }
+.order-line-price { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--fog); white-space: nowrap; }
+.order-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+.order-total-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+.order-total-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
+.order-total-value { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; color: var(--white); }
+.order-empty-msg { padding: 2rem 1.5rem; text-align: center; font-size: 0.85rem; font-weight: 200; color: var(--mist); }
+
+/* CHECKOUT FORM */
+.checkout-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.form-section { background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+.form-grid { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); }
+.form-label .req { color: var(--cirrus); }
+.form-input, .form-select {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(93,141,217,0.15);
+  padding: 0.75rem 0.9rem; font-family: 'Outfit', sans-serif; font-size: 0.88rem;
+  font-weight: 200; color: var(--fog); outline: none; transition: border-color 0.3s; width: 100%;
+}
+.form-input::placeholder { color: rgba(141,152,179,0.4); }
+.form-input:focus, .form-select:focus { border-color: var(--cirrus); background: rgba(93,141,217,0.04); }
+.form-input.error { border-color: #e05a5a; }
+.form-select { cursor: pointer; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d98b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+.form-select option { background: #0f1828; }
+.error-msg { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: #e05a5a; display: none; }
+.error-msg.show { display: block; }
+
+/* PAYMENT METHOD */
+.payment-methods { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.payment-option { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.25s; }
+.payment-option:hover { border-color: rgba(93,141,217,0.3); }
+.payment-option.selected { border-color: var(--cirrus); background: rgba(93,141,217,0.05); }
+.payment-option input[type=radio] { accent-color: var(--cirrus); width: 16px; height: 16px; flex-shrink: 0; }
+.payment-icon { font-size: 1.4rem; }
+.payment-info { flex: 1; }
+.payment-name { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
+.payment-desc { font-size: 0.75rem; font-weight: 200; color: var(--mist); margin-top: 0.15rem; }
+.crypto-badge { font-family: 'DM Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(201,168,76,0.4); color: var(--gold); letter-spacing: 0.08em; }
+
+/* CRYPTO SELECTOR */
+.crypto-select-wrap { padding: 0 1.5rem 1.5rem; display: none; }
+.crypto-select-wrap.show { display: block; }
+.crypto-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.crypto-opt { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.75rem 0.5rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.25s; }
+.crypto-opt:hover { border-color: rgba(93,141,217,0.3); }
+.crypto-opt.selected { border-color: var(--cirrus); background: rgba(93,141,217,0.06); }
+.crypto-symbol { font-size: 1.2rem; }
+.crypto-name { font-family: 'DM Mono', monospace; font-size: 0.52rem; color: var(--mist); letter-spacing: 0.08em; }
+
+/* RUO CONFIRM */
+.ruo-confirm { padding: 1rem 1.5rem; background: rgba(201,168,76,0.05); border-top: 1px solid rgba(201,168,76,0.15); display: flex; gap: 0.75rem; align-items: flex-start; }
+.ruo-confirm input { accent-color: var(--gold); width: 15px; height: 15px; flex-shrink: 0; margin-top: 0.1rem; cursor: pointer; }
+.ruo-confirm label { font-size: 0.78rem; font-weight: 200; color: var(--mist); line-height: 1.6; cursor: pointer; }
+.ruo-confirm label a { color: var(--cirrus); }
+
+/* SUBMIT */
+.submit-wrap { padding: 1.5rem; border-top: 1px solid var(--border); }
+.btn-submit { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1.1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; position: relative; overflow: hidden; }
+.btn-submit:hover { background: var(--white); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.security-badges { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.security-badge { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(141,152,179,0.5); display: flex; align-items: center; gap: 0.3rem; }
+
+/* SUCCESS STATE */
+.success-state { display: none; text-align: center; padding: 5rem 2rem; }
+.success-state.show { display: block; }
+.success-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+.success-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--white); margin-bottom: 1rem; }
+.success-body { font-size: 0.9rem; font-weight: 200; color: var(--mist); line-height: 1.8; max-width: 480px; margin: 0 auto 2rem; }
+.success-order-id { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--cirrus); letter-spacing: 0.15em; margin-bottom: 2rem; }
+.btn-outline { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: 1px solid var(--border); color: var(--silver); text-decoration: none; display: inline-block; transition: all 0.3s; }
+.btn-outline:hover { border-color: var(--cirrus); color: var(--cirrus); }
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-logo span { color: var(--cirrus); }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.35); }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .nav-links { display: none !important; }
+  .hamburger { display: flex !important; }
+  .checkout-grid { grid-template-columns: 1fr !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .form-group.full { grid-column: 1 !important; }
+  .crypto-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  footer { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul class="nav-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <button class="cart-icon" onclick="toggleCart()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span class="cart-count" id="cart-count">0</span>
+  </button>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-header">
+    <span class="cart-title">Your Cart</span>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty">Your cart is empty.<br>Browse our catalog to add products.</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-subtotal">
+      <span class="cart-subtotal-label">Subtotal</span>
+      <span class="cart-subtotal-value" id="cart-subtotal">$0.00</span>
+    </div>
+    <button class="btn-checkout" onclick="proceedToCheckout()">Proceed to Checkout →</button>
+    <p class="cart-note">🔒 Secure · Crypto payments accepted · Research use only</p>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <div class="disclaimer-dot"></div>
+  <p>All products for research use only — not for human or veterinary use.</p>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ORDER FORM -->
+  <div id="order-section">
+    <p class="page-eyebrow">Secure Checkout</p>
+    <h1 class="page-title">Complete your <em>order.</em></h1>
+
+    <div class="checkout-grid">
+
+      <!-- LEFT: FORM -->
+      <div class="checkout-form">
+
+        <!-- Contact -->
+        <div class="form-section">
+          <div class="section-head">Contact Information</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name <span class="req">*</span></label>
+              <input class="form-input" id="fname" type="text" placeholder="Jane"/>
+              <span class="error-msg" id="fname-err">Required</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span class="req">*</span></label>
+              <input class="form-input" id="lname" type="text" placeholder="Smith"/>
+              <span class="error-msg" id="lname-err">Required</span>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Email Address <span class="req">*</span></label>
+              <input class="form-input" id="email" type="email" placeholder="jane@university.edu"/>
+              <span class="error-msg" id="email-err">Valid email required</span>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Phone</label>
+              <input class="form-input" id="phone" type="tel" placeholder="+1 (555) 000-0000"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping -->
+        <div class="form-section">
+          <div class="section-head">Shipping Address</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Street Address <span class="req">*</span></label>
+              <input class="form-input" id="address" type="text" placeholder="123 Research Dr"/>
+              <span class="error-msg" id="address-err">Required</span>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Apt / Suite / Unit</label>
+              <input class="form-input" id="address2" type="text" placeholder="Suite 400"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">City <span class="req">*</span></label>
+              <input class="form-input" id="city" type="text" placeholder="San Diego"/>
+              <span class="error-msg" id="city-err">Required</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">State <span class="req">*</span></label>
+              <select class="form-select" id="state">
+                <option value="">Select state...</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+                <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+                <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+                <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+                <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+                <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+                <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+                <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+                <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+                <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+                <option>WI</option><option>WY</option>
+              </select>
+              <span class="error-msg" id="state-err">Required</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ZIP Code <span class="req">*</span></label>
+              <input class="form-input" id="zip" type="text" placeholder="92101"/>
+              <span class="error-msg" id="zip-err">Required</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <select class="form-select" id="country">
+                <option>United States</option>
+                <option>Canada</option>
+                <option>United Kingdom</option>
+                <option>Australia</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Notes -->
+        <div class="form-section">
+          <div class="section-head">Order Notes</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Institution / Lab (optional)</label>
+              <input class="form-input" id="institution" type="text" placeholder="University of California San Diego"/>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Special Instructions</label>
+              <input class="form-input" id="notes" type="text" placeholder="Any special handling or delivery notes..."/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="form-section">
+          <div class="section-head">Payment Method</div>
+          <div class="payment-methods">
+            <label class="payment-option selected" onclick="selectPayment('crypto')">
+              <input type="radio" name="payment" value="crypto" checked/>
+              <span class="payment-icon">₿</span>
+              <div class="payment-info">
+                <div class="payment-name">Cryptocurrency <span class="crypto-badge">Recommended</span></div>
+                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and 100+ coins via NOWPayments</div>
+              </div>
+            </label>
+          </div>
+          <div class="crypto-select-wrap show" id="crypto-select">
+            <p style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--mist);margin-bottom:0.75rem;">Select your preferred coin</p>
+            <div class="crypto-grid">
+              <div class="crypto-opt selected" onclick="selectCrypto(this,'BTC')"><span class="crypto-symbol">₿</span><span class="crypto-name">Bitcoin</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'ETH')"><span class="crypto-symbol">⟠</span><span class="crypto-name">Ethereum</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'USDC')"><span class="crypto-symbol">◎</span><span class="crypto-name">USDC</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'USDT')"><span class="crypto-symbol">₮</span><span class="crypto-name">Tether</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'SOL')"><span class="crypto-symbol">◉</span><span class="crypto-name">Solana</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'LTC')"><span class="crypto-symbol">Ł</span><span class="crypto-name">Litecoin</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'XRP')"><span class="crypto-symbol">✕</span><span class="crypto-name">XRP</span></div>
+              <div class="crypto-opt" onclick="selectCrypto(this,'DOGE')"><span class="crypto-symbol">Ð</span><span class="crypto-name">Dogecoin</span></div>
+            </div>
+          </div>
+
+          <!-- RUO Confirmation -->
+          <div class="ruo-confirm">
+            <input type="checkbox" id="ruo-check"/>
+            <label for="ruo-check">I confirm these products are for <strong>research use only</strong>, I am a qualified researcher, and I agree to Stratus Biolabs' <a href="faq.html#compliance">Terms of Sale</a>. Not for human consumption.</label>
+          </div>
+          <span class="error-msg" id="ruo-err" style="padding:0 1.5rem 0.5rem;display:none;">You must confirm research use to proceed.</span>
+
+          <div class="submit-wrap">
+            <button class="btn-submit" id="submit-btn" onclick="submitOrder()">
+              Place Order &amp; Pay with Crypto →
+            </button>
+            <div class="security-badges">
+              <span class="security-badge">🔒 SSL Encrypted</span>
+              <span class="security-badge">🔐 NOWPayments Secure</span>
+              <span class="security-badge">📦 Ships within 72h</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div>
+        <div class="order-summary">
+          <div class="section-head">Order Summary</div>
+          <div id="order-lines-wrap">
+            <div class="order-empty-msg">Your cart is empty. <a href="catalog.html" style="color:var(--cirrus)">Browse catalog →</a></div>
+          </div>
+          <div class="order-total-row" id="order-total-row" style="display:none;">
+            <span class="order-total-label">Total</span>
+            <span class="order-total-value" id="order-total">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Shipping info -->
+        <div style="margin-top:1rem;padding:1.2rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
+          <p style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--cirrus);margin-bottom:0.8rem;">Shipping</p>
+          <div style="font-size:0.82rem;font-weight:200;color:var(--mist);line-height:1.8;">
+            <p>🚀 Free shipping on orders over <strong style="color:var(--fog);">$150</strong></p>
+            <p>📦 Standard: 3–5 business days</p>
+            <p>⚡ Rush: Available on request</p>
+            <p>🌡️ Temperature-controlled packaging</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="success-state" id="success-state">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">Order Confirmed</h2>
+    <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
+    <p class="success-body">Thank you for your order. You'll receive a payment address for your selected cryptocurrency shortly. Once payment is confirmed, your order will be processed and shipped within 72 hours.</p>
+    <a href="catalog.html" class="btn-outline">Continue Shopping →</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+// ── CART STATE ──
+let cart = JSON.parse(localStorage.getItem('sb-cart') || '[]');
+let selectedCrypto = 'BTC';
+
+function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
+
+function toggleCart() {
+  document.getElementById('cart-overlay').classList.toggle('open');
+  document.getElementById('cart-drawer').classList.toggle('open');
+  renderCart();
+}
+
+function addToCart(name, variant, price) {
+  const existing = cart.find(i => i.name === name && i.variant === variant);
+  if (existing) { existing.qty++; }
+  else { cart.push({ name, variant, price, qty: 1 }); }
+  saveCart();
+  updateCartCount();
+  renderCart();
+  // Open cart drawer
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  saveCart();
+  updateCartCount();
+  renderCart();
+  renderOrderSummary();
+}
+
+function changeQty(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) { removeFromCart(index); return; }
+  saveCart();
+  updateCartCount();
+  renderCart();
+  renderOrderSummary();
+}
+
+function updateCartCount() {
+  const total = cart.reduce((sum, i) => sum + i.qty, 0);
+  document.getElementById('cart-count').textContent = total;
+}
+
+function getCartTotal() {
+  return cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+}
+
+function renderCart() {
+  const wrap = document.getElementById('cart-items');
+  const subtotalEl = document.getElementById('cart-subtotal');
+  if (cart.length === 0) {
+    wrap.innerHTML = '<div class="cart-empty">Your cart is empty.<br>Browse our catalog to add products.</div>';
+    subtotalEl.textContent = '$0.00';
+    return;
+  }
+  wrap.innerHTML = cart.map((item, i) => `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-variant">${item.variant}</div>
+        <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
+    </div>
+  `).join('');
+  subtotalEl.textContent = '$' + getCartTotal().toFixed(2);
+}
+
+function renderOrderSummary() {
+  const wrap = document.getElementById('order-lines-wrap');
+  const totalRow = document.getElementById('order-total-row');
+  const totalEl = document.getElementById('order-total');
+  if (cart.length === 0) {
+    wrap.innerHTML = '<div class="order-empty-msg">Your cart is empty. <a href="catalog.html" style="color:var(--cirrus)">Browse catalog →</a></div>';
+    totalRow.style.display = 'none';
+    return;
+  }
+  const shipping = getCartTotal() >= 150 ? 0 : 9.99;
+  wrap.innerHTML = `<div class="order-lines">
+    ${cart.map(item => `
+      <div class="order-line">
+        <div>
+          <div class="order-line-name">${item.name} × ${item.qty}</div>
+          <div class="order-line-variant">${item.variant}</div>
+        </div>
+        <div class="order-line-price">$${(item.price * item.qty).toFixed(2)}</div>
+      </div>
+    `).join('')}
+    <div class="order-divider"></div>
+    <div class="order-line">
+      <div class="order-line-name" style="font-size:0.85rem;color:var(--mist);">Shipping</div>
+      <div class="order-line-price">${shipping === 0 ? 'Free' : '$' + shipping.toFixed(2)}</div>
+    </div>
+  </div>`;
+  totalRow.style.display = 'flex';
+  totalEl.textContent = '$' + (getCartTotal() + shipping).toFixed(2);
+}
+
+function proceedToCheckout() {
+  toggleCart();
+  renderOrderSummary();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectPayment(type) {
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('crypto-select').classList.toggle('show', type === 'crypto');
+}
+
+function selectCrypto(el, symbol) {
+  document.querySelectorAll('.crypto-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCrypto = symbol;
+}
+
+function validate(id, errId, condition) {
+  const el = document.getElementById(id);
+  const err = document.getElementById(errId);
+  if (condition) { el.classList.remove('error'); err.classList.remove('show'); return true; }
+  else { el.classList.add('error'); err.classList.add('show'); return false; }
+}
+
+function submitOrder() {
+  let valid = true;
+  valid = validate('fname', 'fname-err', document.getElementById('fname').value.trim()) && valid;
+  valid = validate('lname', 'lname-err', document.getElementById('lname').value.trim()) && valid;
+  const email = document.getElementById('email').value.trim();
+  valid = validate('email', 'email-err', email && email.includes('@') && email.includes('.')) && valid;
+  valid = validate('address', 'address-err', document.getElementById('address').value.trim()) && valid;
+  valid = validate('city', 'city-err', document.getElementById('city').value.trim()) && valid;
+  valid = validate('state', 'state-err', document.getElementById('state').value) && valid;
+  valid = validate('zip', 'zip-err', document.getElementById('zip').value.trim()) && valid;
+
+  const ruo = document.getElementById('ruo-check').checked;
+  const ruoErr = document.getElementById('ruo-err');
+  if (!ruo) { ruoErr.classList.add('show'); valid = false; }
+  else ruoErr.classList.remove('show');
+
+  if (cart.length === 0) { alert('Your cart is empty. Please add products before checking out.'); return; }
+  if (!valid) return;
+
+  // In production: call NOWPayments API here with your API key
+  // const response = await fetch('https://api.nowpayments.io/v1/payment', {
+  //   method: 'POST',
+  //   headers: { 'x-api-key': 'YOUR_NOWPAYMENTS_API_KEY', 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ price_amount: getCartTotal(), price_currency: 'usd', pay_currency: selectedCrypto, order_id: orderId })
+  // });
+
+  const orderId = 'SB-' + Date.now().toString().slice(-6);
+  document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
+  document.getElementById('order-section').style.display = 'none';
+  document.getElementById('success-state').classList.add('show');
+  cart = []; saveCart(); updateCartCount();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+updateCartCount();
+renderOrderSummary();
+
+// Expose addToCart globally for catalog page
+window.addToCart = addToCart;
+window.toggleCart = toggleCart;
+</script>
+</body>
+</html>
