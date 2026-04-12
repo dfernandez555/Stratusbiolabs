@@ -24,8 +24,11 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .nav-links a:hover, .nav-links a.active { color: var(--cirrus); }
 .nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.45rem 1rem; text-decoration: none; transition: all 0.3s; white-space: nowrap; }
 .nav-cta:hover { background: var(--cirrus); color: var(--ink); }
-.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
-.hamburger span { width: 22px; height: 2px; background: var(--mist); display: block; }
+.nav-search { position: relative; display: flex; align-items: center; }
+.nav-search input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 0.4rem 0.8rem 0.4rem 2rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.06em; color: var(--fog); outline: none; width: 180px; transition: all 0.3s; }
+.nav-search input::placeholder { color: var(--mist); }
+.nav-search input:focus { border-color: var(--cirrus); width: 220px; background: rgba(93,141,217,0.04); }
+.nav-search svg { position: absolute; left: 0.5rem; opacity: 0.4; pointer-events: none; }
 .mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 1rem 2rem; z-index: 99; flex-direction: column; }
 .mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
 .mobile-nav.open { display: flex; }
@@ -237,6 +240,10 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <li><a href="faq.html">FAQ</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
+  <div class="nav-search">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="nav-search" placeholder="Search peptides..." oninput="navSearch(this.value)"/>
+  </div>
   <a href="contact.html" class="nav-cta">Order Now</a>
   <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
     <span></span><span></span><span></span>
@@ -716,11 +723,17 @@ document.querySelectorAll('.product-card').forEach(card => {
   btn.onclick = () => addToCart(name, variant, price);
   btn.textContent = 'Add to Cart';
 });
+const cards = document.querySelectorAll('.product-card');
 const searchInput = document.getElementById('search');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const countNum = document.getElementById('count-num');
 const noResults = document.getElementById('no-results');
 let activeCategory = 'all';
+function navSearch(val) {
+  document.getElementById('search').value = val;
+  updateDisplay();
+  document.getElementById('product-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 function updateDisplay() {
   const q = searchInput.value.toLowerCase().trim();
   let visible = 0;

@@ -4,287 +4,256 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Contact — Stratus Biolabs</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
   --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
   --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
-  --border: rgba(93,141,217,0.12); --red: #e05a5a;
+  --border: rgba(93,141,217,0.12);
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; }
 
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 4rem; background: rgba(11,15,26,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(11,15,26,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); gap: 1rem; }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; white-space: nowrap; }
 .logo span { color: var(--cirrus); }
-nav ul { list-style: none; display: flex; gap: 2.5rem; }
-nav ul a { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
-nav ul a:hover, nav ul a.active { color: var(--cirrus); }
-.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.5rem 1.2rem; text-decoration: none; transition: all 0.3s; }
+.nav-links { list-style: none; display: flex; gap: 2rem; }
+.nav-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; white-space: nowrap; }
+.nav-links a:hover, .nav-links a.active { color: var(--cirrus); }
+.nav-search { position: relative; display: flex; align-items: center; }
+.nav-search input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 0.4rem 0.8rem 0.4rem 2rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.06em; color: var(--fog); outline: none; width: 180px; transition: all 0.3s; }
+.nav-search input::placeholder { color: var(--mist); }
+.nav-search input:focus { border-color: var(--cirrus); width: 220px; }
+.nav-search svg { position: absolute; left: 0.5rem; opacity: 0.4; pointer-events: none; }
+.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.45rem 1rem; text-decoration: none; transition: all 0.3s; white-space: nowrap; }
 .nav-cta:hover { background: var(--cirrus); color: var(--ink); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--mist); }
+.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem 1rem; z-index: 99; flex-direction: column; }
+.mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
+.mobile-nav.open { display: flex; }
 
-/* DISCLAIMER */
-.disclaimer { margin-top: 80px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.75rem 4rem; display: flex; align-items: center; gap: 1rem; }
+.disclaimer { margin-top: 60px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
 .disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
-.disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
+.disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
 
-/* LAYOUT */
-.contact-layout { display: grid; grid-template-columns: 1fr 1.4fr; min-height: calc(100vh - 120px); }
+/* PAGE */
+.page-wrap { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+.page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 0.5rem; }
+.page-title em { font-style: italic; color: var(--cirrus); }
+.page-sub { font-size: 0.9rem; font-weight: 200; color: var(--mist); margin-bottom: 3rem; line-height: 1.8; }
 
-/* LEFT PANEL */
-.contact-info { padding: 6rem 5rem 6rem 4rem; border-right: 1px solid var(--border); position: relative; overflow: hidden; }
-.contact-info::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(46,74,122,0.2) 0%, transparent 70%); pointer-events:none; }
-.info-inner { position: relative; z-index: 1; }
-.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; }
-.info-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5rem, 4vw, 3.8rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 2rem; }
-.info-title em { font-style: italic; color: var(--cirrus); }
-.info-body { font-size: 0.92rem; font-weight: 200; color: var(--silver); line-height: 1.9; margin-bottom: 4rem; }
+/* GRID */
+.contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: start; }
 
-.contact-items { display: flex; flex-direction: column; gap: 2.5rem; }
-.contact-item { display: flex; gap: 1.5rem; align-items: flex-start; }
-.ci-icon { width: 36px; height: 36px; border: 1px solid rgba(93,141,217,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
-.ci-icon svg { opacity: 0.5; }
-.ci-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); margin-bottom: 0.3rem; }
-.ci-value { font-size: 0.9rem; font-weight: 300; color: var(--silver); }
-.ci-value a { color: var(--cirrus); text-decoration: none; }
+/* INFO PANEL */
+.info-panel { display: flex; flex-direction: column; gap: 2rem; }
+.info-block { padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+.info-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.6rem; }
+.info-value { font-size: 0.9rem; font-weight: 200; color: var(--silver); line-height: 1.8; }
+.info-value a { color: var(--cirrus); text-decoration: none; }
+.info-value a:hover { text-decoration: underline; }
+.hours-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 0.4rem 0; font-size: 0.82rem; font-weight: 200; }
+.hours-row:last-child { border-bottom: none; }
+.hours-day { color: var(--mist); }
+.hours-time { color: var(--silver); }
 
-.turnaround { margin-top: 4rem; padding: 1.5rem; border: 1px solid var(--border); background: rgba(93,141,217,0.04); }
-.ta-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
-.ta-row:last-child { border-bottom: none; }
-.ta-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
-.ta-value { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--gold); }
-
-/* RIGHT PANEL / FORM */
-.contact-form-wrap { padding: 6rem 5rem 6rem 5rem; }
-.form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; color: var(--white); margin-bottom: 0.5rem; }
-.form-sub { font-size: 0.85rem; font-weight: 200; color: var(--mist); margin-bottom: 3rem; line-height: 1.7; }
-
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+/* FORM */
+.form-wrap { background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+.form-head { padding: 1.5rem; border-bottom: 1px solid var(--border); }
+.form-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--white); margin-bottom: 0.3rem; }
+.form-head p { font-size: 0.8rem; font-weight: 200; color: var(--mist); }
+.form-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group.full { grid-column: 1 / -1; }
-.form-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); }
-.form-label .req { color: var(--cirrus); }
-
+.form-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); }
+.req { color: var(--cirrus); }
 .form-input, .form-select, .form-textarea {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(93,141,217,0.15);
-  padding: 0.85rem 1rem;
-  font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 200;
-  color: var(--fog); outline: none;
-  transition: border-color 0.3s, background 0.3s;
-  width: 100%;
-  -webkit-appearance: none;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(93,141,217,0.15);
+  padding: 0.75rem 0.9rem; font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem; font-weight: 200; color: var(--fog);
+  outline: none; transition: border-color 0.3s; width: 100%;
 }
 .form-input::placeholder, .form-textarea::placeholder { color: rgba(141,152,179,0.4); }
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--cirrus); background: rgba(93,141,217,0.04); }
-.form-input.error, .form-select.error { border-color: var(--red); }
-.error-msg { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--red); letter-spacing: 0.1em; display: none; }
-.error-msg.show { display: block; }
-
-.form-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d98b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--cirrus); background: rgba(93,141,217,0.03); }
+.form-textarea { resize: vertical; min-height: 120px; font-family: 'Outfit', sans-serif; }
+.form-select { -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d98b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
 .form-select option { background: #0f1828; }
 
-.form-textarea { resize: vertical; min-height: 120px; }
+/* RUO */
+.ruo-row { display: flex; gap: 0.75rem; align-items: flex-start; padding: 1rem; background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.12); }
+.ruo-row input { accent-color: var(--gold); width: 15px; height: 15px; flex-shrink: 0; margin-top: 0.15rem; cursor: pointer; }
+.ruo-row label { font-size: 0.78rem; font-weight: 200; color: var(--mist); line-height: 1.6; cursor: pointer; }
 
-.checkbox-group { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: 1px solid rgba(93,141,217,0.1); background: rgba(93,141,217,0.02); cursor: pointer; }
-.checkbox-group input[type=checkbox] { accent-color: var(--cirrus); width: 15px; height: 15px; flex-shrink: 0; margin-top: 0.1rem; cursor: pointer; }
-.checkbox-group label { font-size: 0.8rem; font-weight: 200; color: var(--mist); line-height: 1.6; cursor: pointer; }
-.checkbox-group label a { color: var(--cirrus); }
+.form-footer { padding: 1.5rem; border-top: 1px solid var(--border); }
+.btn-submit { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; }
+.btn-submit:hover { background: var(--white); }
+.form-note { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); text-align: center; margin-top: 0.75rem; letter-spacing: 0.08em; }
 
-.submit-row { display: flex; align-items: center; gap: 2rem; margin-top: 0.5rem; }
-.btn-submit {
-  font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
-  padding: 1rem 2.5rem; background: var(--cirrus); color: var(--ink);
-  border: none; cursor: pointer; transition: all 0.3s;
-  position: relative; overflow: hidden;
-}
-.btn-submit::before { content:''; position:absolute; inset:0; background:var(--white); transform:translateX(-100%); transition:transform 0.3s; }
-.btn-submit:hover::before { transform: translateX(0); }
-.btn-submit span { position: relative; z-index:1; }
-.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-.submit-note { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: rgba(141,152,179,0.5); text-transform: uppercase; }
+/* SUCCESS */
+.success-msg { display: none; text-align: center; padding: 3rem 2rem; }
+.success-msg.show { display: block; }
+.success-msg .check { font-size: 2.5rem; margin-bottom: 1rem; }
+.success-msg h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; color: var(--white); margin-bottom: 0.5rem; }
+.success-msg p { font-size: 0.88rem; font-weight: 200; color: var(--mist); }
 
-/* SUCCESS STATE */
-.success-state { display: none; text-align: center; padding: 5rem 2rem; }
-.success-state.show { display: block; }
-.success-icon { font-family: 'Cormorant Garamond', serif; font-size: 4rem; font-weight: 300; color: var(--cirrus); margin-bottom: 1.5rem; }
-.success-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--white); margin-bottom: 1rem; }
-.success-body { font-size: 0.9rem; font-weight: 200; color: var(--mist); line-height: 1.8; max-width: 400px; margin: 0 auto; }
-
-footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-logo span { color: var(--cirrus); }
-.footer-links { display: flex; gap: 2.5rem; list-style: none; }
-.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-links a:hover { color: var(--cirrus); }
-.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(141,152,179,0.4); letter-spacing: 0.1em; }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.35); }
+
+@media (max-width: 768px) {
+  .nav-links, .nav-search, .nav-cta { display: none !important; }
+  .hamburger { display: flex !important; }
+  .contact-grid { grid-template-columns: 1fr !important; }
+  .form-row { grid-template-columns: 1fr !important; }
+  footer { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
 <nav>
   <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
-  <ul>
+  <ul class="nav-links">
     <li><a href="catalog.html">Catalog</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="faq.html">FAQ</a></li>
     <li><a href="contact.html" class="active">Contact</a></li>
   </ul>
-  <a href="contact.html" class="nav-cta">Request Quote</a>
+  <div class="nav-search">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search peptides..." onkeydown="if(event.key==='Enter'){window.location.href='catalog.html?q='+encodeURIComponent(this.value)}"/>
+  </div>
+  <a href="catalog.html" class="nav-cta">Shop Now</a>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html" class="active">Contact</a>
+</div>
 
 <div class="disclaimer">
   <div class="disclaimer-dot"></div>
-  <p>All products are for research use only. Qualified researchers and licensed institutions only.</p>
+  <p>All products for research use only — not for human or veterinary use.</p>
 </div>
 
-<div class="contact-layout">
+<div class="page-wrap">
+  <p class="page-eyebrow">Get In Touch</p>
+  <h1 class="page-title">Questions about<br><em>your research?</em></h1>
+  <p class="page-sub">Our team responds within 24 hours. All inquiries are confidential.</p>
 
-  <!-- LEFT INFO PANEL -->
-  <div class="contact-info">
-    <div class="info-inner">
-      <p class="eyebrow">Get In Touch</p>
-      <h1 class="info-title">Let's discuss<br>your <em>research.</em></h1>
-      <p class="info-body">Whether you need catalog peptides, custom synthesis, or volume pricing for your institution — our scientific team is here to help you find the right solution.</p>
+  <div class="contact-grid">
 
-      <div class="contact-items">
-        <div class="contact-item">
-          <div class="ci-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div>
-            <div class="ci-label">Email</div>
-            <div class="ci-value"><a href="mailto:info@stratusbiolabs.com">info@stratusbiolabs.com</a></div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="ci-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
-          </div>
-          <div>
-            <div class="ci-label">Phone</div>
-            <div class="ci-value">+1 (800) 555-0192</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="ci-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div>
-            <div class="ci-label">Response Time</div>
-            <div class="ci-value">Within 1 business day</div>
-          </div>
+    <!-- INFO -->
+    <div class="info-panel">
+      <div class="info-block">
+        <div class="info-label">Email</div>
+        <div class="info-value"><a href="mailto:info@stratusbiolabs.com">info@stratusbiolabs.com</a></div>
+      </div>
+      <div class="info-block">
+        <div class="info-label">Response Time</div>
+        <div class="info-value">
+          <div class="hours-row"><span class="hours-day">Mon – Fri</span><span class="hours-time">Within 24h</span></div>
+          <div class="hours-row"><span class="hours-day">Weekends</span><span class="hours-time">Within 48h</span></div>
         </div>
       </div>
-
-      <div class="turnaround">
-        <div class="ta-row">
-          <span class="ta-label">Catalog Items</span>
-          <span class="ta-value">72 hours standard</span>
-        </div>
-        <div class="ta-row">
-          <span class="ta-label">Custom Synthesis</span>
-          <span class="ta-value">5–10 business days</span>
-        </div>
-        <div class="ta-row">
-          <span class="ta-label">Rush Orders</span>
-          <span class="ta-value">Available on request</span>
-        </div>
-        <div class="ta-row">
-          <span class="ta-label">Bulk / Institution</span>
-          <span class="ta-value">Custom agreements</span>
-        </div>
+      <div class="info-block">
+        <div class="info-label">Order Fulfillment</div>
+        <div class="info-value">Standard turnaround is 72 hours from payment confirmation. Rush fulfillment available on request.</div>
       </div>
-    </div>
-  </div>
-
-  <!-- RIGHT FORM PANEL -->
-  <div class="contact-form-wrap">
-    <div id="form-container">
-      <h2 class="form-title">Request a Quote</h2>
-      <p class="form-sub">Complete the form below and a member of our team will respond within one business day. All fields marked <span style="color:var(--cirrus)">*</span> are required.</p>
-
-      <div class="form-grid" id="contact-form">
-        <div class="form-group">
-          <label class="form-label">First Name <span class="req">*</span></label>
-          <input class="form-input" id="fname" type="text" placeholder="Dr. Jane"/>
-          <span class="error-msg" id="fname-err">Required</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Last Name <span class="req">*</span></label>
-          <input class="form-input" id="lname" type="text" placeholder="Smith"/>
-          <span class="error-msg" id="lname-err">Required</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Institutional Email <span class="req">*</span></label>
-          <input class="form-input" id="email" type="email" placeholder="jsmith@university.edu"/>
-          <span class="error-msg" id="email-err">Valid institutional email required</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input class="form-input" id="phone" type="tel" placeholder="+1 (555) 000-0000"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Institution / Organization <span class="req">*</span></label>
-          <input class="form-input" id="institution" type="text" placeholder="University / Lab / Clinic"/>
-          <span class="error-msg" id="institution-err">Required</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Your Role <span class="req">*</span></label>
-          <select class="form-select" id="role">
-            <option value="">Select role...</option>
-            <option>Principal Investigator</option>
-            <option>Research Scientist</option>
-            <option>Postdoctoral Researcher</option>
-            <option>Graduate Student</option>
-            <option>Lab Manager / Procurement</option>
-            <option>Clinical Researcher</option>
-            <option>Other</option>
-          </select>
-          <span class="error-msg" id="role-err">Required</span>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Peptide(s) of Interest <span class="req">*</span></label>
-          <input class="form-input" id="peptides" type="text" placeholder="e.g., BPC-157 (5mg), Ipamorelin (10mg), or custom sequence..."/>
-          <span class="error-msg" id="peptides-err">Required</span>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Inquiry Type</label>
-          <select class="form-select" id="inquiry-type">
-            <option value="">Select type...</option>
-            <option>Catalog order / pricing</option>
-            <option>Custom peptide synthesis</option>
-            <option>Institutional volume agreement</option>
-            <option>Technical / scientific question</option>
-            <option>Rush order</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Research Context / Additional Notes</label>
-          <textarea class="form-textarea" id="notes" placeholder="Briefly describe your research application or any specific requirements (purity grade, format, labeling, etc.)..."></textarea>
-        </div>
-        <div class="form-group full">
-          <div class="checkbox-group">
-            <input type="checkbox" id="ruo-confirm"/>
-            <label for="ruo-confirm">I confirm that I am a qualified researcher or authorized institutional representative and that these products will be used <strong>for research purposes only</strong>, in compliance with all applicable regulations. I acknowledge Stratus Biolabs' <a href="#">Terms of Sale</a>.</label>
-          </div>
-          <span class="error-msg" id="confirm-err">You must confirm research use</span>
-        </div>
-        <div class="form-group full submit-row">
-          <button class="btn-submit" id="submit-btn" onclick="handleSubmit()"><span>Submit Inquiry →</span></button>
-          <span class="submit-note">We respond within 1 business day</span>
-        </div>
+      <div class="info-block">
+        <div class="info-label">Shipping</div>
+        <div class="info-value">Free shipping on orders over $150. All products shipped with temperature-controlled packaging and full tracking.</div>
       </div>
     </div>
 
-    <div class="success-state" id="success-state">
-      <div class="success-icon">✓</div>
-      <h2 class="success-title">Inquiry received.</h2>
-      <p class="success-body">Thank you for reaching out to Stratus Biolabs. A member of our scientific team will review your inquiry and respond within one business day.</p>
+    <!-- FORM -->
+    <div class="form-wrap">
+      <div class="form-head">
+        <h2>Send us a message</h2>
+        <p>For order inquiries, custom synthesis, or general questions.</p>
+      </div>
+
+      <!-- Formspree form — replace FORM_ID with your Formspree form ID -->
+      <form id="contact-form" action="https://formspree.io/f/mkokwgog" method="POST" onsubmit="handleSubmit(event)">
+
+        <div class="form-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name <span class="req">*</span></label>
+              <input class="form-input" type="text" name="first_name" placeholder="Jane" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span class="req">*</span></label>
+              <input class="form-input" type="text" name="last_name" placeholder="Smith" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address <span class="req">*</span></label>
+            <input class="form-input" type="email" name="email" placeholder="jane@university.edu" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone (optional)</label>
+            <input class="form-input" type="tel" name="phone" placeholder="+1 (555) 000-0000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Inquiry Type <span class="req">*</span></label>
+            <select class="form-select" name="inquiry_type" required>
+              <option value="">Select topic...</option>
+              <option value="Order / Purchase">Order / Purchase</option>
+              <option value="Product Question">Product Question</option>
+              <option value="Custom Synthesis">Custom Synthesis</option>
+              <option value="Bulk / Wholesale">Bulk / Wholesale</option>
+              <option value="Shipping / Tracking">Shipping / Tracking</option>
+              <option value="Returns / Refunds">Returns / Refunds</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Institution / Lab (optional)</label>
+            <input class="form-input" type="text" name="institution" placeholder="University of California San Diego"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message <span class="req">*</span></label>
+            <textarea class="form-textarea" name="message" placeholder="Tell us about your research needs, the compounds you're interested in, or any questions you have..." required></textarea>
+          </div>
+          <div class="ruo-row">
+            <input type="checkbox" id="ruo" name="ruo_confirmed" value="confirmed" required/>
+            <label for="ruo">I confirm these products are for <strong>research use only</strong> and I am a qualified researcher. Not for human consumption.</label>
+          </div>
+          <!-- Hidden field to identify form source -->
+          <input type="hidden" name="_subject" value="New Inquiry — Stratus Biolabs"/>
+          <input type="hidden" name="_replyto" value="fernandezdaniel_12@yahoo.com"/>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn-submit" type="submit">Send Message →</button>
+          <p class="form-note">🔒 Your information is kept confidential and never sold.</p>
+        </div>
+
+      </form>
+
+      <div class="success-msg" id="success-msg">
+        <div class="check">✓</div>
+        <h3>Message Sent</h3>
+        <p>We'll get back to you within 24 hours at the email you provided.</p>
+      </div>
     </div>
+
   </div>
 </div>
 
@@ -300,33 +269,30 @@ footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex;
 </footer>
 
 <script>
-function handleSubmit() {
-  let valid = true;
+document.querySelectorAll('.mobile-nav a').forEach(a => a.addEventListener('click', () => document.getElementById('mob-nav').classList.remove('open')));
 
-  function validate(id, errId, condition) {
-    const el = document.getElementById(id);
-    const err = document.getElementById(errId);
-    if (condition) { el.classList.remove('error'); err.classList.remove('show'); }
-    else { el.classList.add('error'); err.classList.add('show'); valid = false; }
-  }
-
-  validate('fname', 'fname-err', document.getElementById('fname').value.trim());
-  validate('lname', 'lname-err', document.getElementById('lname').value.trim());
-  const email = document.getElementById('email').value.trim();
-  validate('email', 'email-err', email && email.includes('@') && email.includes('.'));
-  validate('institution', 'institution-err', document.getElementById('institution').value.trim());
-  validate('role', 'role-err', document.getElementById('role').value);
-  validate('peptides', 'peptides-err', document.getElementById('peptides').value.trim());
-
-  const confirmed = document.getElementById('ruo-confirm').checked;
-  const confirmErr = document.getElementById('confirm-err');
-  if (!confirmed) { confirmErr.classList.add('show'); valid = false; }
-  else confirmErr.classList.remove('show');
-
-  if (valid) {
-    document.getElementById('form-container').style.display = 'none';
-    document.getElementById('success-state').classList.add('show');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+async function handleSubmit(e) {
+  e.preventDefault();
+  const form = document.getElementById('contact-form');
+  const btn = form.querySelector('.btn-submit');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      form.style.display = 'none';
+      document.getElementById('success-msg').classList.add('show');
+    } else {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    }
+  } catch {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
   }
 }
 </script>
