@@ -566,7 +566,7 @@ function validate(id, errId, condition) {
   else { el.classList.add('error'); err.classList.add('show'); return false; }
 }
 
-function submitOrder() {
+async function submitOrder() {
   let valid = true;
   valid = validate('fname', 'fname-err', document.getElementById('fname').value.trim()) && valid;
   valid = validate('lname', 'lname-err', document.getElementById('lname').value.trim()) && valid;
@@ -585,24 +585,68 @@ function submitOrder() {
   if (cart.length === 0) { alert('Your cart is empty. Please add products before checking out.'); return; }
   if (!valid) return;
 
-  // In production: call NOWPayments API here with your API key
-  // const response = await fetch('https://api.nowpayments.io/v1/payment', {
-  //   method: 'POST',
-  //   headers: { 'x-api-key': '9YDNCR0-MZYMGS2-M92FZS1-HTT4T0R', 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ price_amount: getCartTotal(), price_currency: 'usd', pay_currency: selectedCrypto, order_id: orderId })
-  // });
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
 
   const orderId = 'SB-' + Date.now().toString().slice(-6);
-  document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
-  document.getElementById('order-section').style.display = 'none';
-  document.getElementById('success-state').classList.add('show');
-  cart = []; saveCart(); updateCartCount();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const shipping = getCartTotal() >= 150 ? 0 : 9.99;
+  const totalAmount = getCartTotal() + shipping;
+
+  try {
+    const response = await fetch('https://api.nowpayments.io/v1/invoice', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_NOWPAYMENTS_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        price_amount: totalAmount,
+        price_currency: 'usd',
+        pay_currency: selectedCrypto.toLowerCase(),
+        order_id: orderId,
+        order_description: cart.map(i => `${i.name} x${i.qty}`).join(', '),
+        success_url: 'https://stratusbiolabs.com/checkout.html?success=true',
+        cancel_url: 'https://stratusbiolabs.com/checkout.html',
+        customer_email: email
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.invoice_url) {
+      // Save order info before redirecting
+      localStorage.setItem('sb-pending-order', JSON.stringify({
+        orderId, email, total: totalAmount, items: cart
+      }));
+      cart = []; saveCart(); updateCartCount();
+      // Redirect to NOWPayments payment page
+      window.location.href = data.invoice_url;
+    } else {
+      throw new Error(data.message || 'Payment creation failed');
+    }
+  } catch (err) {
+    console.error('Payment error:', err);
+    btn.textContent = 'Place Order & Pay with Crypto →';
+    btn.disabled = false;
+    alert('Payment setup failed. Please try again or contact us at info@stratusbiolabs.com');
+  }
 }
 
 // Init
 updateCartCount();
 renderOrderSummary();
+
+// Handle return from NOWPayments after successful payment
+if (window.location.search.includes('success=true')) {
+  const pending = JSON.parse(localStorage.getItem('sb-pending-order') || '{}');
+  if (pending.orderId) {
+    document.getElementById('success-order-id').textContent = 'ORDER #' + pending.orderId;
+    localStorage.removeItem('sb-pending-order');
+  }
+  document.getElementById('order-section').style.display = 'none';
+  document.getElementById('success-state').classList.add('show');
+}
 
 // Expose addToCart globally for catalog page
 window.addToCart = addToCart;
