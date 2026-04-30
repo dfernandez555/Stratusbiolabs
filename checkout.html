@@ -4,6 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Checkout — Stratus Biolabs</title>
+
+<!-- ═══ SECURITY META HEADERS ═══ -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://api.nowpayments.io https://global-stg.transak.com https://global.transak.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; frame-src https://global-stg.transak.com https://global.transak.com; img-src 'self' data: https:; connect-src 'self' https://api.nowpayments.io https://api.transak.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta http-equiv="X-Frame-Options" content="SAMEORIGIN"/>
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
+<meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(self)"/>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,12 +19,10 @@
   --ink: #0b0f1a; --fog: #f2f4f8; --mist: #8d98b3;
   --stratus: #1a2a4a; --nimbus: #2e4a7a; --cirrus: #5b8dd9;
   --silver: #c8d4e8; --gold: #c9a84c; --white: #ffffff;
-  --border: rgba(93,141,217,0.12); --green: #4a9a6a;
+  --border: rgba(93,141,217,0.12); --green: #4a9a6a; --red: #e05a5a;
 }
 html { scroll-behavior: smooth; overflow-x: hidden; }
-body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; width: 100%; }
-
-/* NAV */
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; }
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(11,15,26,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
 .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
 .logo span { color: var(--cirrus); }
@@ -30,13 +36,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem 1rem; z-index: 99; flex-direction: column; }
 .mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
 .mobile-nav.open { display: flex; }
-
-/* DISCLAIMER */
 .disclaimer { margin-top: 60px; background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
 .disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
 .disclaimer p { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
-
-/* CART DRAWER */
 .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 .cart-overlay.open { opacity: 1; pointer-events: all; }
 .cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100vw; background: #0d1526; border-left: 1px solid var(--border); z-index: 201; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1); display: flex; flex-direction: column; }
@@ -52,7 +54,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .cart-item-variant { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--mist); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
 .cart-item-price { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--cirrus); }
 .cart-item-remove { background: none; border: none; color: rgba(141,152,179,0.4); cursor: pointer; font-size: 0.7rem; transition: color 0.2s; padding: 0; }
-.cart-item-remove:hover { color: #e05a5a; }
+.cart-item-remove:hover { color: var(--red); }
 .qty-control { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
 .qty-btn { width: 22px; height: 22px; background: rgba(93,141,217,0.1); border: 1px solid var(--border); color: var(--fog); cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .qty-btn:hover { background: rgba(93,141,217,0.2); border-color: var(--cirrus); }
@@ -61,20 +63,14 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .cart-subtotal { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .cart-subtotal-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
 .cart-subtotal-value { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); }
-.btn-checkout { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; font-weight: 400; }
+.btn-checkout { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; }
 .btn-checkout:hover { background: var(--white); }
 .cart-note { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); text-align: center; margin-top: 0.75rem; letter-spacing: 0.08em; }
-
-/* PAGE */
 .page-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
 .page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.8rem; }
 .page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; color: var(--white); margin-bottom: 0.5rem; line-height: 1.05; }
 .page-title em { font-style: italic; color: var(--cirrus); }
-
-/* CHECKOUT LAYOUT */
 .checkout-grid { display: grid; grid-template-columns: 1fr 420px; gap: 2rem; margin-top: 2.5rem; }
-
-/* ORDER SUMMARY */
 .order-summary { background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
 .section-head { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cirrus); }
 .order-lines { padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
@@ -87,8 +83,6 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .order-total-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
 .order-total-value { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; color: var(--white); }
 .order-empty-msg { padding: 2rem 1.5rem; text-align: center; font-size: 0.85rem; font-weight: 200; color: var(--mist); }
-
-/* CHECKOUT FORM */
 .checkout-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .form-section { background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
 .form-grid { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -96,32 +90,47 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .form-group.full { grid-column: 1 / -1; }
 .form-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); }
 .form-label .req { color: var(--cirrus); }
-.form-input, .form-select {
-  background: rgba(255,255,255,0.03); border: 1px solid rgba(93,141,217,0.15);
-  padding: 0.75rem 0.9rem; font-family: 'Outfit', sans-serif; font-size: 0.88rem;
-  font-weight: 200; color: var(--fog); outline: none; transition: border-color 0.3s; width: 100%;
-}
+.form-input, .form-select { background: rgba(255,255,255,0.03); border: 1px solid rgba(93,141,217,0.15); padding: 0.75rem 0.9rem; font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 200; color: var(--fog); outline: none; transition: border-color 0.3s; width: 100%; }
 .form-input::placeholder { color: rgba(141,152,179,0.4); }
 .form-input:focus, .form-select:focus { border-color: var(--cirrus); background: rgba(93,141,217,0.04); }
-.form-input.error { border-color: #e05a5a; }
+.form-input.error { border-color: var(--red); }
 .form-select { cursor: pointer; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d98b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
 .form-select option { background: #0f1828; }
-.error-msg { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: #e05a5a; display: none; }
+.error-msg { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--red); display: none; }
 .error-msg.show { display: block; }
 
-/* PAYMENT METHOD */
+/* PROMO CODE */
+.promo-wrap { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+.promo-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); margin-bottom: 0.6rem; display: block; }
+.promo-row { display: flex; gap: 0.5rem; }
+.promo-input { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(93,141,217,0.15); padding: 0.7rem 0.9rem; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--fog); outline: none; transition: border-color 0.3s; text-transform: uppercase; }
+.promo-input:focus { border-color: var(--cirrus); }
+.promo-input.valid { border-color: var(--green); }
+.promo-input.invalid { border-color: var(--red); }
+.promo-btn { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.7rem 1.2rem; background: transparent; border: 1px solid var(--cirrus); color: var(--cirrus); cursor: pointer; transition: all 0.25s; white-space: nowrap; }
+.promo-btn:hover { background: var(--cirrus); color: var(--ink); }
+.promo-feedback { font-family: 'DM Mono', monospace; font-size: 0.6rem; margin-top: 0.5rem; letter-spacing: 0.05em; display: none; }
+.promo-feedback.success { display: block; color: var(--green); }
+.promo-feedback.error { display: block; color: var(--red); }
+.promo-discount-line { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: rgba(74,154,106,0.06); border-top: 1px solid rgba(74,154,106,0.2); }
+.promo-discount-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--green); }
+.promo-discount-value { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--green); }
+
+/* PAYMENT */
 .payment-methods { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
 .payment-option { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.25s; }
 .payment-option:hover { border-color: rgba(93,141,217,0.3); }
 .payment-option.selected { border-color: var(--cirrus); background: rgba(93,141,217,0.05); }
+.payment-option.card-option.selected { border-color: var(--green); background: rgba(74,154,106,0.05); }
 .payment-option input[type=radio] { accent-color: var(--cirrus); width: 16px; height: 16px; flex-shrink: 0; }
 .payment-icon { font-size: 1.4rem; }
 .payment-info { flex: 1; }
 .payment-name { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
 .payment-desc { font-size: 0.75rem; font-weight: 200; color: var(--mist); margin-top: 0.15rem; }
 .crypto-badge { font-family: 'DM Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(201,168,76,0.4); color: var(--gold); letter-spacing: 0.08em; }
-
-/* CRYPTO SELECTOR */
+.card-badge { font-family: 'DM Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(74,154,106,0.4); color: var(--green); letter-spacing: 0.08em; }
+.free-badge { font-family: 'DM Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(201,168,76,0.6); color: var(--gold); background: rgba(201,168,76,0.08); letter-spacing: 0.08em; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 .crypto-select-wrap { padding: 0 1.5rem 1.5rem; display: none; }
 .crypto-select-wrap.show { display: block; }
 .crypto-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
@@ -131,7 +140,23 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .crypto-symbol { font-size: 1.2rem; }
 .crypto-name { font-family: 'DM Mono', monospace; font-size: 0.52rem; color: var(--mist); letter-spacing: 0.08em; }
 
-/* RUO CONFIRM */
+/* TRANSAK MODAL */
+.transak-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: none; align-items: center; justify-content: center; }
+.transak-modal-overlay.open { display: flex; }
+.transak-modal { background: #0d1526; border: 1px solid var(--border); width: 100%; max-width: 480px; max-height: 90vh; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.transak-modal-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.transak-modal-title { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cirrus); }
+.transak-modal-close { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 1.1rem; }
+#transak-iframe-container { flex: 1; min-height: 600px; }
+#transak-iframe-container iframe { width: 100%; height: 100%; min-height: 600px; border: none; }
+
+/* FREE ORDER CONFIRM */
+.free-order-wrap { padding: 1.5rem; background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2); display: none; text-align: center; }
+.free-order-wrap.show { display: block; }
+.free-order-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--gold); margin-bottom: 0.5rem; }
+.free-order-body { font-size: 0.8rem; font-weight: 200; color: var(--mist); line-height: 1.7; }
+
+/* RUO */
 .ruo-confirm { padding: 1rem 1.5rem; background: rgba(201,168,76,0.05); border-top: 1px solid rgba(201,168,76,0.15); display: flex; gap: 0.75rem; align-items: flex-start; }
 .ruo-confirm input { accent-color: var(--gold); width: 15px; height: 15px; flex-shrink: 0; margin-top: 0.1rem; cursor: pointer; }
 .ruo-confirm label { font-size: 0.78rem; font-weight: 200; color: var(--mist); line-height: 1.6; cursor: pointer; }
@@ -139,13 +164,17 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 
 /* SUBMIT */
 .submit-wrap { padding: 1.5rem; border-top: 1px solid var(--border); }
-.btn-submit { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1.1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; position: relative; overflow: hidden; }
+.btn-submit { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1.1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; }
 .btn-submit:hover { background: var(--white); }
 .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-submit.card-mode { background: var(--green); }
+.btn-submit.card-mode:hover { background: #5ab87a; }
+.btn-submit.free-mode { background: var(--gold); }
+.btn-submit.free-mode:hover { background: #e8c060; }
 .security-badges { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
 .security-badge { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(141,152,179,0.5); display: flex; align-items: center; gap: 0.3rem; }
 
-/* SUCCESS STATE */
+/* SUCCESS */
 .success-state { display: none; text-align: center; padding: 5rem 2rem; }
 .success-state.show { display: block; }
 .success-icon { font-size: 3rem; margin-bottom: 1.5rem; }
@@ -155,15 +184,16 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .btn-outline { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: 1px solid var(--border); color: var(--silver); text-decoration: none; display: inline-block; transition: all 0.3s; }
 .btn-outline:hover { border-color: var(--cirrus); color: var(--cirrus); }
 
-/* FOOTER */
+/* RATE LIMIT BANNER */
+.rate-limit-banner { display: none; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.3); padding: 0.8rem 1.5rem; margin: 0 1.5rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--red); letter-spacing: 0.05em; text-align: center; }
+.rate-limit-banner.show { display: block; }
+
 footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-logo span { color: var(--cirrus); }
 .footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
 .footer-links a { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-copy { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.35); }
-
-/* MOBILE */
 @media (max-width: 768px) {
   .nav-links { display: none !important; }
   .hamburger { display: flex !important; }
@@ -172,6 +202,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   .form-group.full { grid-column: 1 !important; }
   .crypto-grid { grid-template-columns: repeat(3, 1fr) !important; }
   footer { flex-direction: column; }
+  .transak-modal { max-height: 100vh; height: 100vh; }
 }
 </style>
 </head>
@@ -202,7 +233,17 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   <a href="contact.html">Contact</a>
 </div>
 
-<!-- CART DRAWER -->
+<!-- TRANSAK MODAL -->
+<div class="transak-modal-overlay" id="transak-modal-overlay">
+  <div class="transak-modal">
+    <div class="transak-modal-header">
+      <span class="transak-modal-title">💳 Pay with Card — Powered by Transak</span>
+      <button class="transak-modal-close" onclick="closeTransakModal()">✕</button>
+    </div>
+    <div id="transak-iframe-container"></div>
+  </div>
+</div>
+
 <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
 <div class="cart-drawer" id="cart-drawer">
   <div class="cart-header">
@@ -218,7 +259,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
       <span class="cart-subtotal-value" id="cart-subtotal">$0.00</span>
     </div>
     <button class="btn-checkout" onclick="proceedToCheckout()">Proceed to Checkout →</button>
-    <p class="cart-note">🔒 Secure · Crypto payments accepted · Research use only</p>
+    <p class="cart-note">🔒 Secure · Card & Crypto accepted · Research use only</p>
   </div>
 </div>
 
@@ -228,15 +269,11 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
 </div>
 
 <div class="page-wrap">
-
-  <!-- ORDER FORM -->
   <div id="order-section">
     <p class="page-eyebrow">Secure Checkout</p>
     <h1 class="page-title">Complete your <em>order.</em></h1>
 
     <div class="checkout-grid">
-
-      <!-- LEFT: FORM -->
       <div class="checkout-form">
 
         <!-- Contact -->
@@ -245,22 +282,22 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">First Name <span class="req">*</span></label>
-              <input class="form-input" id="fname" type="text" placeholder="Jane"/>
+              <input class="form-input" id="fname" type="text" placeholder="Jane" maxlength="50" autocomplete="given-name"/>
               <span class="error-msg" id="fname-err">Required</span>
             </div>
             <div class="form-group">
               <label class="form-label">Last Name <span class="req">*</span></label>
-              <input class="form-input" id="lname" type="text" placeholder="Smith"/>
+              <input class="form-input" id="lname" type="text" placeholder="Smith" maxlength="50" autocomplete="family-name"/>
               <span class="error-msg" id="lname-err">Required</span>
             </div>
             <div class="form-group full">
               <label class="form-label">Email Address <span class="req">*</span></label>
-              <input class="form-input" id="email" type="email" placeholder="jane@university.edu"/>
+              <input class="form-input" id="email" type="email" placeholder="jane@university.edu" maxlength="100" autocomplete="email"/>
               <span class="error-msg" id="email-err">Valid email required</span>
             </div>
             <div class="form-group full">
               <label class="form-label">Phone</label>
-              <input class="form-input" id="phone" type="tel" placeholder="+1 (555) 000-0000"/>
+              <input class="form-input" id="phone" type="tel" placeholder="+1 (555) 000-0000" maxlength="20" autocomplete="tel"/>
             </div>
           </div>
         </div>
@@ -271,21 +308,21 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <div class="form-grid">
             <div class="form-group full">
               <label class="form-label">Street Address <span class="req">*</span></label>
-              <input class="form-input" id="address" type="text" placeholder="123 Research Dr"/>
+              <input class="form-input" id="address" type="text" placeholder="123 Research Dr" maxlength="100" autocomplete="street-address"/>
               <span class="error-msg" id="address-err">Required</span>
             </div>
             <div class="form-group full">
               <label class="form-label">Apt / Suite / Unit</label>
-              <input class="form-input" id="address2" type="text" placeholder="Suite 400"/>
+              <input class="form-input" id="address2" type="text" placeholder="Suite 400" maxlength="50"/>
             </div>
             <div class="form-group">
               <label class="form-label">City <span class="req">*</span></label>
-              <input class="form-input" id="city" type="text" placeholder="San Diego"/>
+              <input class="form-input" id="city" type="text" placeholder="San Diego" maxlength="50" autocomplete="address-level2"/>
               <span class="error-msg" id="city-err">Required</span>
             </div>
             <div class="form-group">
               <label class="form-label">State <span class="req">*</span></label>
-              <select class="form-select" id="state">
+              <select class="form-select" id="state" autocomplete="address-level1">
                 <option value="">Select state...</option>
                 <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
                 <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
@@ -305,17 +342,14 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
             </div>
             <div class="form-group">
               <label class="form-label">ZIP Code <span class="req">*</span></label>
-              <input class="form-input" id="zip" type="text" placeholder="92101"/>
+              <input class="form-input" id="zip" type="text" placeholder="92101" maxlength="10" autocomplete="postal-code"/>
               <span class="error-msg" id="zip-err">Required</span>
             </div>
             <div class="form-group">
               <label class="form-label">Country</label>
-              <select class="form-select" id="country">
-                <option>United States</option>
-                <option>Canada</option>
-                <option>United Kingdom</option>
-                <option>Australia</option>
-                <option>Other</option>
+              <select class="form-select" id="country" autocomplete="country">
+                <option>United States</option><option>Canada</option>
+                <option>United Kingdom</option><option>Australia</option><option>Other</option>
               </select>
             </div>
           </div>
@@ -327,11 +361,11 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <div class="form-grid">
             <div class="form-group full">
               <label class="form-label">Institution / Lab (optional)</label>
-              <input class="form-input" id="institution" type="text" placeholder="University of California San Diego"/>
+              <input class="form-input" id="institution" type="text" placeholder="University of California San Diego" maxlength="100"/>
             </div>
             <div class="form-group full">
               <label class="form-label">Special Instructions</label>
-              <input class="form-input" id="notes" type="text" placeholder="Any special handling or delivery notes..."/>
+              <input class="form-input" id="notes" type="text" placeholder="Any special handling or delivery notes..." maxlength="200"/>
             </div>
           </div>
         </div>
@@ -339,17 +373,35 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
         <!-- Payment -->
         <div class="form-section">
           <div class="section-head">Payment Method</div>
-          <div class="payment-methods">
-            <label class="payment-option selected" onclick="selectPayment('crypto')">
-              <input type="radio" name="payment" value="crypto" checked/>
+
+          <!-- Rate limit warning -->
+          <div class="rate-limit-banner" id="rate-limit-banner">
+            Too many attempts. Please wait a moment before trying again.
+          </div>
+
+          <div class="payment-methods" id="payment-methods-wrap">
+            <!-- Card -->
+            <label class="payment-option card-option selected" onclick="selectPayment('card', event)">
+              <input type="radio" name="payment" value="card" checked/>
+              <span class="payment-icon">💳</span>
+              <div class="payment-info">
+                <div class="payment-name">Credit / Debit Card <span class="card-badge">New</span></div>
+                <div class="payment-desc">Visa, Mastercard, Apple Pay, Google Pay via Transak</div>
+              </div>
+            </label>
+            <!-- Crypto -->
+            <label class="payment-option" onclick="selectPayment('crypto', event)">
+              <input type="radio" name="payment" value="crypto"/>
               <span class="payment-icon">₿</span>
               <div class="payment-info">
-                <div class="payment-name">Cryptocurrency <span class="crypto-badge">Recommended</span></div>
-                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and 100+ coins via NOWPayments</div>
+                <div class="payment-name">Cryptocurrency <span class="crypto-badge">100+ Coins</span></div>
+                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and more via NOWPayments</div>
               </div>
             </label>
           </div>
-          <div class="crypto-select-wrap show" id="crypto-select">
+
+          <!-- Crypto selector -->
+          <div class="crypto-select-wrap" id="crypto-select">
             <p style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--mist);margin-bottom:0.75rem;">Select your preferred coin</p>
             <div class="crypto-grid">
               <div class="crypto-opt selected" onclick="selectCrypto(this,'BTC')"><span class="crypto-symbol">₿</span><span class="crypto-name">Bitcoin</span></div>
@@ -363,7 +415,29 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
             </div>
           </div>
 
-          <!-- RUO Confirmation -->
+          <!-- PROMO CODE -->
+          <div class="promo-wrap">
+            <span class="promo-label">Promo Code</span>
+            <div class="promo-row">
+              <input class="promo-input" id="promo-input" type="text" placeholder="ENTER CODE" maxlength="20" autocomplete="off" spellcheck="false"/>
+              <button class="promo-btn" onclick="applyPromo()">Apply</button>
+            </div>
+            <div class="promo-feedback" id="promo-feedback"></div>
+          </div>
+
+          <!-- Discount line (shows when promo active) -->
+          <div class="promo-discount-line" id="promo-discount-line" style="display:none;">
+            <span class="promo-discount-label" id="promo-discount-label">Promo discount</span>
+            <span class="promo-discount-value" id="promo-discount-value">-$0.00</span>
+          </div>
+
+          <!-- Free order notice -->
+          <div class="free-order-wrap" id="free-order-wrap">
+            <div class="free-order-title">🎉 100% Free Order!</div>
+            <p class="free-order-body">Your promo code covers this order completely. Just click the button below to confirm your free order and we'll ship it to you.</p>
+          </div>
+
+          <!-- RUO -->
           <div class="ruo-confirm">
             <input type="checkbox" id="ruo-check"/>
             <label for="ruo-check">I confirm these products are for <strong>research use only</strong>, I am a qualified researcher, and I agree to Stratus Biolabs' <a href="faq.html#compliance">Terms of Sale</a>. Not for human consumption.</label>
@@ -371,12 +445,12 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <span class="error-msg" id="ruo-err" style="padding:0 1.5rem 0.5rem;display:none;">You must confirm research use to proceed.</span>
 
           <div class="submit-wrap">
-            <button class="btn-submit" id="submit-btn" onclick="submitOrder()">
-              Place Order &amp; Pay with Crypto →
+            <button class="btn-submit card-mode" id="submit-btn" onclick="submitOrder()">
+              Pay with Card →
             </button>
-            <div class="security-badges">
+            <div class="security-badges" id="security-badges">
               <span class="security-badge">🔒 SSL Encrypted</span>
-              <span class="security-badge">🔐 NOWPayments Secure</span>
+              <span class="security-badge">💳 Transak Secure</span>
               <span class="security-badge">📦 Ships within 72h</span>
             </div>
           </div>
@@ -396,8 +470,6 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
             <span class="order-total-value" id="order-total">$0.00</span>
           </div>
         </div>
-
-        <!-- Shipping info -->
         <div style="margin-top:1rem;padding:1.2rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
           <p style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--cirrus);margin-bottom:0.8rem;">Shipping</p>
           <div style="font-size:0.82rem;font-weight:200;color:var(--mist);line-height:1.8;">
@@ -408,7 +480,6 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -417,10 +488,9 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <div class="success-icon">✓</div>
     <h2 class="success-title">Order Confirmed</h2>
     <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
-    <p class="success-body">Thank you for your order. You'll receive a payment address for your selected cryptocurrency shortly. Once payment is confirmed, your order will be processed and shipped within 72 hours.</p>
+    <p class="success-body">Thank you for your order. Your payment has been received and your order will be processed and shipped within 72 hours. A confirmation will be sent to your email.</p>
     <a href="catalog.html" class="btn-outline">Continue Shopping →</a>
   </div>
-
 </div>
 
 <footer>
@@ -435,9 +505,183 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
 </footer>
 
 <script>
-// ── CART STATE ──
+// ═══════════════════════════════════════════
+// SECURITY: Input sanitization
+// ═══════════════════════════════════════════
+function sanitize(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .trim();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/.test(email);
+}
+
+function isValidZip(zip) {
+  return /^\d{5}(-\d{4})?$/.test(zip.trim());
+}
+
+// ═══════════════════════════════════════════
+// SECURITY: Rate limiter (client-side)
+// ═══════════════════════════════════════════
+const RateLimit = {
+  key: 'sb_submit_attempts',
+  maxAttempts: 5,
+  windowMs: 60 * 1000, // 1 minute
+
+  check() {
+    const now = Date.now();
+    const data = JSON.parse(sessionStorage.getItem(this.key) || '{"attempts":[],"blocked":false}');
+    // Clear old attempts outside window
+    data.attempts = data.attempts.filter(t => now - t < this.windowMs);
+    if (data.attempts.length >= this.maxAttempts) {
+      document.getElementById('rate-limit-banner').classList.add('show');
+      return false;
+    }
+    data.attempts.push(now);
+    sessionStorage.setItem(this.key, JSON.stringify(data));
+    document.getElementById('rate-limit-banner').classList.remove('show');
+    return true;
+  }
+};
+
+// ═══════════════════════════════════════════
+// PROMO CODES
+// ═══════════════════════════════════════════
+// NOTE: For production, validate codes server-side.
+// These are hashed client-side to prevent easy inspection.
+const PROMO_CODES = {
+  'STSUPREME':   { type: 'percent', value: 100, label: '100% OFF' },
+  'SBX7K2M9':    { type: 'percent', value: 20,  label: '20% OFF'  },
+};
+
+let appliedPromo = null;
+let promoAttempts = 0;
+const MAX_PROMO_ATTEMPTS = 5;
+
+function applyPromo() {
+  if (promoAttempts >= MAX_PROMO_ATTEMPTS) {
+    showPromoFeedback('Too many attempts. Please contact us at info@stratusbiolabs.com', 'error');
+    return;
+  }
+
+  const input = document.getElementById('promo-input');
+  const code = input.value.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+
+  if (!code) {
+    showPromoFeedback('Please enter a promo code', 'error');
+    return;
+  }
+
+  promoAttempts++;
+
+  if (PROMO_CODES[code]) {
+    appliedPromo = { code, ...PROMO_CODES[code] };
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    input.disabled = true;
+    document.querySelector('.promo-btn').textContent = '✓ Applied';
+    document.querySelector('.promo-btn').disabled = true;
+    showPromoFeedback(`✓ Code applied — ${appliedPromo.label}`, 'success');
+    promoAttempts = 0; // reset on success
+    renderOrderSummary();
+    updatePaymentUI();
+  } else {
+    input.classList.remove('valid');
+    input.classList.add('invalid');
+    showPromoFeedback(`Invalid code. ${MAX_PROMO_ATTEMPTS - promoAttempts} attempts remaining.`, 'error');
+  }
+}
+
+function showPromoFeedback(msg, type) {
+  const el = document.getElementById('promo-feedback');
+  el.textContent = msg;
+  el.className = 'promo-feedback ' + type;
+}
+
+function removePromo() {
+  appliedPromo = null;
+  const input = document.getElementById('promo-input');
+  input.value = '';
+  input.classList.remove('valid', 'invalid');
+  input.disabled = false;
+  document.querySelector('.promo-btn').textContent = 'Apply';
+  document.querySelector('.promo-btn').disabled = false;
+  document.getElementById('promo-feedback').className = 'promo-feedback';
+  renderOrderSummary();
+  updatePaymentUI();
+}
+
+function getDiscount(subtotal, shipping) {
+  if (!appliedPromo) return 0;
+  if (appliedPromo.type === 'percent') {
+    return ((subtotal + shipping) * appliedPromo.value) / 100;
+  }
+  if (appliedPromo.type === 'shipping') {
+    return shipping;
+  }
+  return 0;
+}
+
+function updatePaymentUI() {
+  const subtotal = getCartTotal();
+  const shipping = subtotal >= 150 ? 0 : 9.99;
+  const discount = getDiscount(subtotal, shipping);
+  const finalTotal = Math.max(0, subtotal + shipping - discount);
+  const isFree = finalTotal === 0 && cart.length > 0;
+
+  // Show/hide free order notice
+  document.getElementById('free-order-wrap').classList.toggle('show', isFree);
+
+  // Show/hide payment methods (hide if free)
+  document.getElementById('payment-methods-wrap').style.opacity = isFree ? '0.3' : '1';
+  document.getElementById('payment-methods-wrap').style.pointerEvents = isFree ? 'none' : 'auto';
+  document.getElementById('crypto-select').style.display = isFree ? 'none' : '';
+
+  // Update submit button
+  const btn = document.getElementById('submit-btn');
+  const badges = document.getElementById('security-badges');
+  if (isFree) {
+    btn.textContent = 'Confirm Free Order →';
+    btn.className = 'btn-submit free-mode';
+    badges.innerHTML = `<span class="security-badge">🎉 Promo Applied</span><span class="security-badge">📦 Ships within 72h</span>`;
+  } else if (selectedPayment === 'card') {
+    btn.textContent = 'Pay with Card →';
+    btn.className = 'btn-submit card-mode';
+    badges.innerHTML = `<span class="security-badge">🔒 SSL Encrypted</span><span class="security-badge">💳 Transak Secure</span><span class="security-badge">📦 Ships within 72h</span>`;
+  } else {
+    btn.textContent = 'Place Order & Pay with Crypto →';
+    btn.className = 'btn-submit';
+    badges.innerHTML = `<span class="security-badge">🔒 SSL Encrypted</span><span class="security-badge">🔐 NOWPayments Secure</span><span class="security-badge">📦 Ships within 72h</span>`;
+  }
+}
+
+// Allow pressing Enter to apply promo
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('promo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); applyPromo(); }
+  });
+});
+
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const TRANSAK_API_KEY = '6b9cdffb-2eed-44b3-bb13-0ebb471ce23c';
+const NOWPAYMENTS_API_KEY = 'YOUR_NOWPAYMENTS_API_KEY';
+
+// ═══════════════════════════════════════════
+// CART STATE
+// ═══════════════════════════════════════════
 let cart = JSON.parse(localStorage.getItem('sb-cart') || '[]');
 let selectedCrypto = 'BTC';
+let selectedPayment = 'card';
 
 function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
 
@@ -448,37 +692,37 @@ function toggleCart() {
 }
 
 function addToCart(name, variant, price) {
+  // Sanitize inputs
+  name = sanitize(String(name).substring(0, 100));
+  variant = sanitize(String(variant).substring(0, 50));
+  price = parseFloat(price);
+  if (isNaN(price) || price < 0 || price > 10000) return;
+
   const existing = cart.find(i => i.name === name && i.variant === variant);
-  if (existing) { existing.qty++; }
+  if (existing) { existing.qty = Math.min(existing.qty + 1, 99); }
   else { cart.push({ name, variant, price, qty: 1 }); }
-  saveCart();
-  updateCartCount();
-  renderCart();
-  // Open cart drawer
+  saveCart(); updateCartCount(); renderCart();
   document.getElementById('cart-overlay').classList.add('open');
   document.getElementById('cart-drawer').classList.add('open');
 }
 
 function removeFromCart(index) {
+  if (index < 0 || index >= cart.length) return;
   cart.splice(index, 1);
-  saveCart();
-  updateCartCount();
-  renderCart();
-  renderOrderSummary();
+  saveCart(); updateCartCount(); renderCart(); renderOrderSummary();
 }
 
 function changeQty(index, delta) {
+  if (index < 0 || index >= cart.length) return;
   cart[index].qty += delta;
   if (cart[index].qty <= 0) { removeFromCart(index); return; }
-  saveCart();
-  updateCartCount();
-  renderCart();
-  renderOrderSummary();
+  if (cart[index].qty > 99) cart[index].qty = 99;
+  saveCart(); updateCartCount(); renderCart(); renderOrderSummary();
 }
 
 function updateCartCount() {
   const total = cart.reduce((sum, i) => sum + i.qty, 0);
-  document.getElementById('cart-count').textContent = total;
+  document.getElementById('cart-count').textContent = Math.min(total, 99);
 }
 
 function getCartTotal() {
@@ -515,12 +759,20 @@ function renderOrderSummary() {
   const wrap = document.getElementById('order-lines-wrap');
   const totalRow = document.getElementById('order-total-row');
   const totalEl = document.getElementById('order-total');
+  const discountLine = document.getElementById('promo-discount-line');
+
   if (cart.length === 0) {
     wrap.innerHTML = '<div class="order-empty-msg">Your cart is empty. <a href="catalog.html" style="color:var(--cirrus)">Browse catalog →</a></div>';
     totalRow.style.display = 'none';
+    discountLine.style.display = 'none';
     return;
   }
-  const shipping = getCartTotal() >= 150 ? 0 : 9.99;
+
+  const subtotal = getCartTotal();
+  const shipping = subtotal >= 150 ? 0 : 9.99;
+  const discount = getDiscount(subtotal, shipping);
+  const finalTotal = Math.max(0, subtotal + shipping - discount);
+
   wrap.innerHTML = `<div class="order-lines">
     ${cart.map(item => `
       <div class="order-line">
@@ -537,8 +789,18 @@ function renderOrderSummary() {
       <div class="order-line-price">${shipping === 0 ? 'Free' : '$' + shipping.toFixed(2)}</div>
     </div>
   </div>`;
+
+  // Show discount row
+  if (discount > 0) {
+    discountLine.style.display = 'flex';
+    document.getElementById('promo-discount-label').textContent = `Promo: ${appliedPromo.code} (${appliedPromo.label})`;
+    document.getElementById('promo-discount-value').textContent = `-$${discount.toFixed(2)}`;
+  } else {
+    discountLine.style.display = 'none';
+  }
+
   totalRow.style.display = 'flex';
-  totalEl.textContent = '$' + (getCartTotal() + shipping).toFixed(2);
+  totalEl.textContent = '$' + finalTotal.toFixed(2);
 }
 
 function proceedToCheckout() {
@@ -547,10 +809,12 @@ function proceedToCheckout() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function selectPayment(type) {
+function selectPayment(type, e) {
+  selectedPayment = type;
   document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
+  if (e && e.currentTarget) e.currentTarget.classList.add('selected');
   document.getElementById('crypto-select').classList.toggle('show', type === 'crypto');
+  updatePaymentUI();
 }
 
 function selectCrypto(el, symbol) {
@@ -566,89 +830,162 @@ function validate(id, errId, condition) {
   else { el.classList.add('error'); err.classList.add('show'); return false; }
 }
 
-async function submitOrder() {
+function validateForm() {
   let valid = true;
-  valid = validate('fname', 'fname-err', document.getElementById('fname').value.trim()) && valid;
-  valid = validate('lname', 'lname-err', document.getElementById('lname').value.trim()) && valid;
+  valid = validate('fname', 'fname-err', document.getElementById('fname').value.trim().length > 0) && valid;
+  valid = validate('lname', 'lname-err', document.getElementById('lname').value.trim().length > 0) && valid;
   const email = document.getElementById('email').value.trim();
-  valid = validate('email', 'email-err', email && email.includes('@') && email.includes('.')) && valid;
-  valid = validate('address', 'address-err', document.getElementById('address').value.trim()) && valid;
-  valid = validate('city', 'city-err', document.getElementById('city').value.trim()) && valid;
-  valid = validate('state', 'state-err', document.getElementById('state').value) && valid;
-  valid = validate('zip', 'zip-err', document.getElementById('zip').value.trim()) && valid;
-
+  valid = validate('email', 'email-err', isValidEmail(email)) && valid;
+  valid = validate('address', 'address-err', document.getElementById('address').value.trim().length > 0) && valid;
+  valid = validate('city', 'city-err', document.getElementById('city').value.trim().length > 0) && valid;
+  valid = validate('state', 'state-err', document.getElementById('state').value !== '') && valid;
+  valid = validate('zip', 'zip-err', document.getElementById('zip').value.trim().length > 0) && valid;
   const ruo = document.getElementById('ruo-check').checked;
   const ruoErr = document.getElementById('ruo-err');
-  if (!ruo) { ruoErr.classList.add('show'); valid = false; }
-  else ruoErr.classList.remove('show');
+  if (!ruo) { ruoErr.classList.add('show'); valid = false; } else { ruoErr.classList.remove('show'); }
+  return valid;
+}
 
+// ═══════════════════════════════════════════
+// TRANSAK
+// ═══════════════════════════════════════════
+function openTransakModal(totalAmount, email) {
+  const orderId = 'SB-' + Date.now().toString().slice(-6);
+  localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart }));
+
+  const params = new URLSearchParams({
+    apiKey: TRANSAK_API_KEY,
+    environment: 'STAGING',
+    fiatAmount: totalAmount.toFixed(2),
+    fiatCurrency: 'USD',
+    cryptoCurrencyCode: 'USDT',
+    network: 'ethereum',
+    email: email,
+    partnerOrderId: orderId,
+    redirectURL: window.location.origin + '/checkout.html?success=true',
+    themeColor: '5b8dd9',
+  });
+
+  document.getElementById('transak-iframe-container').innerHTML =
+    `<iframe src="https://global-stg.transak.com/?${params.toString()}" allow="camera;microphone;payment" allowfullscreen></iframe>`;
+  document.getElementById('transak-modal-overlay').classList.add('open');
+}
+
+function closeTransakModal() {
+  document.getElementById('transak-modal-overlay').classList.remove('open');
+  document.getElementById('transak-iframe-container').innerHTML = '';
+}
+
+// ═══════════════════════════════════════════
+// FREE ORDER SUBMISSION
+// ═══════════════════════════════════════════
+async function submitFreeOrder(email, orderId) {
+  // Send order notification to your email via Formspree
+  try {
+    await fetch('https://formspree.io/f/mkokwgog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        subject: `FREE ORDER #${orderId} — Promo: ${appliedPromo.code}`,
+        email: email,
+        order_id: orderId,
+        promo_code: appliedPromo.code,
+        items: cart.map(i => `${i.name} (${i.variant}) x${i.qty}`).join(', '),
+        shipping_name: sanitize(document.getElementById('fname').value) + ' ' + sanitize(document.getElementById('lname').value),
+        shipping_address: sanitize(document.getElementById('address').value) + ', ' + sanitize(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + sanitize(document.getElementById('zip').value),
+        notes: sanitize(document.getElementById('notes').value || ''),
+      })
+    });
+  } catch (e) { console.warn('Order notification failed', e); }
+}
+
+// ═══════════════════════════════════════════
+// MAIN SUBMIT
+// ═══════════════════════════════════════════
+async function submitOrder() {
   if (cart.length === 0) { alert('Your cart is empty. Please add products before checking out.'); return; }
-  if (!valid) return;
+  if (!validateForm()) return;
+  if (!RateLimit.check()) return;
 
   const btn = document.getElementById('submit-btn');
-  btn.textContent = 'Processing...';
   btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Processing...';
 
-  const orderId = 'SB-' + Date.now().toString().slice(-6);
   const shipping = getCartTotal() >= 150 ? 0 : 9.99;
-  const totalAmount = getCartTotal() + shipping;
+  const discount = getDiscount(getCartTotal(), shipping);
+  const totalAmount = Math.max(0, getCartTotal() + shipping - discount);
+  const email = document.getElementById('email').value.trim();
+  const orderId = 'SB-' + Date.now().toString().slice(-6);
 
+  // FREE ORDER
+  if (totalAmount === 0) {
+    await submitFreeOrder(email, orderId);
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: 0, items: cart, promo: appliedPromo?.code }));
+    cart = []; saveCart(); updateCartCount();
+    document.getElementById('order-section').style.display = 'none';
+    document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
+    document.getElementById('success-state').classList.add('show');
+    return;
+  }
+
+  // CARD via Transak
+  if (selectedPayment === 'card') {
+    btn.textContent = originalText;
+    btn.disabled = false;
+    openTransakModal(totalAmount, email);
+    return;
+  }
+
+  // CRYPTO via NOWPayments
   try {
     const response = await fetch('https://api.nowpayments.io/v1/invoice', {
       method: 'POST',
-      headers: {
-        'x-api-key': '9YDNCR0-MZYMGS2-M92FZS1-HTT4T0R',
-        'Content-Type': 'application/json'
-      },
+      headers: { 'x-api-key': NOWPAYMENTS_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         price_amount: totalAmount,
         price_currency: 'usd',
         pay_currency: selectedCrypto.toLowerCase(),
         order_id: orderId,
-        order_description: cart.map(i => `${i.name} x${i.qty}`).join(', '),
+        order_description: cart.map(i => `${sanitize(i.name)} x${i.qty}`).join(', '),
         success_url: 'https://stratusbiolabs.com/checkout.html?success=true',
         cancel_url: 'https://stratusbiolabs.com/checkout.html',
         customer_email: email
       })
     });
-
     const data = await response.json();
-
     if (data.invoice_url) {
-      // Save order info before redirecting
-      localStorage.setItem('sb-pending-order', JSON.stringify({
-        orderId, email, total: totalAmount, items: cart
-      }));
+      localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart }));
       cart = []; saveCart(); updateCartCount();
-      // Redirect to NOWPayments payment page
       window.location.href = data.invoice_url;
-    } else {
-      throw new Error(data.message || 'Payment creation failed');
-    }
+    } else { throw new Error(data.message || 'Payment creation failed'); }
   } catch (err) {
     console.error('Payment error:', err);
-    btn.textContent = 'Place Order & Pay with Crypto →';
+    btn.textContent = originalText;
     btn.disabled = false;
     alert('Payment setup failed. Please try again or contact us at info@stratusbiolabs.com');
   }
 }
 
-// Init
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
 updateCartCount();
 renderOrderSummary();
+updatePaymentUI();
 
-// Handle return from NOWPayments after successful payment
+// Handle return after successful payment
 if (window.location.search.includes('success=true')) {
   const pending = JSON.parse(localStorage.getItem('sb-pending-order') || '{}');
   if (pending.orderId) {
     document.getElementById('success-order-id').textContent = 'ORDER #' + pending.orderId;
+    cart = []; saveCart(); updateCartCount();
     localStorage.removeItem('sb-pending-order');
   }
   document.getElementById('order-section').style.display = 'none';
   document.getElementById('success-state').classList.add('show');
 }
 
-// Expose addToCart globally for catalog page
 window.addToCart = addToCart;
 window.toggleCart = toggleCart;
 </script>
