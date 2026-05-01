@@ -16,124 +16,134 @@
 html { scroll-behavior: smooth; }
 body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; }
 
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1.5rem 4rem;
-  background: rgba(11,15,26,0.85); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
-.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(11,15,26,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
 .logo span { color: var(--cirrus); }
-nav ul { list-style: none; display: flex; gap: 2.5rem; }
-nav ul a { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
-nav ul a:hover, nav ul a.active { color: var(--cirrus); }
-.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.5rem 1.2rem; text-decoration: none; transition: all 0.3s; }
+.nav-links { list-style: none; display: flex; gap: 2rem; }
+.nav-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.nav-links a:hover, .nav-links a.active { color: var(--cirrus); }
+.nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); border: 1px solid var(--cirrus); padding: 0.45rem 1rem; text-decoration: none; transition: all 0.3s; white-space: nowrap; }
 .nav-cta:hover { background: var(--cirrus); color: var(--ink); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--mist); }
+.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(11,15,26,0.98); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem 1rem; z-index: 99; flex-direction: column; }
+.mobile-nav a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(93,141,217,0.08); display: block; }
+.mobile-nav.open { display: flex; }
 
 /* HERO */
-.page-hero {
-  min-height: 60vh; display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 12rem 4rem 6rem; position: relative; overflow: hidden;
-  border-bottom: 1px solid var(--border);
-}
-.hero-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse 70% 80% at 75% 40%, rgba(46,74,122,0.3) 0%, transparent 70%),
-              linear-gradient(160deg, #0b0f1a 0%, #0f1828 60%, #0b0f1a 100%);
-}
-.hero-bg::before {
-  content: ''; position: absolute; inset: 0;
-  background-image: linear-gradient(rgba(93,141,217,0.04) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(93,141,217,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 60% 70% at 80% 50%, black, transparent 80%);
-}
+.page-hero { min-height: 55vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 8rem 2rem 4rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); margin-top: 58px; }
+.hero-bg { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 70% 80% at 75% 40%, rgba(46,74,122,0.3) 0%, transparent 70%), linear-gradient(160deg, #0b0f1a 0%, #0f1828 60%, #0b0f1a 100%); }
+.hero-bg::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(93,141,217,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(93,141,217,0.04) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 60% 70% at 80% 50%, black, transparent 80%); }
 .hero-content { position: relative; z-index: 1; max-width: 750px; }
-.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s 0.2s both; }
-.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 6vw, 5rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s 0.4s both; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.2rem; opacity: 0; animation: fadeUp 1s 0.2s both; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 1.2rem; opacity: 0; animation: fadeUp 1s 0.4s both; }
 .page-title em { font-style: italic; color: var(--cirrus); }
-.page-sub { font-size: 1rem; font-weight: 200; color: var(--silver); line-height: 1.85; max-width: 560px; opacity: 0; animation: fadeUp 1s 0.6s both; }
+.page-sub { font-size: 0.95rem; font-weight: 200; color: var(--silver); line-height: 1.85; max-width: 560px; opacity: 0; animation: fadeUp 1s 0.6s both; }
 @keyframes fadeUp { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: none; } }
 
 /* MISSION */
-.mission { padding: 8rem 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 8rem; align-items: center; border-bottom: 1px solid var(--border); }
-.mission-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 2rem; }
-.mission-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 2rem; }
+.mission { padding: 4rem 2rem; display: grid; grid-template-columns: 1fr; gap: 3rem; border-bottom: 1px solid var(--border); }
+.mission-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.2rem; }
+.mission-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 1.5rem; }
 .mission-title em { font-style: italic; color: var(--cirrus); }
-.mission-body { font-size: 0.95rem; font-weight: 200; color: var(--silver); line-height: 1.95; margin-bottom: 1.5rem; }
-.mission-visual { position: relative; height: 380px; display: flex; align-items: center; justify-content: center; }
-.mission-ring {
-  position: absolute; border-radius: 50%;
-  border: 1px solid rgba(93,141,217,0.15);
-  animation: spin 20s linear infinite;
-}
-.mission-ring:nth-child(1) { width: 320px; height: 320px; }
-.mission-ring:nth-child(2) { width: 220px; height: 220px; border-style: dashed; animation-direction: reverse; animation-duration: 14s; }
-.mission-ring:nth-child(3) { width: 120px; height: 120px; animation-duration: 8s; }
+.mission-body { font-size: 0.92rem; font-weight: 200; color: var(--silver); line-height: 1.95; margin-bottom: 1.2rem; }
+.mission-visual { position: relative; height: 280px; display: flex; align-items: center; justify-content: center; }
+.mission-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(93,141,217,0.15); animation: spin 20s linear infinite; }
+.mission-ring:nth-child(1) { width: 240px; height: 240px; }
+.mission-ring:nth-child(2) { width: 170px; height: 170px; border-style: dashed; animation-direction: reverse; animation-duration: 14s; }
+.mission-ring:nth-child(3) { width: 100px; height: 100px; animation-duration: 8s; }
 .mission-core { position: relative; z-index: 1; text-align: center; }
-.mission-core-num { font-family: 'Cormorant Garamond', serif; font-size: 4rem; font-weight: 300; color: var(--cirrus); line-height: 1; }
-.mission-core-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); margin-top: 0.3rem; }
+.mission-core-num { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; font-weight: 300; color: var(--cirrus); line-height: 1; }
+.mission-core-label { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); margin-top: 0.3rem; }
 .ring-dot { position: absolute; width: 8px; height: 8px; background: var(--cirrus); border-radius: 50%; top: -4px; left: 50%; transform: translateX(-50%); }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* VALUES */
-.values { padding: 8rem 4rem; border-bottom: 1px solid var(--border); }
-.values-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem; }
-.values-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; }
+.values { padding: 4rem 2rem; border-bottom: 1px solid var(--border); }
+.values-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.values-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 3rem; }
 .values-title em { font-style: italic; color: var(--cirrus); }
-.values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-.value-card { background: var(--ink); padding: 3rem 2.5rem; transition: background 0.3s; }
+.values-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.value-card { background: var(--ink); padding: 2rem 1.5rem; transition: background 0.3s; }
 .value-card:hover { background: rgba(26,42,74,0.5); }
-.value-icon { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: rgba(93,141,217,0.3); line-height: 1; margin-bottom: 1.5rem; }
-.value-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 1rem; }
+.value-icon { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: rgba(93,141,217,0.3); line-height: 1; margin-bottom: 1rem; }
+.value-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: var(--white); margin-bottom: 0.75rem; }
 .value-desc { font-size: 0.85rem; font-weight: 200; color: var(--mist); line-height: 1.8; }
 
 /* TEAM */
-.team { padding: 8rem 4rem; border-bottom: 1px solid var(--border); }
-.team-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1.5rem; }
-.team-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 5rem; }
+.team { padding: 4rem 2rem; border-bottom: 1px solid var(--border); }
+.team-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.team-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 3rem; }
 .team-title em { font-style: italic; color: var(--cirrus); }
-.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
-.team-card { }
-.team-avatar {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--stratus), var(--nimbus));
-  border: 1px solid rgba(93,141,217,0.3);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--cirrus);
-  margin-bottom: 1.5rem;
-}
-.team-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: var(--white); margin-bottom: 0.3rem; }
-.team-role { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.team-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+.team-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--stratus), var(--nimbus)); border: 1px solid rgba(93,141,217,0.3); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: var(--cirrus); margin-bottom: 1.2rem; }
+.team-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--white); margin-bottom: 0.3rem; }
+.team-role { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.8rem; }
 .team-bio { font-size: 0.85rem; font-weight: 200; color: var(--mist); line-height: 1.8; }
 
 /* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; align-items: center; text-align: center; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-logo span { color: var(--cirrus); }
-.footer-links { display: flex; gap: 2.5rem; list-style: none; }
-.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
-.footer-links a:hover { color: var(--cirrus); }
-.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(141,152,179,0.4); letter-spacing: 0.1em; }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; justify-content: center; }
+.footer-links a { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.35); }
 
 /* REVEAL */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
 .reveal.visible { opacity: 1; transform: none; }
+
+/* TABLET+ */
+@media (min-width: 768px) {
+  nav { padding: 1.5rem 3rem; }
+  .nav-links { display: flex !important; }
+  .hamburger { display: none !important; }
+  .page-hero { padding: 10rem 4rem 6rem; }
+  .mission { grid-template-columns: 1fr 1fr; gap: 6rem; padding: 6rem 4rem; }
+  .values { padding: 6rem 4rem; }
+  .values-grid { grid-template-columns: repeat(2, 1fr); }
+  .team { padding: 6rem 4rem; }
+  .team-grid { grid-template-columns: repeat(3, 1fr); }
+  footer { flex-direction: row; justify-content: space-between; text-align: left; padding: 2.5rem 4rem; }
+}
+@media (min-width: 1024px) {
+  .values-grid { grid-template-columns: repeat(3, 1fr); }
+  .mission-visual { height: 380px; }
+  .mission-ring:nth-child(1) { width: 320px; height: 320px; }
+  .mission-ring:nth-child(2) { width: 220px; height: 220px; }
+  .mission-ring:nth-child(3) { width: 120px; height: 120px; }
+}
+@media (max-width: 767px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .nav-cta { display: none; }
+}
 </style>
 </head>
 <body>
 
 <nav>
   <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
-  <ul>
+  <ul class="nav-links">
     <li><a href="catalog.html">Catalog</a></li>
     <li><a href="about.html" class="active">About</a></li>
     <li><a href="faq.html">FAQ</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <a href="contact.html" class="nav-cta">Request Quote</a>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</div>
 
 <section class="page-hero">
   <div class="hero-bg"></div>
@@ -144,7 +154,6 @@ footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex;
   </div>
 </section>
 
-<!-- MISSION -->
 <section class="mission">
   <div class="reveal">
     <p class="mission-label">Our Mission</p>
@@ -163,75 +172,22 @@ footer { border-top: 1px solid var(--border); padding: 3rem 4rem; display: flex;
   </div>
 </section>
 
-<!-- VALUES -->
 <section class="values">
-  <div class="values-header reveal">
-    <div>
-      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--cirrus);margin-bottom:1rem;">What We Stand For</p>
-      <h2 class="values-title">Principles that guide<br>every <em>synthesis.</em></h2>
-    </div>
+  <div class="reveal">
+    <p class="values-label">What We Stand For</p>
+    <h2 class="values-title">Principles that guide every <em>synthesis.</em></h2>
   </div>
   <div class="values-grid">
-    <div class="value-card reveal">
-      <div class="value-icon">Ι</div>
-      <div class="value-name">Analytical Rigor</div>
-      <p class="value-desc">Every batch undergoes HPLC and mass spectrometry verification. We never ship without data we'd stake our reputation on — because we do.</p>
-    </div>
-    <div class="value-card reveal">
-      <div class="value-icon">ΙΙ</div>
-      <div class="value-name">Full Transparency</div>
-      <p class="value-desc">Complete Certificates of Analysis ship with every order. We document what we find — including any deviation — because researchers deserve the truth.</p>
-    </div>
-    <div class="value-card reveal">
-      <div class="value-icon">ΙΙΙ</div>
-      <div class="value-name">Reproducibility</div>
-      <p class="value-desc">Our synthesis protocols are written to be replicated. Consistent methodology means your results hold up batch to batch, experiment to experiment.</p>
-    </div>
-    <div class="value-card reveal">
-      <div class="value-icon">ΙV</div>
-      <div class="value-name">Researcher Partnership</div>
-      <p class="value-desc">We treat scientists as collaborators, not just customers. Our technical team is available to discuss your project and help select the right product or custom sequence.</p>
-    </div>
-    <div class="value-card reveal">
-      <div class="value-icon">V</div>
-      <div class="value-name">Speed Without Sacrifice</div>
-      <p class="value-desc">72-hour standard turnaround on catalog items because great science shouldn't wait. Rush synthesis available — quality controls remain non-negotiable.</p>
-    </div>
-    <div class="value-card reveal">
-      <div class="value-icon">VI</div>
-      <div class="value-name">Responsible Practice</div>
-      <p class="value-desc">All products are sold strictly for research use only. We maintain thorough customer verification and comply with all applicable regulations.</p>
-    </div>
+    <div class="value-card reveal"><div class="value-icon">Ι</div><div class="value-name">Analytical Rigor</div><p class="value-desc">Every batch undergoes HPLC and mass spectrometry verification. We never ship without data we'd stake our reputation on — because we do.</p></div>
+    <div class="value-card reveal"><div class="value-icon">ΙΙ</div><div class="value-name">Full Transparency</div><p class="value-desc">Complete Certificates of Analysis ship with every order. We document what we find — including any deviation — because researchers deserve the truth.</p></div>
+    <div class="value-card reveal"><div class="value-icon">ΙΙΙ</div><div class="value-name">Reproducibility</div><p class="value-desc">Our synthesis protocols are written to be replicated. Consistent methodology means your results hold up batch to batch, experiment to experiment.</p></div>
+    <div class="value-card reveal"><div class="value-icon">ΙV</div><div class="value-name">Researcher Partnership</div><p class="value-desc">We treat scientists as collaborators, not just customers. Our technical team is available to discuss your project and help select the right product or custom sequence.</p></div>
+    <div class="value-card reveal"><div class="value-icon">V</div><div class="value-name">Speed Without Sacrifice</div><p class="value-desc">72-hour standard turnaround on catalog items because great science shouldn't wait. Rush synthesis available — quality controls remain non-negotiable.</p></div>
+    <div class="value-card reveal"><div class="value-icon">VI</div><div class="value-name">Responsible Practice</div><p class="value-desc">All products are sold strictly for research use only. We maintain thorough customer verification and comply with all applicable regulations.</p></div>
   </div>
 </section>
 
-<!-- TEAM -->
-<section class="team">
-  <p class="team-eyebrow reveal">The People</p>
-  <h2 class="team-title reveal">Built by scientists,<br>for <em>scientists.</em></h2>
-  <div class="team-grid">
-    <div class="team-card reveal">
-      <div class="team-avatar">DR</div>
-      <div class="team-name">Dr. Daniel Reeves</div>
-      <div class="team-role">Co-Founder & Chief Scientific Officer</div>
-      <p class="team-bio">PhD in biochemistry with 15 years in peptide synthesis research. Formerly Principal Investigator at a leading academic medical center. Leads all synthesis protocols and QC methodology at Stratus.</p>
-    </div>
-    <div class="team-card reveal">
-      <div class="team-avatar">SE</div>
-      <div class="team-name">Sarah Ellison, MS</div>
-      <div class="team-role">Co-Founder & Chief Operating Officer</div>
-      <p class="team-bio">Masters in Pharmaceutical Sciences. 10+ years in biotech operations and supply chain. Ensures every order meets our quality standards from synthesis bench to delivery.</p>
-    </div>
-    <div class="team-card reveal">
-      <div class="team-avatar">MK</div>
-      <div class="team-name">Marcus Kim, PhD</div>
-      <div class="team-role">Director of Analytical Chemistry</div>
-      <p class="team-bio">Analytical chemistry specialist with deep expertise in HPLC method development and mass spectrometric characterization of complex peptide sequences. Heads our QC laboratory.</p>
-    </div>
-  </div>
-</section>
 
-<div style="height:1px;background:linear-gradient(90deg,transparent,var(--nimbus),transparent);margin:0 4rem;"></div>
 
 <footer>
   <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
