@@ -114,7 +114,10 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .promo-feedback.error { display: block; color: var(--red); }
 .promo-discount-line { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: rgba(74,154,106,0.06); border-top: 1px solid rgba(74,154,106,0.2); }
 .promo-discount-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--green); }
+.promo-discount-right { display: flex; align-items: center; gap: 0.6rem; }
 .promo-discount-value { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--green); }
+.promo-remove-btn { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 0.2rem; transition: color 0.2s; }
+.promo-remove-btn:hover { color: var(--red); }
 
 /* PAYMENT */
 .payment-methods { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
@@ -428,7 +431,10 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <!-- Discount line (shows when promo active) -->
           <div class="promo-discount-line" id="promo-discount-line" style="display:none;">
             <span class="promo-discount-label" id="promo-discount-label">Promo discount</span>
-            <span class="promo-discount-value" id="promo-discount-value">-$0.00</span>
+            <div class="promo-discount-right">
+              <span class="promo-discount-value" id="promo-discount-value">-$0.00</span>
+              <button type="button" class="promo-remove-btn" onclick="removePromo()" aria-label="Remove promo code" title="Remove promo">×</button>
+            </div>
           </div>
 
           <!-- Free order notice -->
@@ -508,16 +514,22 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
 // ═══════════════════════════════════════════
 // SECURITY: Input sanitization
 // ═══════════════════════════════════════════
-function sanitize(str) {
+// HTML-escape: only call when injecting into innerHTML.
+// Outbound API/email payloads should send raw values (callers strip/clamp length themselves).
+function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;')
-    .trim();
+    .replace(/'/g, '&#x27;');
+}
+
+// Strip any control chars and trim — safe for any context.
+function clean(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[\x00-\x1F\x7F]/g, '').trim();
 }
 
 function isValidEmail(email) {
@@ -555,10 +567,12 @@ const RateLimit = {
 // ═══════════════════════════════════════════
 // PROMO CODES
 // ═══════════════════════════════════════════
-// NOTE: For production, validate codes server-side.
-// These are hashed client-side to prevent easy inspection.
+// SECURITY NOTE: Anything in this file is public. Promo codes here are visible
+// to anyone who views the page source, and a 100%-off code combined with the
+// free-order branch in submitOrder() = free-merch faucet. STSUPREME removed
+// for that reason. Move all promo validation server-side before re-introducing
+// any code with significant value. See: Cloudflare Workers / Netlify Functions.
 const PROMO_CODES = {
-  'STSUPREME':   { type: 'percent', value: 100, label: '100% OFF' },
   'INTERNETMONEYBITCH':    { type: 'percent', value: 20,  label: '20% OFF'  },
 };
 
@@ -693,8 +707,8 @@ function toggleCart() {
 
 function addToCart(name, variant, price) {
   // Sanitize inputs
-  name = sanitize(String(name).substring(0, 100));
-  variant = sanitize(String(variant).substring(0, 50));
+  name = clean(String(name)).substring(0, 100);
+  variant = clean(String(variant)).substring(0, 50);
   price = parseFloat(price);
   if (isNaN(price) || price < 0 || price > 10000) return;
 
@@ -740,8 +754,8 @@ function renderCart() {
   wrap.innerHTML = cart.map((item, i) => `
     <div class="cart-item">
       <div class="cart-item-info">
-        <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-variant">${item.variant}</div>
+        <div class="cart-item-name">${escapeHtml(item.name)}</div>
+        <div class="cart-item-variant">${escapeHtml(item.variant)}</div>
         <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
         <div class="qty-control">
           <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
@@ -777,8 +791,8 @@ function renderOrderSummary() {
     ${cart.map(item => `
       <div class="order-line">
         <div>
-          <div class="order-line-name">${item.name} × ${item.qty}</div>
-          <div class="order-line-variant">${item.variant}</div>
+          <div class="order-line-name">${escapeHtml(item.name)} × ${item.qty}</div>
+          <div class="order-line-variant">${escapeHtml(item.variant)}</div>
         </div>
         <div class="order-line-price">$${(item.price * item.qty).toFixed(2)}</div>
       </div>
@@ -855,7 +869,7 @@ function openTransakModal(totalAmount, email) {
 
   const params = new URLSearchParams({
     apiKey: TRANSAK_API_KEY,
-    environment: 'STAGING',
+    environment: 'PRODUCTION',
     fiatAmount: totalAmount.toFixed(2),
     fiatCurrency: 'USD',
     cryptoCurrencyCode: 'USDT',
@@ -867,7 +881,7 @@ function openTransakModal(totalAmount, email) {
   });
 
   document.getElementById('transak-iframe-container').innerHTML =
-    `<iframe src="https://global-stg.transak.com/?${params.toString()}" allow="camera;microphone;payment" allowfullscreen></iframe>`;
+    `<iframe src="https://global.transak.com/?${params.toString()}" allow="camera;microphone;payment" allowfullscreen></iframe>`;
   document.getElementById('transak-modal-overlay').classList.add('open');
 }
 
@@ -891,9 +905,9 @@ async function submitFreeOrder(email, orderId) {
         order_id: orderId,
         promo_code: appliedPromo.code,
         items: cart.map(i => `${i.name} (${i.variant}) x${i.qty}`).join(', '),
-        shipping_name: sanitize(document.getElementById('fname').value) + ' ' + sanitize(document.getElementById('lname').value),
-        shipping_address: sanitize(document.getElementById('address').value) + ', ' + sanitize(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + sanitize(document.getElementById('zip').value),
-        notes: sanitize(document.getElementById('notes').value || ''),
+        shipping_name: clean(document.getElementById('fname').value) + ' ' + clean(document.getElementById('lname').value),
+        shipping_address: clean(document.getElementById('address').value) + ', ' + clean(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + clean(document.getElementById('zip').value),
+        notes: clean(document.getElementById('notes').value || ''),
       })
     });
   } catch (e) { console.warn('Order notification failed', e); }
@@ -947,7 +961,7 @@ async function submitOrder() {
         price_currency: 'usd',
         pay_currency: selectedCrypto.toLowerCase(),
         order_id: orderId,
-        order_description: cart.map(i => `${sanitize(i.name)} x${i.qty}`).join(', '),
+        order_description: cart.map(i => `${clean(i.name)} x${i.qty}`).join(', '),
         success_url: 'https://stratusbiolabs.com/checkout.html?success=true',
         cancel_url: 'https://stratusbiolabs.com/checkout.html',
         customer_email: email

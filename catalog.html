@@ -212,6 +212,18 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .no-results { padding: 4rem 2rem; text-align: center; display: none; }
 .no-results h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--mist); margin-bottom: 0.4rem; }
 
+.variant-select {
+  font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--fog);
+  padding: 0.45rem 2rem 0.45rem 0.6rem; margin-top: 0.4rem; width: 100%;
+  outline: none; cursor: pointer; -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238d98b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.7rem center;
+  transition: border-color 0.25s;
+}
+.variant-select:focus, .variant-select:hover { border-color: var(--cirrus); }
+.variant-select option { background: #0f1828; color: var(--fog); }
+
 footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-logo span { color: var(--cirrus); }
@@ -710,17 +722,50 @@ function addToCart(name, variant, price) {
 }
 updateFloatCart();
 
-// Update all order buttons
+// Update all order buttons. For products with a price range (e.g. "$72–$132"),
+// inject a size selector so the cart charges the correct per-size price.
 document.querySelectorAll('.product-card').forEach(card => {
   const btn = card.querySelector('.order-btn');
   if (!btn) return;
   const name = card.querySelector('.prod-name')?.textContent.trim() || '';
   const priceEl = card.querySelector('.prod-price');
-  const variant = priceEl?.querySelector('span')?.textContent.trim() || '';
-  const priceText = priceEl?.childNodes[0]?.textContent?.trim() || '0';
-  const price = parseFloat(priceText.replace(/[^0-9.]/g,'').split('–')[0]) || 0;
+  if (!priceEl) return;
+  const fullVariant = priceEl.querySelector('span')?.textContent.trim() || '';
+  const priceText = priceEl.childNodes[0]?.textContent?.trim() || '0';
+
+  let getSelection;
+  if (priceText.includes('–')) {
+    const [lowStr, highStr] = priceText.split('–');
+    const lowPrice  = parseFloat(lowStr.replace(/[^0-9.]/g, ''))  || 0;
+    const highPrice = parseFloat(highStr.replace(/[^0-9.]/g, '')) || 0;
+    const [variantRange, ...rest] = fullVariant.split('·');
+    const suffix = rest.join('·').trim();
+    const [lowVariantRaw, highVariantRaw] = variantRange.split('–');
+    const lowVariant  = (lowVariantRaw  || 'Small').trim();
+    const highVariant = (highVariantRaw || 'Large').trim();
+
+    const sel = document.createElement('select');
+    sel.className = 'variant-select';
+    sel.innerHTML =
+      `<option value="${lowPrice}|${lowVariant}">${lowVariant} — $${lowPrice}</option>` +
+      `<option value="${highPrice}|${highVariant}">${highVariant} — $${highPrice}</option>`;
+    const footer = card.querySelector('.prod-footer');
+    if (footer) card.insertBefore(sel, footer);
+
+    getSelection = () => {
+      const [p, v] = sel.value.split('|');
+      return { variant: suffix ? `${v} · ${suffix}` : v, price: parseFloat(p) || 0 };
+    };
+  } else {
+    const price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+    getSelection = () => ({ variant: fullVariant, price });
+  }
+
   btn.removeAttribute('href');
-  btn.onclick = () => addToCart(name, variant, price);
+  btn.onclick = () => {
+    const s = getSelection();
+    addToCart(name, s.variant, s.price);
+  };
   btn.textContent = 'Add to Cart';
 });
 const cards = document.querySelectorAll('.product-card');
