@@ -66,6 +66,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .btn-checkout { width: 100%; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: var(--cirrus); color: var(--ink); border: none; cursor: pointer; transition: background 0.3s; }
 .btn-checkout:hover { background: var(--white); }
 .cart-note { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: var(--mist); text-align: center; margin-top: 0.75rem; letter-spacing: 0.08em; }
+.ship-progress { padding: 0 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+.ship-progress-text { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; color: var(--mist); margin-bottom: 0.55rem; text-align: center; }
+.ship-progress-text strong { color: var(--cirrus); font-weight: 400; }
+.ship-progress-text.unlocked { color: var(--green); letter-spacing: 0.1em; }
+.ship-progress-track { width: 100%; height: 3px; background: rgba(93,141,217,0.1); position: relative; overflow: hidden; }
+.ship-progress-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, var(--cirrus), var(--green)); transition: width 0.4s cubic-bezier(0.16,1,0.3,1); }
+.ship-progress-fill.unlocked { background: var(--green); }
 .page-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
 .page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 0.8rem; }
 .page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; color: var(--white); margin-bottom: 0.5rem; line-height: 1.05; }
@@ -257,6 +264,10 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <div class="cart-empty">Your cart is empty.<br>Browse our catalog to add products.</div>
   </div>
   <div class="cart-footer">
+    <div class="ship-progress" id="ship-progress" style="display:none;">
+      <div class="ship-progress-text" id="ship-progress-text">Add <strong>$150.00</strong> for free shipping</div>
+      <div class="ship-progress-track"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+    </div>
     <div class="cart-subtotal">
       <span class="cart-subtotal-label">Subtotal</span>
       <span class="cart-subtotal-value" id="cart-subtotal">$0.00</span>
@@ -743,12 +754,37 @@ function getCartTotal() {
   return cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 }
 
+const FREE_SHIPPING_THRESHOLD = 150;
+
+function updateShipProgress() {
+  const wrap = document.getElementById('ship-progress');
+  const txt = document.getElementById('ship-progress-text');
+  const fill = document.getElementById('ship-progress-fill');
+  if (!wrap || !txt || !fill) return;
+  if (cart.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const subtotal = getCartTotal();
+  if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    txt.classList.add('unlocked');
+    fill.classList.add('unlocked');
+    txt.textContent = '✓ Free shipping unlocked';
+    fill.style.width = '100%';
+  } else {
+    txt.classList.remove('unlocked');
+    fill.classList.remove('unlocked');
+    const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
+    txt.innerHTML = `Add <strong>$${remaining.toFixed(2)}</strong> for free shipping`;
+    fill.style.width = `${(subtotal / FREE_SHIPPING_THRESHOLD) * 100}%`;
+  }
+}
+
 function renderCart() {
   const wrap = document.getElementById('cart-items');
   const subtotalEl = document.getElementById('cart-subtotal');
   if (cart.length === 0) {
     wrap.innerHTML = '<div class="cart-empty">Your cart is empty.<br>Browse our catalog to add products.</div>';
     subtotalEl.textContent = '$0.00';
+    updateShipProgress();
     return;
   }
   wrap.innerHTML = cart.map((item, i) => `
@@ -767,6 +803,7 @@ function renderCart() {
     </div>
   `).join('');
   subtotalEl.textContent = '$' + getCartTotal().toFixed(2);
+  updateShipProgress();
 }
 
 function renderOrderSummary() {
