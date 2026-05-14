@@ -578,50 +578,73 @@ const RateLimit = {
 // ═══════════════════════════════════════════
 // PROMO CODES
 // ═══════════════════════════════════════════
-// SECURITY NOTE: Anything in this file is public. Promo codes here are visible
-// to anyone who views the page source, and a 100%-off code combined with the
-// free-order branch in submitOrder() = free-merch faucet. STSUPREME removed
-// for that reason. Move all promo validation server-side before re-introducing
-// any code with significant value. See: Cloudflare Workers / Netlify Functions.
-const PROMO_CODES = {
-  'INTERNETMONEYBITCH':    { type: 'percent', value: 20,  label: '20% OFF'  },
-};
+// Promo validation now lives server-side at /api/validate-cart (Cloudflare
+// Pages Function in functions/api/validate-cart.js). Codes are no longer
+// readable from the browser. Anything left in this file is intentionally
+// non-sensitive UX glue.
 
 let appliedPromo = null;
 let promoAttempts = 0;
 const MAX_PROMO_ATTEMPTS = 5;
 
-function applyPromo() {
+async function applyPromo() {
   if (promoAttempts >= MAX_PROMO_ATTEMPTS) {
     showPromoFeedback('Too many attempts. Please contact us at info@stratusbiolabs.com', 'error');
     return;
   }
-
   const input = document.getElementById('promo-input');
   const code = input.value.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+  if (!code) { showPromoFeedback('Please enter a promo code', 'error'); return; }
+  if (cart.length === 0) { showPromoFeedback('Add items to your cart first', 'error'); return; }
 
-  if (!code) {
-    showPromoFeedback('Please enter a promo code', 'error');
+  // Build the SKU/size payload. Older cart entries (added before the SKU
+  // upgrade) won't have sku/sizeKey — ask the user to refresh those.
+  const items = cart
+    .filter(i => i.sku && i.sizeKey)
+    .map(i => ({ sku: i.sku, sizeKey: i.sizeKey, qty: i.qty }));
+  if (items.length === 0) {
+    showPromoFeedback('Please clear your cart and re-add items, then try again.', 'error');
     return;
   }
 
   promoAttempts++;
+  showPromoFeedback('Checking…', 'success');
 
-  if (PROMO_CODES[code]) {
-    appliedPromo = { code, ...PROMO_CODES[code] };
+  let data;
+  try {
+    const res = await fetch('/api/validate-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items, promoCode: code }),
+    });
+    data = await res.json();
+  } catch {
+    showPromoFeedback('Could not reach server. Try again in a moment.', 'error');
+    return;
+  }
+
+  if (data && data.ok && data.promoApplied) {
+    appliedPromo = {
+      code: data.promoApplied.code,
+      label: data.promoApplied.label,
+      discountPct: data.promoApplied.discountPct,
+      // Authoritative discount amount from server, recomputed from server-truth prices.
+      serverDiscount: data.discount,
+    };
     input.classList.remove('invalid');
     input.classList.add('valid');
     input.disabled = true;
     document.querySelector('.promo-btn').textContent = '✓ Applied';
     document.querySelector('.promo-btn').disabled = true;
     showPromoFeedback(`✓ Code applied — ${appliedPromo.label}`, 'success');
-    promoAttempts = 0; // reset on success
+    promoAttempts = 0;
     renderOrderSummary();
     updatePaymentUI();
   } else {
     input.classList.remove('valid');
     input.classList.add('invalid');
-    showPromoFeedback(`Invalid code. ${MAX_PROMO_ATTEMPTS - promoAttempts} attempts remaining.`, 'error');
+    const msg = (data && data.error) || 'Invalid code';
+    showPromoFeedback(`${msg}. ${MAX_PROMO_ATTEMPTS - promoAttempts} attempts remaining.`, 'error');
   }
 }
 
@@ -646,6 +669,11 @@ function removePromo() {
 
 function getDiscount(subtotal, shipping) {
   if (!appliedPromo) return 0;
+  // Use the server-computed discount when present (post-Cloudflare deploy).
+  // The server recomputes from authoritative prices so this number is safe.
+  if (typeof appliedPromo.serverDiscount === 'number') {
+    return appliedPromo.serverDiscount;
+  }
   if (appliedPromo.type === 'percent') {
     return ((subtotal + shipping) * appliedPromo.value) / 100;
   }
@@ -716,16 +744,18 @@ function toggleCart() {
   renderCart();
 }
 
-function addToCart(name, variant, price) {
-  // Sanitize inputs
-  name = clean(String(name)).substring(0, 100);
+function addToCart(name, variant, price, sku, sizeKey) {
+  // Clean inputs (strip control chars + length-clamp); never trust client values.
+  name    = clean(String(name)).substring(0, 100);
   variant = clean(String(variant)).substring(0, 50);
+  sku     = clean(String(sku || '')).substring(0, 20);
+  sizeKey = clean(String(sizeKey || '')).substring(0, 30);
   price = parseFloat(price);
   if (isNaN(price) || price < 0 || price > 10000) return;
 
   const existing = cart.find(i => i.name === name && i.variant === variant);
   if (existing) { existing.qty = Math.min(existing.qty + 1, 99); }
-  else { cart.push({ name, variant, price, qty: 1 }); }
+  else { cart.push({ name, variant, price, qty: 1, sku, sizeKey }); }
   saveCart(); updateCartCount(); renderCart();
   document.getElementById('cart-overlay').classList.add('open');
   document.getElementById('cart-drawer').classList.add('open');

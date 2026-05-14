@@ -525,10 +525,10 @@ function updateFloatCart() {
   if (countEl) countEl.textContent = total;
   if (btn) btn.classList.toggle('show', total > 0);
 }
-function addToCart(name, variant, price) {
+function addToCart(name, variant, price, sku, sizeKey) {
   const existing = cart.find(i => i.name === name && i.variant === variant);
   if (existing) existing.qty++;
-  else cart.push({ name, variant, price, qty: 1 });
+  else cart.push({ name, variant, price, qty: 1, sku, sizeKey });
   saveCart();
   updateFloatCart();
   // Flash button
@@ -539,10 +539,13 @@ updateFloatCart();
 
 // Update all order buttons. For products with a price range (e.g. "$72–$132"),
 // inject a size selector so the cart charges the correct per-size price.
+// Each card also passes its SKU + sizeKey so server-side validation can verify
+// the product+price (see functions/api/validate-cart.js).
 document.querySelectorAll('.product-card').forEach(card => {
   const btn = card.querySelector('.order-btn');
   if (!btn) return;
   const name = card.querySelector('.prod-name')?.textContent.trim() || '';
+  const sku  = card.querySelector('.prod-id')?.textContent.trim()  || '';
   const priceEl = card.querySelector('.prod-price');
   if (!priceEl) return;
   const fullVariant = priceEl.querySelector('span')?.textContent.trim() || '';
@@ -569,17 +572,23 @@ document.querySelectorAll('.product-card').forEach(card => {
 
     getSelection = () => {
       const [p, v] = sel.value.split('|');
-      return { variant: suffix ? `${v} · ${suffix}` : v, price: parseFloat(p) || 0 };
+      return {
+        sizeKey: v,
+        variant: suffix ? `${v} · ${suffix}` : v,
+        price: parseFloat(p) || 0,
+      };
     };
   } else {
     const price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
-    getSelection = () => ({ variant: fullVariant, price });
+    // Single-size product: derive sizeKey from the part before "·" (e.g. "5mg · Lyophilized" -> "5mg")
+    const sizeKey = (fullVariant.split('·')[0] || '').trim();
+    getSelection = () => ({ sizeKey, variant: fullVariant, price });
   }
 
   btn.removeAttribute('href');
   btn.onclick = () => {
     const s = getSelection();
-    addToCart(name, s.variant, s.price);
+    addToCart(name, s.variant, s.price, sku, s.sizeKey);
   };
   btn.textContent = 'Add to Cart';
 });
