@@ -985,6 +985,26 @@ async function submitFreeOrder(email, orderId) {
 }
 
 // ═══════════════════════════════════════════
+// ORDER LOGGING (server-side, idempotent on orderId)
+// ═══════════════════════════════════════════
+async function logOrderToServer(orderId, email, totalAmount, shipping, discount, subtotal, paymentMethod) {
+  try {
+    await fetch('/api/log-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId,
+        items: cart.map(i => ({ sku: i.sku, sizeKey: i.sizeKey, name: i.name, qty: i.qty, price: i.price })),
+        subtotal, shipping, discount, total: totalAmount,
+        promoCode: appliedPromo?.code || null,
+        customerEmail: email,
+        paymentMethod,
+      }),
+    });
+  } catch (e) { /* best-effort, don't block checkout */ }
+}
+
+// ═══════════════════════════════════════════
 // MAIN SUBMIT
 // ═══════════════════════════════════════════
 async function submitOrder() {
@@ -1006,6 +1026,7 @@ async function submitOrder() {
   // FREE ORDER
   if (totalAmount === 0) {
     await submitFreeOrder(email, orderId);
+    await logOrderToServer(orderId, email, 0, shipping, discount, getCartTotal(), 'free');
     localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: 0, items: cart, promo: appliedPromo?.code }));
     cart = []; saveCart(); updateCartCount();
     document.getElementById('order-section').style.display = 'none';
@@ -1016,6 +1037,8 @@ async function submitOrder() {
 
   // CARD via Transak
   if (selectedPayment === 'card') {
+    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'card');
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code }));
     btn.textContent = originalText;
     btn.disabled = false;
     openTransakModal(totalAmount, email);
@@ -1040,7 +1063,8 @@ async function submitOrder() {
     });
     const data = await response.json();
     if (data.invoice_url) {
-      localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart }));
+      await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'crypto');
+      localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code }));
       cart = []; saveCart(); updateCartCount();
       window.location.href = data.invoice_url;
     } else { throw new Error(data.message || 'Payment creation failed'); }

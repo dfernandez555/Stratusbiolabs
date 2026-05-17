@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Stratus Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #0A0A0C; --cream-2: #14161B; --ink: #F0EBE0; --muted: #B5B1A8;
+  --hairline: rgba(240,235,224,0.12); --crimson: #A82138; --crimson-text: #C5314A;
+  --green: #4a9a6a;
+}
+body { font-family: 'Inter', system-ui, sans-serif; font-size: 14px; background: var(--cream); color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; padding: 2rem; }
+h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 300; margin-bottom: 0.4rem; }
+h1 em { font-style: italic; color: var(--crimson-text); }
+.lead { color: var(--muted); margin-bottom: 2.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; }
+.lead .month { color: var(--ink); }
+
+/* Login gate */
+.gate { max-width: 380px; margin: 4rem auto; }
+.gate input { width: 100%; padding: 0.9rem 1rem; background: var(--cream-2); border: 1px solid var(--hairline); color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; margin-bottom: 1rem; }
+.gate input:focus { border-color: var(--crimson-text); }
+.gate button { width: 100%; padding: 0.9rem; background: var(--ink); color: var(--cream); border: none; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+.gate button:hover { background: var(--crimson); color: var(--ink); }
+.gate-error { color: #e05a5a; font-size: 0.82rem; margin-top: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+.kpi { background: var(--cream-2); border: 1px solid var(--hairline); padding: 1.5rem; position: relative; }
+.kpi::before { content: ''; position: absolute; top: -1px; left: -1px; width: 24px; height: 1px; background: var(--crimson); }
+.kpi::after  { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 24px; background: var(--crimson); }
+.kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+.kpi-value { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 400; line-height: 1; }
+.kpi-value .sub { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted); margin-left: 0.4rem; }
+
+h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; margin: 2.5rem 0 1.2rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--cream-2); }
+table th, table td { padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid var(--hairline); }
+table th { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--cream); }
+table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
+.code { font-family: 'JetBrains Mono', monospace; color: var(--crimson-text); }
+.pill { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.pill.active { background: rgba(74,154,106,0.15); color: var(--green); }
+.pill.disabled { background: rgba(224,90,90,0.15); color: #e05a5a; }
+.toggle-btn { background: none; border: 1px solid var(--hairline); padding: 0.3rem 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+.toggle-btn:hover { border-color: var(--crimson-text); color: var(--crimson-text); }
+
+.month-picker { font-family: 'JetBrains Mono', monospace; background: var(--cream-2); border: 1px solid var(--hairline); color: var(--ink); padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+.empty { color: var(--muted); padding: 2rem; text-align: center; font-style: italic; }
+
+#dashboard { display: none; }
+#dashboard.show { display: block; }
+.gate.hide { display: none; }
+
+@media (max-width: 800px) {
+  body { padding: 1rem; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  table { font-size: 0.78rem; }
+  table th, table td { padding: 0.6rem 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <h1>Admin</h1>
+  <p class="lead">Enter admin password to view dashboard</p>
+  <input id="pw" type="password" placeholder="Password" autocomplete="off"/>
+  <button id="enter-btn" onclick="enter()">Unlock</button>
+  <div class="gate-error" id="gate-error"></div>
+</div>
+
+<div id="dashboard">
+  <h1>Stratus <em>Admin</em></h1>
+  <p class="lead">Reporting period: <span class="month" id="month-display">—</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <input type="month" id="month-picker" class="month-picker" onchange="loadStats()"/></p>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-label">// Revenue</div>
+      <div class="kpi-value">$<span id="kpi-revenue">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Orders</div>
+      <div class="kpi-value"><span id="kpi-orders">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Active Affiliates</div>
+      <div class="kpi-value"><span id="kpi-affs">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Pending Payouts</div>
+      <div class="kpi-value">$<span id="kpi-payouts">0</span></div>
+    </div>
+  </div>
+
+  <h2>Affiliate revenue this period</h2>
+  <table id="aff-rev-table">
+    <thead><tr><th>Affiliate</th><th>Code</th><th>Platform</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Owed (15%)</th></tr></thead>
+    <tbody id="aff-rev-body"><tr><td colspan="6" class="empty">No revenue yet this month.</td></tr></tbody>
+  </table>
+
+  <h2>Affiliates</h2>
+  <table id="aff-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Platform</th><th>Audience</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+    <tbody id="aff-body"><tr><td colspan="8" class="empty">No affiliates yet.</td></tr></tbody>
+  </table>
+
+  <h2>Recent orders</h2>
+  <table id="orders-table">
+    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th></tr></thead>
+    <tbody id="orders-body"><tr><td colspan="7" class="empty">No orders yet this month.</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+const FMT_USD = n => n.toFixed(2);
+const FMT_DATE = s => { try { return new Date(s).toLocaleDateString(); } catch { return s; } };
+let password = sessionStorage.getItem('admin-pw') || '';
+
+function enter() {
+  const v = document.getElementById('pw').value;
+  if (!v) return;
+  password = v;
+  sessionStorage.setItem('admin-pw', v);
+  loadStats();
+}
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') enter(); });
+
+async function loadStats() {
+  const picker = document.getElementById('month-picker');
+  const month = picker.value || new Date().toISOString().slice(0, 7);
+  picker.value = month;
+
+  const res = await fetch('/api/admin/stats?month=' + month, { headers: { 'X-Admin-Password': password } });
+  if (res.status === 401) {
+    document.getElementById('gate-error').textContent = 'Wrong password.';
+    sessionStorage.removeItem('admin-pw');
+    return;
+  }
+  const d = await res.json();
+  if (!d.ok) { document.getElementById('gate-error').textContent = d.error || 'Failed'; return; }
+
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('dashboard').classList.add('show');
+  document.getElementById('month-display').textContent = d.month;
+
+  document.getElementById('kpi-revenue').textContent  = FMT_USD(d.summary.totalRevenue);
+  document.getElementById('kpi-orders').textContent   = d.summary.orderCount;
+  document.getElementById('kpi-affs').textContent     = d.summary.affiliateCount;
+  document.getElementById('kpi-payouts').textContent  = FMT_USD(d.summary.pendingPayoutTotal);
+
+  const affRevBody = document.getElementById('aff-rev-body');
+  if (d.affiliatesByRevenue.length) {
+    affRevBody.innerHTML = d.affiliatesByRevenue.map(a => `
+      <tr><td>${a.name || a.affiliateId}</td>
+          <td><span class="code">${a.code || '—'}</span></td>
+          <td>${a.platform || '—'}</td>
+          <td class="num">${a.orders}</td>
+          <td class="num">$${FMT_USD(a.revenue)}</td>
+          <td class="num">$${FMT_USD(a.commissionOwed)}</td></tr>
+    `).join('');
+  } else {
+    affRevBody.innerHTML = '<tr><td colspan="6" class="empty">No revenue yet this month.</td></tr>';
+  }
+
+  const affBody = document.getElementById('aff-body');
+  if (d.affiliates.length) {
+    affBody.innerHTML = d.affiliates.map(a => `
+      <tr><td>${a.name}</td>
+          <td>${a.email}</td>
+          <td><span class="code">${a.code}</span></td>
+          <td>${a.platform}</td>
+          <td>${a.audienceSize}</td>
+          <td>${FMT_DATE(a.createdAt)}</td>
+          <td><span class="pill ${a.status}">${a.status}</span></td>
+          <td><button class="toggle-btn" onclick="toggleAff('${a.id}','${a.status === 'active' ? 'disabled' : 'active'}')">${a.status === 'active' ? 'Disable' : 'Enable'}</button></td></tr>
+    `).join('');
+  } else {
+    affBody.innerHTML = '<tr><td colspan="8" class="empty">No affiliates yet.</td></tr>';
+  }
+
+  const ordBody = document.getElementById('orders-body');
+  if (d.recentOrders.length) {
+    ordBody.innerHTML = d.recentOrders.map(o => `
+      <tr><td>${FMT_DATE(o.createdAt)}</td>
+          <td><span class="code">${o.orderId}</span></td>
+          <td>${o.customerEmail}</td>
+          <td>${o.promoCode ? `<span class="code">${o.promoCode}</span>` : '—'}</td>
+          <td>${o.paymentMethod}</td>
+          <td class="num">$${FMT_USD(o.total)}</td>
+          <td class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td></tr>
+    `).join('');
+  } else {
+    ordBody.innerHTML = '<tr><td colspan="7" class="empty">No orders yet this month.</td></tr>';
+  }
+}
+
+async function toggleAff(id, newStatus) {
+  await fetch('/api/admin/stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+    body: JSON.stringify({ affiliateId: id, status: newStatus }),
+  });
+  loadStats();
+}
+
+// Auto-load if password is stored.
+if (password) loadStats();
+</script>
+</body>
+</html>

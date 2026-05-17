@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Affiliate Program — Stratus Biolabs</title>
+<meta name="description" content="Earn 15% on every order. Join the Stratus Biolabs affiliate program — research-grade peptides, paid monthly."/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #0A0A0C; --cream-2: #14161B; --ink: #F0EBE0; --ink-2: #1A1D24;
+  --muted: #B5B1A8; --hairline: rgba(240,235,224,0.12);
+  --crimson: #A82138; --crimson-h: #C42B45; --crimson-text: #C5314A;
+  --green: #4a9a6a; --red: #e05a5a;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', system-ui, sans-serif; font-weight: 400; font-size: 16px; background: var(--cream); color: var(--ink); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+
+nav { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 3rem; background: rgba(10,10,12,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--hairline); }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink); }
+.logo em { font-style: italic; color: var(--crimson-text); font-weight: 400; }
+.nav-links { list-style: none; display: flex; gap: 2.25rem; }
+.nav-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); opacity: 0.78; transition: opacity 0.2s, color 0.2s; }
+.nav-links a:hover { opacity: 1; color: var(--crimson-text); }
+.nav-cta { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; background: var(--ink); color: var(--cream); padding: 0.75rem 1.5rem; transition: background 0.2s, transform 0.15s; }
+.nav-cta:hover { background: var(--crimson); color: var(--ink); transform: translateY(-1px); }
+
+.hero { padding: 7rem 3rem 4rem; max-width: 1100px; margin: 0 auto; }
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--crimson-text); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+.eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--crimson-text); }
+h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 300; line-height: 1.04; letter-spacing: -0.01em; margin-bottom: 1.5rem; max-width: 800px; }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 620px; line-height: 1.75; margin-bottom: 2rem; }
+.lede strong { color: var(--ink); font-weight: 500; }
+
+.terms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 1100px; margin: 0 auto 4rem; padding: 0 3rem; }
+.term-card { background: var(--cream-2); border: 1px solid var(--hairline); padding: 2rem; position: relative; }
+.term-card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 28px; height: 1px; background: var(--crimson); }
+.term-card::after { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 28px; background: var(--crimson); }
+.term-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.term-value { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 400; line-height: 1.05; color: var(--ink); margin-bottom: 0.5rem; }
+.term-value .small { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--crimson-text); margin-left: 0.3rem; }
+.term-desc { font-size: 0.92rem; color: var(--muted); line-height: 1.65; }
+
+.section { padding: 4rem 3rem; max-width: 1100px; margin: 0 auto; }
+.section-head { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 300; line-height: 1.1; margin-bottom: 2rem; max-width: 700px; }
+.how-list { display: grid; gap: 1.5rem; }
+.how-step { display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; align-items: start; padding-bottom: 1.5rem; border-bottom: 1px solid var(--hairline); }
+.how-step:last-child { border-bottom: none; padding-bottom: 0; }
+.how-num { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.2em; color: var(--crimson-text); padding-top: 0.5rem; }
+.how-step h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; margin-bottom: 0.4rem; }
+.how-step p { color: var(--muted); line-height: 1.7; font-size: 0.96rem; }
+
+/* Form */
+.form-section { background: var(--ink-2); padding: 5rem 3rem; }
+.form-inner { max-width: 720px; margin: 0 auto; }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2.5rem; }
+.form .full { grid-column: 1 / -1; }
+.form label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.5rem; }
+.form input, .form textarea, .form select { width: 100%; background: var(--cream); border: 1px solid var(--hairline); padding: 0.85rem 1rem; font-family: 'Inter', sans-serif; font-size: 0.96rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+.form input::placeholder, .form textarea::placeholder { color: rgba(240,235,224,0.35); }
+.form input:focus, .form textarea:focus, .form select:focus { border-color: var(--crimson-text); }
+.form textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.form select { cursor: pointer; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B5B1A8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+.terms-check { display: flex; gap: 0.75rem; align-items: flex-start; margin-top: 1.5rem; }
+.terms-check input { width: 16px; height: 16px; margin-top: 0.25rem; accent-color: var(--crimson); cursor: pointer; }
+.terms-check label { font-family: 'Inter', sans-serif; font-size: 0.88rem; text-transform: none; letter-spacing: 0; color: var(--muted); line-height: 1.6; cursor: pointer; }
+.terms-check label a { color: var(--crimson-text); }
+.btn-submit { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; padding: 1.15rem 2.4rem; background: var(--ink); color: var(--cream); border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-top: 1.5rem; }
+.btn-submit:hover { background: var(--crimson); color: var(--ink); transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.form-msg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; padding: 1rem; margin-top: 1.5rem; display: none; }
+.form-msg.show { display: block; }
+.form-msg.success { background: rgba(74,154,106,0.1); border: 1px solid rgba(74,154,106,0.4); color: var(--green); }
+.form-msg.error { background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.4); color: var(--red); }
+
+footer { border-top: 1px solid var(--hairline); padding: 2.5rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+.footer-links { display: flex; gap: 1.8rem; list-style: none; }
+.footer-links a:hover { color: var(--crimson-text); }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); }
+.footer-logo em { font-style: italic; color: var(--crimson-text); }
+
+@media (max-width: 800px) {
+  nav { padding: 1rem 1.2rem; }
+  .nav-links, .nav-cta { display: none; }
+  .hero { padding: 3rem 1.2rem; }
+  .terms-grid { grid-template-columns: 1fr; padding: 0 1.2rem; gap: 0.75rem; }
+  .section, .form-section { padding: 3rem 1.2rem; }
+  .form { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 1rem; align-items: flex-start; padding: 1.5rem 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <em>Bio</em>labs</a>
+  <ul class="nav-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a href="catalog.html" class="nav-cta">View Catalog</a>
+</nav>
+
+<section class="hero">
+  <p class="eyebrow">Affiliate Program</p>
+  <h1>Get paid to share peptides that actually work.</h1>
+  <p class="lede"><strong>15% commission</strong> on every order from your audience. Your customers get <strong>10% off</strong> with your code. No quotas, no exclusivity, no quarterly reviews. Paid monthly.</p>
+</section>
+
+<div class="terms-grid">
+  <div class="term-card">
+    <div class="term-label">// Your Commission</div>
+    <div class="term-value">15<span class="small">%</span></div>
+    <p class="term-desc">Of every order subtotal placed using your code. Paid monthly via PayPal, Venmo, or crypto.</p>
+  </div>
+  <div class="term-card">
+    <div class="term-label">// Customer Discount</div>
+    <div class="term-value">10<span class="small">%</span></div>
+    <p class="term-desc">Your code is automatically a 10% discount for your audience. Easier conversion than promo-less links.</p>
+  </div>
+  <div class="term-card">
+    <div class="term-label">// Approval Time</div>
+    <div class="term-value">&lt; 24<span class="small">h</span></div>
+    <p class="term-desc">Apply once. Get your code within a business day. Use it forever — no annual renewals.</p>
+  </div>
+</div>
+
+<section class="section">
+  <h2 class="section-head">How it works.</h2>
+  <div class="how-list">
+    <div class="how-step"><div class="how-num">01</div><div><h4>Apply below</h4><p>Tell us about your audience (Instagram, YouTube, podcast, research community, gym). Approval typically within 24 hours.</p></div></div>
+    <div class="how-step"><div class="how-num">02</div><div><h4>Receive your unique code</h4><p>We email you a personalized discount code (e.g., your name or handle). Share it with your audience however you want.</p></div></div>
+    <div class="how-step"><div class="how-num">03</div><div><h4>Customers redeem at checkout</h4><p>They enter your code at stratusbiolabs.com → 10% off their order. We track every sale automatically.</p></div></div>
+    <div class="how-step"><div class="how-num">04</div><div><h4>Get paid monthly</h4><p>First of every month, we tally orders from your code and pay you 15% of the subtotal. No minimum threshold.</p></div></div>
+  </div>
+</section>
+
+<section class="form-section">
+  <div class="form-inner">
+    <p class="eyebrow">Application</p>
+    <h2 class="section-head" style="margin-bottom: 0;">Join the program.</h2>
+    <form class="form" id="affiliate-form" novalidate>
+      <div>
+        <label for="firstName">First Name *</label>
+        <input id="firstName" name="firstName" type="text" required maxlength="50" autocomplete="given-name"/>
+      </div>
+      <div>
+        <label for="lastName">Last Name *</label>
+        <input id="lastName" name="lastName" type="text" required maxlength="50" autocomplete="family-name"/>
+      </div>
+      <div class="full">
+        <label for="email">Email Address *</label>
+        <input id="email" name="email" type="email" required maxlength="120" autocomplete="email"/>
+      </div>
+      <div class="full">
+        <label for="handle">Primary Platform / Handle *</label>
+        <input id="handle" name="handle" type="text" placeholder="@yourhandle or url" required maxlength="120"/>
+      </div>
+      <div>
+        <label for="platform">Audience Platform *</label>
+        <select id="platform" name="platform" required>
+          <option value="">Select...</option>
+          <option>Instagram</option><option>YouTube</option><option>TikTok</option>
+          <option>X / Twitter</option><option>Podcast</option><option>Newsletter / Blog</option>
+          <option>Research community</option><option>Gym / Wellness</option><option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="audienceSize">Approx. Audience Size *</label>
+        <select id="audienceSize" name="audienceSize" required>
+          <option value="">Select...</option>
+          <option>Under 1,000</option><option>1,000–10,000</option><option>10,000–50,000</option>
+          <option>50,000–100,000</option><option>100,000–500,000</option><option>500,000+</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="notes">Tell us about your audience (optional)</label>
+        <textarea id="notes" name="notes" placeholder="Who they are, what they're interested in, why they'd care about research peptides..." maxlength="600"></textarea>
+      </div>
+      <div class="terms-check full">
+        <input id="tos" type="checkbox" required/>
+        <label for="tos">I agree to follow FTC disclosure requirements on every promotional post, not to make medical or dosing claims about Stratus products, and to acknowledge that products are sold For Research Use Only. Stratus may terminate the affiliate relationship at any time for non-compliance.</label>
+      </div>
+      <div class="full">
+        <button type="submit" class="btn-submit" id="submit-btn">Apply →</button>
+        <div class="form-msg" id="form-msg"></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <em>Bio</em>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span>© 2026 — Research Use Only</span>
+</footer>
+
+<script>
+const form = document.getElementById('affiliate-form');
+const msg = document.getElementById('form-msg');
+const btn = document.getElementById('submit-btn');
+
+function showMsg(text, type) { msg.textContent = text; msg.className = 'form-msg show ' + type; }
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  const data = Object.fromEntries(new FormData(form));
+  try {
+    const res = await fetch('/api/affiliate-signup', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const j = await res.json();
+    if (j.ok) {
+      showMsg('✓ Application received. We\'ll email you within 24 hours with your unique code.', 'success');
+      form.reset();
+    } else {
+      showMsg(j.error || 'Submission failed. Please try again.', 'error');
+      btn.disabled = false; btn.textContent = 'Apply →';
+    }
+  } catch {
+    showMsg('Could not reach server. Try again in a moment.', 'error');
+    btn.disabled = false; btn.textContent = 'Apply →';
+  }
+});
+</script>
+</body>
+</html>

@@ -5,8 +5,8 @@
 // Response:  { ok, lineItems, subtotal, shipping, discount, total, promoApplied }
 //        or  { ok: false, error }
 //
-// This is the source of truth for product prices and promo codes.
-// The browser is treated as untrusted — items come in as SKU+size, prices come from here.
+// Promo lookup: tries Cloudflare KV first (for affiliate codes added via signup),
+// then falls back to the global hardcoded promo table.
 
 // ── Single source of truth for what we sell + at what price ─────────────────
 // Must match catalog.html. When adding/changing SKUs, update both places.
@@ -32,8 +32,8 @@ const SKU_TABLE = {
   "SB-19": { name: "Bacteriostatic Water", sizes: { "3mL": 6,     "10mL": 12 } },
 };
 
-// ── Promo codes (server-side only; never exposed to the browser) ─────────────
-const PROMOS = {
+// ── Global / non-affiliate promos (never exposed to the browser) ────────────
+const GLOBAL_PROMOS = {
   "INTERNETMONEYBITCH": { type: "percent", value: 20, label: "20% OFF" },
 };
 
@@ -43,29 +43,33 @@ const MAX_QTY_PER_ITEM = 99;
 const MAX_LINE_ITEMS = 50;
 
 function round2(n) { return Math.round(n * 100) / 100; }
-
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 }
 
-export async function onRequestPost({ request }) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
+async function lookupPromo(code, env) {
+  // 1) KV-backed affiliate codes (preferred — new codes need no redeploy)
+  if (env && env.STRATUS_DATA) {
+    const raw = await env.STRATUS_DATA.get(`promo:${code}`);
+    if (raw) {
+      try {
+        const p = JSON.parse(raw);
+        if (p && p.status !== "disabled") return p;
+      } catch { /* ignore parse errors, fall through */ }
+    }
   }
+  // 2) Global hardcoded promos
+  return GLOBAL_PROMOS[code] || null;
+}
+
+export async function onRequestPost({ request, env }) {
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
 
   const items = Array.isArray(body?.items) ? body.items : null;
-  if (!items || items.length === 0) {
-    return json({ ok: false, error: "Cart is empty" }, 400);
-  }
-  if (items.length > MAX_LINE_ITEMS) {
-    return json({ ok: false, error: "Too many line items" }, 400);
-  }
+  if (!items || items.length === 0) return json({ ok: false, error: "Cart is empty" }, 400);
+  if (items.length > MAX_LINE_ITEMS)  return json({ ok: false, error: "Too many line items" }, 400);
 
   const lineItems = [];
   let subtotal = 0;
@@ -76,13 +80,9 @@ export async function onRequestPost({ request }) {
     const qty = Math.max(1, Math.min(MAX_QTY_PER_ITEM, parseInt(raw?.qty) || 1));
 
     const product = SKU_TABLE[sku];
-    if (!product) {
-      return json({ ok: false, error: `Unknown product: ${sku}` }, 400);
-    }
+    if (!product) return json({ ok: false, error: `Unknown product: ${sku}` }, 400);
     const unitPrice = product.sizes[sizeKey];
-    if (unitPrice == null) {
-      return json({ ok: false, error: `Unknown size '${sizeKey}' for ${sku}` }, 400);
-    }
+    if (unitPrice == null) return json({ ok: false, error: `Unknown size '${sizeKey}' for ${sku}` }, 400);
     const lineTotal = round2(unitPrice * qty);
     subtotal += lineTotal;
     lineItems.push({ sku, sizeKey, name: product.name, qty, unitPrice, lineTotal });
@@ -96,16 +96,18 @@ export async function onRequestPost({ request }) {
   const rawPromo = body?.promoCode;
   if (rawPromo) {
     const code = String(rawPromo).toUpperCase().replace(/[^A-Z0-9]/g, "");
-    const promo = PROMOS[code];
-    if (!promo) {
-      return json({ ok: false, error: "Invalid promo code" }, 400);
-    }
+    const promo = await lookupPromo(code, env);
+    if (!promo) return json({ ok: false, error: "Invalid promo code" }, 400);
+
     if (promo.type === "percent") {
       discount = round2(((subtotal + shipping) * promo.value) / 100);
     } else if (promo.type === "shipping") {
       discount = shipping;
     }
-    promoApplied = { code, label: promo.label, discountPct: promo.value };
+    promoApplied = {
+      code, label: promo.label, discountPct: promo.value,
+      affiliateId: promo.affiliateId || null,
+    };
   }
 
   const total = round2(Math.max(0, subtotal + shipping - discount));
