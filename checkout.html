@@ -986,7 +986,24 @@ async function submitFreeOrder(email, orderId) {
 
 // ═══════════════════════════════════════════
 // ORDER LOGGING (server-side, idempotent on orderId)
+// Captures the full shipping address so the Rapid dispatcher has everything it needs.
 // ═══════════════════════════════════════════
+function readShippingAddress() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  return {
+    firstName:   v('fname'),
+    lastName:    v('lname'),
+    address:     v('address'),
+    address2:    v('address2'),
+    city:        v('city'),
+    state:       v('state'),
+    zip:         v('zip'),
+    country:     v('country'),
+    phone:       v('phone'),
+    institution: v('institution'),
+    notes:       v('notes'),
+  };
+}
 async function logOrderToServer(orderId, email, totalAmount, shipping, discount, subtotal, paymentMethod) {
   try {
     await fetch('/api/log-order', {
@@ -999,6 +1016,7 @@ async function logOrderToServer(orderId, email, totalAmount, shipping, discount,
         promoCode: appliedPromo?.code || null,
         customerEmail: email,
         paymentMethod,
+        shippingAddress: readShippingAddress(),
       }),
     });
   } catch (e) { /* best-effort, don't block checkout */ }
@@ -1027,6 +1045,7 @@ async function submitOrder() {
   if (totalAmount === 0) {
     await submitFreeOrder(email, orderId);
     await logOrderToServer(orderId, email, 0, shipping, discount, getCartTotal(), 'free');
+    dispatchToRapid(orderId);  // fire-and-forget; admin can retry on failure
     localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: 0, items: cart, promo: appliedPromo?.code }));
     cart = []; saveCart(); updateCartCount();
     document.getElementById('order-section').style.display = 'none';
@@ -1083,11 +1102,25 @@ updateCartCount();
 renderOrderSummary();
 updatePaymentUI();
 
+// Fire the Rapid Fulfillment dispatch. Best-effort, server-side handles retries
+// and the admin dashboard surfaces any failures. We don't block the success UI
+// on this — customer should see their confirmation immediately.
+function dispatchToRapid(orderId) {
+  try {
+    fetch('/api/place-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId }),
+    }).catch(() => { /* admin will see failure status in /admin */ });
+  } catch (e) { /* swallow */ }
+}
+
 // Handle return after successful payment
 if (window.location.search.includes('success=true')) {
   const pending = JSON.parse(localStorage.getItem('sb-pending-order') || '{}');
   if (pending.orderId) {
     document.getElementById('success-order-id').textContent = 'ORDER #' + pending.orderId;
+    dispatchToRapid(pending.orderId);
     cart = []; saveCart(); updateCartCount();
     localStorage.removeItem('sb-pending-order');
   }

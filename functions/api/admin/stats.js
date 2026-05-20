@@ -99,6 +99,9 @@ export async function onRequestGet({ request, env }) {
       affiliateId: o.affiliateId, commissionOwed: o.commissionOwed,
       paymentMethod: o.paymentMethod, createdAt: o.createdAt,
       customerEmail: o.customerEmail,
+      rapidStatus: o.rapidStatus || "pending",
+      rapidError: o.rapidError || null,
+      rapidDispatchedAt: o.rapidDispatchedAt || null,
     })),
   });
 }

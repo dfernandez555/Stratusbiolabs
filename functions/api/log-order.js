@@ -1,12 +1,13 @@
 // Cloudflare Pages Function — log a completed order.
 //
 // POST /api/log-order
-// Body: { orderId, items, subtotal, shipping, discount, total, promoCode?, customerEmail, paymentMethod }
+// Body: { orderId, items, subtotal, shipping, discount, total, promoCode?,
+//         customerEmail, paymentMethod,
+//         shipping: { firstName, lastName, address, address2, city, state, zip, country, phone? } }
 //
 // Writes the order to KV so the admin dashboard can aggregate revenue,
-// affiliate commissions owed, etc.
-//
-// Re-validates the cart server-side before logging so a client can't lie about totals.
+// affiliate commissions owed, and so /api/place-order has the full data
+// needed to dispatch to Rapid Fulfillment.
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -55,18 +56,40 @@ export async function onRequestPost({ request, env }) {
   }
 
   const subtotal = Number(body?.subtotal) || 0;
-  const shipping = Number(body?.shipping) || 0;
+  const shippingCost = Number(body?.shipping) || 0;
   const discount = Number(body?.discount) || 0;
   const total    = Number(body?.total)    || 0;
   const commissionOwed = affiliateId ? Math.round(subtotal * commissionPct) / 100 : 0;
 
+  // Capture full shipping address — needed by /api/place-order to dispatch
+  // to Rapid. Defensive: missing pieces fall through; dispatcher will reject.
+  const shipObj = body?.shippingAddress || {};
+  const shippingAddress = {
+    firstName: clean(shipObj.firstName, 50),
+    lastName:  clean(shipObj.lastName, 50),
+    address:   clean(shipObj.address, 100),
+    address2:  clean(shipObj.address2, 50),
+    city:      clean(shipObj.city, 50),
+    state:     clean(shipObj.state, 40),
+    zip:       clean(shipObj.zip, 20),
+    country:   clean(shipObj.country, 60),
+    phone:     clean(shipObj.phone, 30),
+    institution: clean(shipObj.institution, 100),
+    notes:     clean(shipObj.notes, 400),
+  };
+
   const now = new Date().toISOString();
   const record = {
-    orderId, customerEmail, items, subtotal, shipping, discount, total,
+    orderId, customerEmail, items,
+    subtotal, shipping: shippingCost, discount, total,
     promoCode: promoCode || null,
     affiliateId, commissionPct, commissionOwed,
     paymentMethod: paymentMethod || "unknown",
+    shippingAddress,
     status: "logged",
+    rapidStatus: "pending",  // pending | dispatched | failed | cancelled
+    rapidDispatchedAt: null,
+    rapidError: null,
     createdAt: now,
   };
 

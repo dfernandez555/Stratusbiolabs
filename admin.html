@@ -111,8 +111,8 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 
   <h2>Recent orders</h2>
   <table id="orders-table">
-    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th></tr></thead>
-    <tbody id="orders-body"><tr><td colspan="7" class="empty">No orders yet this month.</td></tr></tbody>
+    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th><th>Rapid</th><th></th></tr></thead>
+    <tbody id="orders-body"><tr><td colspan="9" class="empty">No orders yet this month.</td></tr></tbody>
   </table>
 </div>
 
@@ -185,17 +185,51 @@ async function loadStats() {
 
   const ordBody = document.getElementById('orders-body');
   if (d.recentOrders.length) {
-    ordBody.innerHTML = d.recentOrders.map(o => `
+    ordBody.innerHTML = d.recentOrders.map(o => {
+      const rs = o.rapidStatus || 'pending';
+      const pillClass = rs === 'dispatched' ? 'active' : rs === 'failed' ? 'disabled' : '';
+      const retryBtn = (rs !== 'dispatched')
+        ? `<button class="toggle-btn" title="${o.rapidError ? o.rapidError.replace(/"/g, '&quot;') : 'Dispatch to Rapid'}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`
+        : '—';
+      return `
       <tr><td>${FMT_DATE(o.createdAt)}</td>
           <td><span class="code">${o.orderId}</span></td>
           <td>${o.customerEmail}</td>
           <td>${o.promoCode ? `<span class="code">${o.promoCode}</span>` : '—'}</td>
           <td>${o.paymentMethod}</td>
           <td class="num">$${FMT_USD(o.total)}</td>
-          <td class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td></tr>
-    `).join('');
+          <td class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td>
+          <td><span class="pill ${pillClass}">${rs}</span></td>
+          <td>${retryBtn}</td></tr>`;
+    }).join('');
   } else {
-    ordBody.innerHTML = '<tr><td colspan="7" class="empty">No orders yet this month.</td></tr>';
+    ordBody.innerHTML = '<tr><td colspan="9" class="empty">No orders yet this month.</td></tr>';
+  }
+}
+
+async function dispatchOrder(orderId) {
+  const btn = event.target;
+  const original = btn.textContent;
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/place-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, adminPassword: password }),
+    });
+    const d = await res.json();
+    if (d.ok) {
+      loadStats();
+    } else {
+      alert('Dispatch failed: ' + (d.error || 'unknown error'));
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  } catch (e) {
+    alert('Dispatch failed: ' + e.message);
+    btn.textContent = original;
+    btn.disabled = false;
   }
 }
 
