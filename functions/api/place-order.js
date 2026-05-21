@@ -141,14 +141,20 @@ function buildOrderXml(order, env) {
     <phone xsi:type="xsd:string">${escapeXml(addr.phone || "")}</phone>
     <email xsi:type="xsd:string">${escapeXml(order.customerEmail || "")}</email>`;
 
-  // <products> array
-  const productsXml = (order.items || []).map(it => `
+  // <products> array. Name field follows the Chaos & Control listing format
+  // mandated by the Master Agreement Exhibit A:  SBL-<SKU> -- <Product> -- <MG>
+  // (Their dash is " – " but a hyphen-space-hyphen works too; using "–" en-dash.)
+  const formatSize = (s) => String(s || "").replace(/mg$/i, " MG").replace(/ml$/i, " ML").trim();
+  const productsXml = (order.items || []).map(it => {
+    const fmtName = `${it.sku || ""} – ${it.name || ""} – ${formatSize(it.sizeKey)}`.slice(0, 60);
+    return `
         <item xsi:type="ns1:ordersProductsData">
           <product_id xsi:type="xsd:string">${escapeXml(it.sku || "")}</product_id>
-          <name xsi:type="xsd:string">${escapeXml((it.name + (it.sizeKey ? ` ${it.sizeKey}` : "")).slice(0, 60))}</name>
+          <name xsi:type="xsd:string">${escapeXml(fmtName)}</name>
           <qty xsi:type="xsd:int">${parseInt(it.qty) || 1}</qty>
           <unit_price xsi:type="xsd:string">${(Number(it.price) || 0).toFixed(2)}</unit_price>
-        </item>`).join("");
+        </item>`;
+  }).join("");
 
   // custom_data: store our original order ID + any notes
   const customDataXml = `

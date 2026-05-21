@@ -10,28 +10,21 @@
 
 // ── Single source of truth for what we sell + at what price ─────────────────
 // Must match catalog.html. When adding/changing SKUs, update both places.
-// Names are research codes only — no trademarked generic drug names
-// (Semaglutide / Tirzepatide / etc.). See catalog.html for matching display.
+// Per the Chaos & Control Master Agreement (Exhibit A, signed 2026-05-20),
+// only the 10 approved SKUs below may be sold. Listing format mandated by
+// the agreement: SBL-<sku> -- <product name> -- <mg strength>.
+// Each entry's single size key matches the product's only sold size.
 const SKU_TABLE = {
-  "SB-01": { name: "GLP1-S",               sizes: { "5mg": 45,    "10mg": 70 } },
-  "SB-02": { name: "GLP1-T",               sizes: { "10mg": 75,   "30mg": 170 } },
-  "SB-03": { name: "GLP3-R",               sizes: { "10mg": 100,  "30mg": 175 } },
-  "SB-04": { name: "AML-C",                sizes: { "5mg": 90 } },
-  "SB-05": { name: "AML-GLP",              sizes: { "5mg": 100 } },
-  "SB-06": { name: "MOTS-C",               sizes: { "10mg": 55 } },
-  "SB-07": { name: "BPC-157",              sizes: { "5mg": 45 } },
-  "SB-08": { name: "TB-500",               sizes: { "5mg": 70,    "10mg": 110 } },
-  "SB-09": { name: "BPC-157 + TB-500",     sizes: { "5/5mg": 90,  "10/10mg": 135 } },
-  "SB-10": { name: "IGF-1 LR3",            sizes: { "1mg": 70 } },
-  "SB-11": { name: "CJC-1295 (DAC)",       sizes: { "5mg": 95 } },
-  "SB-12": { name: "GHRH-T",               sizes: { "10mg": 110 } },
-  "SB-13": { name: "GHRP-I",               sizes: { "5mg": 45 } },
-  "SB-14": { name: "NAD+",                 sizes: { "500mg": 75 } },
-  "SB-15": { name: "GHK-Cu",               sizes: { "50mg": 65 } },
-  "SB-16": { name: "TA-1",                 sizes: { "10mg": 90 } },
-  "SB-17": { name: "MT-2",                 sizes: { "10mg": 50 } },
-  "SB-18": { name: "PT-141",               sizes: { "10mg": 55 } },
-  "SB-19": { name: "Bacteriostatic Water", sizes: { "3mL": 6,     "10mL": 12 } },
+  "SBL-RT10":  { name: "G3-R",                 sizes: { "10mg":  100 } },
+  "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 } },
+  "SBL-IG1":   { name: "IGF1-LR3",             sizes: { "1mg":    70 } },
+  "SBL-NJ500": { name: "NAD+",                 sizes: { "500mg":  75 } },
+  "SBL-CU50":  { name: "GHK-CU",               sizes: { "50mg":   65 } },
+  "SBL-BBG70": { name: "GLOW",                 sizes: { "70mg":  120 } },
+  "SBL-KBT80": { name: "KLOW",                 sizes: { "80mg":  140 } },
+  "SBL-XA30":  { name: "Semax",                sizes: { "30mg":   85 } },
+  "SBL-WA3":   { name: "Bacteriostatic Water", sizes: { "3mL":     8 } },
+  "SBL-WA10":  { name: "Bacteriostatic Water", sizes: { "10mL":   15 } },
 };
 
 // ── Global / non-affiliate promos (never exposed to the browser) ────────────

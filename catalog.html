@@ -282,152 +282,89 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
 <div class="catalog-header">
   <p class="eyebrow">Product Catalog</p>
   <h1 class="page-title">Research-grade<br><em>peptide library.</em></h1>
-  <p class="header-sub">19 compounds · 25 sizes · ≥99% purity · COA with every order · Free shipping over $150 · For research use only</p>
+  <p class="header-sub">10 compounds · ≥99% purity · COA with every order · Free shipping over $150 · For research use only</p>
 </div>
 
 <div class="filters">
   <div class="search-wrap">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" id="search" placeholder="Search by code, class, or mechanism (e.g. GLP, GHRH, copper)..." aria-label="Search catalog"/>
-    <span class="count-label"><span id="count-num">19</span> compounds</span>
+    <span class="count-label"><span id="count-num">10</span> compounds</span>
   </div>
 </div>
 
 <div class="catalog-main">
   <div class="products-grid" id="product-grid">
 
-    <!-- Research-use-only compounds. Code names only; no human-outcome language. -->
-    <div class="product-card" data-cat="glp1" data-name="GLP1-S GLP-1 receptor agonist incretin pathway analog">
-      <div class="prod-id">SB-01</div><div class="prod-name">GLP1-S</div>
-      <div class="prod-tags"><span class="tag">GLP-1 Class</span><span class="tag">Receptor Agonist</span></div>
-      <p class="prod-desc">GLP-1 receptor agonist analog. Investigated in incretin-pathway and receptor-pharmacology research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$45–$70<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="glp1" data-name="GLP1-T GLP-1 GIP dual co-agonist incretin">
-      <div class="prod-id">SB-02</div><div class="prod-name">GLP1-T</div>
-      <div class="prod-tags"><span class="tag">GLP-1 Class</span><span class="tag">Dual Co-Agonist</span></div>
-      <p class="prod-desc">Dual GIP / GLP-1 receptor co-agonist. Investigated in dual-incretin receptor research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$75–$170<span>10mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="glp1" data-name="GLP3-R GLP-1 GIP glucagon triple agonist multi-incretin">
-      <div class="prod-id">SB-03</div><div class="prod-name">GLP3-R</div>
-      <div class="prod-tags"><span class="tag">GLP-1 Class</span><span class="tag">Triple Agonist</span></div>
+    <!-- C&C-approved SKUs only (Exhibit A, 5/20/2026). Listing format: SBL-<SKU> -- <Product> -- <MG>. RUO. -->
+    <div class="product-card" data-cat="glp" data-name="SBL-RT10 G3-R triple agonist GIP GLP glucagon receptor incretin">
+      <div class="prod-id">SBL-RT10</div><div class="prod-name">G3-R</div>
+      <div class="prod-tags"><span class="tag">Triple Agonist</span><span class="tag">Receptor Pharmacology</span></div>
       <p class="prod-desc">Triple GIP / GLP-1 / glucagon receptor agonist. Investigated in multi-receptor incretin research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$100–$175<span>10mg–30mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+      <div class="prod-footer"><div class="prod-price">$100<span>SBL-RT10 · G3-R · 10 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="glp1" data-name="AML-C amylin receptor analog long-acting peptide">
-      <div class="prod-id">SB-04</div><div class="prod-name">AML-C</div>
-      <div class="prod-tags"><span class="tag">Amylin Class</span><span class="tag">Receptor Analog</span></div>
-      <p class="prod-desc">Long-acting amylin receptor analog. Investigated in amylin receptor pharmacology research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$90<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    <div class="product-card" data-cat="ghrh" data-name="SBL-TSM10 Tesamorelin stabilized GHRH analog pharmacokinetics">
+      <div class="prod-id">SBL-TSM10</div><div class="prod-name">Tesamorelin</div>
+      <div class="prod-tags"><span class="tag">GHRH Analog</span><span class="tag">Pharmacokinetics</span></div>
+      <p class="prod-desc">Stabilized GHRH analog. Investigated in GHRH receptor pharmacology and pharmacokinetics research. For research use only.</p>
+      <div class="prod-footer"><div class="prod-price">$110<span>SBL-TSM10 · Tesamorelin · 10 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="glp1" data-name="AML-GLP amylin GLP-1 dual class combination blend">
-      <div class="prod-id">SB-05</div><div class="prod-name">AML-GLP</div>
-      <div class="prod-tags"><span class="tag">Combo</span><span class="tag">Dual Class</span></div>
-      <p class="prod-desc">Amylin + GLP-1 dual-class combination blend. Investigated in combined receptor-pathway research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$100<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="glp1" data-name="MOTS-c mitochondrial peptide signaling research">
-      <div class="prod-id">SB-06</div><div class="prod-name">MOTS-C</div>
-      <div class="prod-tags"><span class="tag">Mitochondrial</span><span class="tag">Signaling Peptide</span></div>
-      <p class="prod-desc">Mitochondria-derived peptide. Investigated in mitochondrial signaling research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$55<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="BPC-157 pentadecapeptide gastric in-vitro tissue">
-      <div class="prod-id">SB-07</div><div class="prod-name">BPC-157</div>
-      <div class="prod-tags"><span class="tag">Pentadecapeptide</span><span class="tag">In Vitro Research</span></div>
-      <p class="prod-desc">15-residue gastric pentadecapeptide. Investigated in receptor-pathway and in vitro tissue research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$45<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="TB-500 thymosin beta-4 fragment actin cellular migration">
-      <div class="prod-id">SB-08</div><div class="prod-name">TB-500</div>
-      <div class="prod-tags"><span class="tag">Thymosin β-4</span><span class="tag">Actin Binding</span></div>
-      <p class="prod-desc">Synthetic Thymosin Beta-4 fragment. Investigated in actin-binding and cellular migration research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$70–$110<span>5mg–10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="BPC-157 TB-500 blend comparative in-vitro pathway">
-      <div class="prod-id">SB-09</div><div class="prod-name">BPC-157 + TB-500</div>
-      <div class="prod-tags"><span class="tag">Combo</span><span class="tag">In Vitro Research</span></div>
-      <p class="prod-desc">Combination of BPC-157 and TB-500. Investigated in comparative in vitro receptor and pathway research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$90–$135<span>5/5mg–10/10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="IGF-1 LR3 receptor pharmacology proliferation in-vitro">
-      <div class="prod-id">SB-10</div><div class="prod-name">IGF-1 LR3</div>
+    <div class="product-card" data-cat="growth" data-name="SBL-IG1 IGF1-LR3 long R3 insulin growth factor analog proliferation">
+      <div class="prod-id">SBL-IG1</div><div class="prod-name">IGF1-LR3</div>
       <div class="prod-tags"><span class="tag">Growth Factor</span><span class="tag">Receptor Pharmacology</span></div>
       <p class="prod-desc">Long R3 IGF-1 analog. Investigated in IGF receptor pharmacology and in vitro proliferation research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$70<span>1mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+      <div class="prod-footer"><div class="prod-price">$70<span>SBL-IG1 · IGF1-LR3 · 1 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="recovery" data-name="CJC-1295 DAC GHRH analog drug-affinity-complex pharmacokinetics">
-      <div class="prod-id">SB-11</div><div class="prod-name">CJC-1295 (DAC)</div>
-      <div class="prod-tags"><span class="tag">GHRH Analog</span><span class="tag">Pharmacokinetics</span></div>
-      <p class="prod-desc">Long-acting GHRH analog with drug-affinity complex. Investigated in growth-hormone-axis pharmacokinetics research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$95<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="GHRH-T stabilized GHRH analog receptor pharmacology">
-      <div class="prod-id">SB-12</div><div class="prod-name">GHRH-T</div>
-      <div class="prod-tags"><span class="tag">GHRH Analog</span><span class="tag">Receptor Pharmacology</span></div>
-      <p class="prod-desc">Stabilized GHRH analog. Investigated in GHRH receptor pharmacology and pharmacokinetics research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$110<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="recovery" data-name="GHRP-I pentapeptide ghrelin receptor secretagogue selective">
-      <div class="prod-id">SB-13</div><div class="prod-name">GHRP-I</div>
-      <div class="prod-tags"><span class="tag">GHRP</span><span class="tag">Ghrelin Receptor</span></div>
-      <p class="prod-desc">Selective pentapeptide GH secretagogue. Investigated in ghrelin receptor pharmacology research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$45<span>5mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
-    </div>
-
-    <div class="product-card" data-cat="antiaging" data-name="NAD+ nicotinamide adenine dinucleotide bioenergetics pathway">
-      <div class="prod-id">SB-14</div><div class="prod-name">NAD+</div>
+    <div class="product-card" data-cat="metabolic" data-name="SBL-NJ500 NAD nicotinamide adenine dinucleotide cofactor bioenergetics">
+      <div class="prod-id">SBL-NJ500</div><div class="prod-name">NAD+</div>
       <div class="prod-tags"><span class="tag">Cofactor</span><span class="tag">Bioenergetics</span></div>
       <p class="prod-desc">Nicotinamide adenine dinucleotide. Investigated in cellular bioenergetics and NAD-pathway research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$75<span>500mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+      <div class="prod-footer"><div class="prod-price">$75<span>SBL-NJ500 · NAD+ · 500 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="antiaging" data-name="GHK-Cu copper tripeptide signaling collagen biology">
-      <div class="prod-id">SB-15</div><div class="prod-name">GHK-Cu</div>
+    <div class="product-card" data-cat="tripeptide" data-name="SBL-CU50 GHK-CU copper tripeptide signaling collagen biology">
+      <div class="prod-id">SBL-CU50</div><div class="prod-name">GHK-CU</div>
       <div class="prod-tags"><span class="tag">Tripeptide</span><span class="tag">Copper Complex</span></div>
       <p class="prod-desc">Copper-binding tripeptide. Investigated in copper-tripeptide signaling and collagen biology research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$65<span>50mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+      <div class="prod-footer"><div class="prod-price">$65<span>SBL-CU50 · GHK-CU · 50 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="immune" data-name="TA-1 thymic alpha-1 peptide T-cell immune signaling">
-      <div class="prod-id">SB-16</div><div class="prod-name">TA-1</div>
-      <div class="prod-tags"><span class="tag">Thymic Peptide</span><span class="tag">Immunological</span></div>
-      <p class="prod-desc">Thymic alpha-1 peptide. Investigated in T-cell modulation and immune signaling research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$90<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    <div class="product-card" data-cat="blend" data-name="SBL-BBG70 GLOW proprietary peptide blend research">
+      <div class="prod-id">SBL-BBG70</div><div class="prod-name">GLOW</div>
+      <div class="prod-tags"><span class="tag">Proprietary Blend</span><span class="tag">Characterization Research</span></div>
+      <p class="prod-desc">Proprietary multi-peptide research blend. Supplied for synthesis and characterization research. For research use only.</p>
+      <div class="prod-footer"><div class="prod-price">$120<span>SBL-BBG70 · GLOW · 70 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="sexual" data-name="MT-2 melanotan melanocortin receptor agonist pathway">
-      <div class="prod-id">SB-17</div><div class="prod-name">MT-2</div>
-      <div class="prod-tags"><span class="tag">Melanocortin</span><span class="tag">Receptor Agonist</span></div>
-      <p class="prod-desc">Melanocortin receptor agonist. Investigated in melanocortin-pathway research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$50<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    <div class="product-card" data-cat="blend" data-name="SBL-KBT80 KLOW proprietary peptide blend research">
+      <div class="prod-id">SBL-KBT80</div><div class="prod-name">KLOW</div>
+      <div class="prod-tags"><span class="tag">Proprietary Blend</span><span class="tag">Characterization Research</span></div>
+      <p class="prod-desc">Proprietary multi-peptide research blend. Supplied for synthesis and characterization research. For research use only.</p>
+      <div class="prod-footer"><div class="prod-price">$140<span>SBL-KBT80 · KLOW · 80 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="sexual" data-name="PT-141 MC4R melanocortin receptor 4 agonist pharmacology">
-      <div class="prod-id">SB-18</div><div class="prod-name">PT-141</div>
-      <div class="prod-tags"><span class="tag">MC4R Agonist</span><span class="tag">Melanocortin</span></div>
-      <p class="prod-desc">Melanocortin-4 receptor (MC4R) agonist. Investigated in MC4R receptor pharmacology research. For research use only.</p>
-      <div class="prod-footer"><div class="prod-price">$55<span>10mg · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    <div class="product-card" data-cat="nootropic" data-name="SBL-XA30 Semax ACTH 4-7 BDNF synthetic peptide neuro research">
+      <div class="prod-id">SBL-XA30</div><div class="prod-name">Semax</div>
+      <div class="prod-tags"><span class="tag">ACTH Analog</span><span class="tag">BDNF Pathway</span></div>
+      <p class="prod-desc">Synthetic peptide derived from ACTH(4-10). Investigated in BDNF-pathway research. For research use only.</p>
+      <div class="prod-footer"><div class="prod-price">$85<span>SBL-XA30 · Semax · 30 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="supplies" data-name="BAC water bacteriostatic reconstitution benzyl alcohol laboratory">
-      <div class="prod-id">SB-19</div><div class="prod-name">Bacteriostatic Water</div>
+    <div class="product-card" data-cat="supplies" data-name="SBL-WA3 bacteriostatic water BAC reconstitution benzyl alcohol supply">
+      <div class="prod-id">SBL-WA3</div><div class="prod-name">Bacteriostatic Water</div>
       <div class="prod-tags"><span class="tag">Reconstitution</span><span class="tag">Laboratory Supply</span></div>
       <p class="prod-desc">Sterile water with 0.9% benzyl alcohol. For laboratory reconstitution of lyophilized compounds.</p>
-      <div class="prod-footer"><div class="prod-price">$6–$12<span>3mL–10mL</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+      <div class="prod-footer"><div class="prod-price">$8<span>SBL-WA3 · Bacteriostatic Water · 3 ML</span></div><a href="contact.html" class="order-btn">Order →</a></div>
+    </div>
+
+    <div class="product-card" data-cat="supplies" data-name="SBL-WA10 bacteriostatic water BAC reconstitution benzyl alcohol supply">
+      <div class="prod-id">SBL-WA10</div><div class="prod-name">Bacteriostatic Water</div>
+      <div class="prod-tags"><span class="tag">Reconstitution</span><span class="tag">Laboratory Supply</span></div>
+      <p class="prod-desc">Sterile water with 0.9% benzyl alcohol. For laboratory reconstitution of lyophilized compounds.</p>
+      <div class="prod-footer"><div class="prod-price">$15<span>SBL-WA10 · Bacteriostatic Water · 10 ML</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
     <div class="custom-card">
