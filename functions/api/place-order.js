@@ -63,14 +63,16 @@ function soapEnvelope(method, paramsXml) {
 }
 
 async function soapCall(env, method, paramsXml) {
-  const host = env.RAPID_API_HOST || "stratusbiolabs.test.rapidfulfillmentcrm.com";
-  const url = `https://${host}/api/soap/`;
+  const host = env.RAPID_API_HOST || "stratusbiolabs.rapidfulfillmentcrm.com";
+  // Endpoint is /api/soap/?action (the WSDL declares this as the service location).
+  // SOAPAction is the same handler tag for every method.
+  const url = `https://${host}/api/soap/?action`;
   const body = soapEnvelope(method, paramsXml);
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "text/xml; charset=utf-8",
-      "SOAPAction": `urn:WFService#${method}`,
+      "SOAPAction": "urn:WF_Api_Soap_HandlerAction",
     },
     body,
   });
