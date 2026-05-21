@@ -16,21 +16,21 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --cream:    #0A0A0C;
-  --cream-2:  #14161B;
-  --ink:      #F0EBE0;
-  --ink-2:    #1A1D24;
-  --muted:    #B5B1A8;
-  --hairline: rgba(240,235,224,0.12);
-  --crimson:  #A82138;
-  --crimson-h:#C42B45;
-  --crimson-text: #C5314A;
+  --cream:    #EFEAE0;
+  --cream-2:  #E2DCCE;
+  --ink:      #1F1B16;
+  --ink-2:    #D5CDBC;
+  --muted:    #7A746C;
+  --hairline: rgba(31,27,22,0.12);
+  --crimson:  #1F1B16;
+  --crimson-h:#3D352C;
+  --crimson-text: #7A746C;
 }
 
 html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -49,11 +49,11 @@ nav {
   position: sticky; top: 0; z-index: 50;
   display: flex; justify-content: space-between; align-items: center;
   padding: 1.25rem 3rem;
-  background: rgba(10,10,12,0.85); backdrop-filter: blur(12px);
+  background: rgba(239,234,224,0.85); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--hairline);
 }
-.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink); }
-.logo em { font-style: italic; color: var(--crimson-text); font-weight: 400; }
+.logo { font-family: 'Inter', sans-serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink); }
+.logo em { font-style: normal; color: inherit; }
 .nav-links { list-style: none; display: flex; gap: 2.25rem; }
 .nav-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); opacity: 0.78; transition: opacity 0.2s, color 0.2s; }
 .nav-links a:hover { opacity: 1; color: var(--crimson-text); }
@@ -80,7 +80,7 @@ nav {
 }
 .eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--crimson-text); }
 .hero-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(3rem, 6.5vw, 6rem);
   font-weight: 300; line-height: 1.02; letter-spacing: -0.01em;
   margin-bottom: 2rem;
@@ -114,14 +114,14 @@ nav {
 .stats { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); display: grid; grid-template-columns: repeat(4, 1fr); max-width: 1400px; margin: 0 auto; }
 .stat { padding: 2.5rem 3rem; border-right: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 0.6rem; }
 .stat:last-child { border-right: none; }
-.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 3.4rem; font-weight: 300; line-height: 1; color: var(--ink); }
+.stat-num { font-family: 'Inter', sans-serif; font-size: 3.4rem; font-weight: 300; line-height: 1; color: var(--ink); }
 .stat-num sup { font-size: 1rem; color: var(--crimson-text); font-family: 'JetBrains Mono', monospace; }
 .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
 
 /* ── SECTIONS ── */
 .section { padding: 7rem 3rem; max-width: 1400px; margin: 0 auto; }
 .section-head { margin-bottom: 4rem; }
-.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1.5rem; max-width: 600px; }
+.section-title { font-family: 'Inter', sans-serif; font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1.5rem; max-width: 600px; }
 .section-body { font-size: 1.05rem; color: var(--muted); max-width: 560px; line-height: 1.7; }
 .section-body a { color: var(--crimson-text); }
 
@@ -129,28 +129,28 @@ nav {
 .products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 .prod { background: var(--cream); border: 1px solid var(--hairline); padding: 2rem; transition: border-color 0.2s, transform 0.2s; display: flex; flex-direction: column; text-decoration: none; color: var(--ink); }
 .prod:hover { border-color: var(--ink); transform: translateY(-2px); }
-.prod-imgwrap { aspect-ratio: 1 / 1; background: linear-gradient(135deg, #14161B 0%, #1F2228 100%); margin-bottom: 1.5rem; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.prod-imgwrap { aspect-ratio: 1 / 1; background: linear-gradient(135deg, #E2DCCE 0%, #1F2228 100%); margin-bottom: 1.5rem; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .vial { position: relative; width: 70px; }
 .vial-cap { width: 38px; height: 14px; margin: 0 auto; background: linear-gradient(180deg, #b8a78a, #8a7c64); border-radius: 4px 4px 0 0; }
 .vial-collar { width: 44px; height: 6px; margin: 0 auto; background: linear-gradient(180deg, #9a8b72, #6f624e); }
-.vial-body { width: 50px; height: 100px; margin: 0 auto; background: linear-gradient(180deg, rgba(240,235,224,0.18), rgba(240,235,224,0.06)); border: 1px solid rgba(240,235,224,0.18); border-radius: 0 0 6px 6px; position: relative; overflow: hidden; }
-.vial-label { position: absolute; left: 4px; right: 4px; top: 18px; height: 56px; background: #0E0F12; border: 1px solid rgba(240,235,224,0.15); padding: 6px; display: flex; flex-direction: column; justify-content: space-between; }
+.vial-body { width: 50px; height: 100px; margin: 0 auto; background: linear-gradient(180deg, rgba(31,27,22,0.18), rgba(31,27,22,0.06)); border: 1px solid rgba(31,27,22,0.18); border-radius: 0 0 6px 6px; position: relative; overflow: hidden; }
+.vial-label { position: absolute; left: 4px; right: 4px; top: 18px; height: 56px; background: #EFEAE0; border: 1px solid rgba(31,27,22,0.15); padding: 6px; display: flex; flex-direction: column; justify-content: space-between; }
 .v-brand { font-family: 'JetBrains Mono', monospace; font-size: 4px; letter-spacing: 0.15em; color: var(--crimson-text); text-transform: uppercase; }
-.v-name { font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 400; color: var(--ink); line-height: 1; }
+.v-name { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 400; color: var(--ink); line-height: 1; }
 .v-dose { font-family: 'JetBrains Mono', monospace; font-size: 5px; color: var(--muted); }
 
 .prod-sku { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; color: var(--muted); margin-bottom: 0.5rem; }
-.prod-name { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; line-height: 1.1; margin-bottom: 0.3rem; }
+.prod-name { font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 400; line-height: 1.1; margin-bottom: 0.3rem; }
 .prod-cat { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.12em; color: var(--crimson-text); text-transform: uppercase; margin-bottom: 1rem; }
 .prod-desc { font-size: 0.96rem; color: var(--muted); line-height: 1.7; flex: 1; margin-bottom: 1.5rem; }
 .prod-foot { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.2rem; border-top: 1px solid var(--hairline); }
-.prod-price { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; line-height: 1; color: var(--ink); }
+.prod-price { font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 400; line-height: 1; color: var(--ink); }
 .prod-price span { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); display: block; margin-top: 0.3rem; letter-spacing: 0.08em; }
 .prod-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; background: var(--ink); color: var(--cream); padding: 0.7rem 1.1rem; border: none; cursor: pointer; transition: background 0.2s; text-decoration: none; }
 .prod-btn:hover { background: var(--crimson); }
 
 .catalog-cta-card { background: var(--cream-2); border: 1px dashed var(--hairline); padding: 3rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-.catalog-cta-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; color: var(--ink); margin-bottom: 0.5rem; }
+.catalog-cta-card h3 { font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 400; color: var(--ink); margin-bottom: 0.5rem; }
 .catalog-cta-card p { font-size: 0.96rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.65; }
 .btn-primary { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; padding: 1rem 2rem; background: var(--ink); color: var(--cream); text-decoration: none; display: inline-block; transition: background 0.2s, transform 0.15s; }
 .btn-primary:hover { background: var(--crimson); color: var(--ink); transform: translateY(-1px); }
@@ -158,14 +158,14 @@ nav {
 /* ── PROCESS (dark elevation) ── */
 .process { background: var(--ink-2); padding: 7rem 3rem; }
 .process-inner { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-.process h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 300; line-height: 1.05; margin-bottom: 2rem; color: var(--ink); }
-.process p.intro { color: rgba(240,235,224,0.7); font-size: 1.05rem; line-height: 1.75; margin-bottom: 1.5rem; max-width: 480px; }
+.process h2 { font-family: 'Inter', sans-serif; font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 300; line-height: 1.05; margin-bottom: 2rem; color: var(--ink); }
+.process p.intro { color: rgba(31,27,22,0.7); font-size: 1.05rem; line-height: 1.75; margin-bottom: 1.5rem; max-width: 480px; }
 .steps { display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem; }
-.step { display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; align-items: start; padding-bottom: 2rem; border-bottom: 1px solid rgba(240,235,224,0.10); }
+.step { display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; align-items: start; padding-bottom: 2rem; border-bottom: 1px solid rgba(31,27,22,0.10); }
 .step:last-child { border-bottom: none; padding-bottom: 0; }
 .step-num { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.2em; color: var(--crimson-text); padding-top: 0.5rem; }
-.step-content h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 0.4rem; color: var(--ink); }
-.step-content p { font-size: 0.95rem; color: rgba(240,235,224,0.55); margin-bottom: 0; line-height: 1.65; }
+.step-content h4 { font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 0.4rem; color: var(--ink); }
+.step-content p { font-size: 0.95rem; color: rgba(31,27,22,0.55); margin-bottom: 0; line-height: 1.65; }
 
 /* ── CTA ── */
 .cta-section { text-align: center; padding: 8rem 3rem; max-width: 900px; margin: 0 auto; }
@@ -181,8 +181,8 @@ nav {
 footer { border-top: 1px solid var(--hairline); padding: 2.5rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
 .footer-links { display: flex; gap: 1.8rem; list-style: none; }
 .footer-links a:hover { color: var(--crimson-text); }
-.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); }
-.footer-logo em { font-style: italic; color: var(--crimson-text); }
+.footer-logo { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); }
+.footer-logo em { font-style: normal; color: inherit; }
 
 @media (max-width: 900px) {
   nav { padding: 1rem 1.2rem; }
