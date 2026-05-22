@@ -46,6 +46,11 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 .pill { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
 .pill.active { background: rgba(74,154,106,0.15); color: var(--green); }
 .pill.disabled { background: rgba(224,90,90,0.15); color: #e05a5a; }
+.pill.pending-pay { background: rgba(229,165,57,0.18); color: #9a6a17; }
+.mark-paid-btn { background: var(--ink); border: none; padding: 0.35rem 0.75rem; color: var(--cream); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+.mark-paid-btn:hover { background: #3D352C; }
+.mark-paid-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.awaiting-row td { background: rgba(229,165,57,0.06); }
 .toggle-btn { background: none; border: 1px solid var(--hairline); padding: 0.3rem 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
 .toggle-btn:hover { border-color: var(--crimson-text); color: var(--crimson-text); }
 
@@ -109,10 +114,17 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
     <tbody id="aff-body"><tr><td colspan="8" class="empty">No affiliates yet.</td></tr></tbody>
   </table>
 
+  <h2>Awaiting payment</h2>
+  <p class="lead" style="margin-top:-0.6rem;margin-bottom:1rem;">Invoice orders waiting for Cash App / Zelle / bank transfer. Mark paid once funds arrive — dispatch to Rapid fires automatically.</p>
+  <table id="awaiting-table">
+    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th class="num">Total</th><th>Method</th><th></th></tr></thead>
+    <tbody id="awaiting-body"><tr><td colspan="6" class="empty">No orders awaiting payment.</td></tr></tbody>
+  </table>
+
   <h2>Recent orders</h2>
   <table id="orders-table">
-    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th><th>Rapid</th><th></th></tr></thead>
-    <tbody id="orders-body"><tr><td colspan="9" class="empty">No orders yet this month.</td></tr></tbody>
+    <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th><th>Payment</th><th>Rapid</th><th></th></tr></thead>
+    <tbody id="orders-body"><tr><td colspan="10" class="empty">No orders yet this month.</td></tr></tbody>
   </table>
 </div>
 
@@ -183,14 +195,43 @@ async function loadStats() {
     affBody.innerHTML = '<tr><td colspan="8" class="empty">No affiliates yet.</td></tr>';
   }
 
+  // Awaiting payment (invoice orders that haven't been marked paid yet).
+  // Surfaced separately so they don't get lost in the recent-orders firehose.
+  const awaiting = d.recentOrders.filter(o => o.paymentStatus === 'awaiting_payment');
+  const awaitingBody = document.getElementById('awaiting-body');
+  if (awaiting.length) {
+    awaitingBody.innerHTML = awaiting.map(o => `
+      <tr class="awaiting-row">
+        <td>${FMT_DATE(o.createdAt)}</td>
+        <td><span class="code">${o.orderId}</span></td>
+        <td>${o.customerEmail}</td>
+        <td class="num">$${FMT_USD(o.total)}</td>
+        <td>${o.paymentMethod || 'invoice'}</td>
+        <td><button class="mark-paid-btn" onclick="markPaid('${o.orderId}')">Mark Paid</button></td>
+      </tr>
+    `).join('');
+  } else {
+    awaitingBody.innerHTML = '<tr><td colspan="6" class="empty">No orders awaiting payment.</td></tr>';
+  }
+
   const ordBody = document.getElementById('orders-body');
   if (d.recentOrders.length) {
     ordBody.innerHTML = d.recentOrders.map(o => {
       const rs = o.rapidStatus || 'pending';
-      const pillClass = rs === 'dispatched' ? 'active' : rs === 'failed' ? 'disabled' : '';
-      const retryBtn = (rs !== 'dispatched')
-        ? `<button class="toggle-btn" title="${o.rapidError ? o.rapidError.replace(/"/g, '&quot;') : 'Dispatch to Rapid'}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`
-        : '—';
+      const ps = o.paymentStatus || 'paid';
+      const rapidPillClass = rs === 'dispatched' ? 'active' : (rs === 'failed' ? 'disabled' : '');
+      const payPillClass   = ps === 'paid' ? 'active' : (ps === 'awaiting_payment' ? 'pending-pay' : 'disabled');
+      // Action column:
+      //   awaiting_payment  -> Mark Paid (dispatch fires automatically after)
+      //   dispatched        -> —
+      //   otherwise         -> Dispatch / Retry
+      let actionBtn = '—';
+      if (ps === 'awaiting_payment') {
+        actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}')">Mark Paid</button>`;
+      } else if (rs !== 'dispatched') {
+        const title = o.rapidError ? o.rapidError.replace(/"/g, '&quot;') : 'Dispatch to Rapid';
+        actionBtn = `<button class="toggle-btn" title="${title}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`;
+      }
       return `
       <tr><td>${FMT_DATE(o.createdAt)}</td>
           <td><span class="code">${o.orderId}</span></td>
@@ -199,11 +240,33 @@ async function loadStats() {
           <td>${o.paymentMethod}</td>
           <td class="num">$${FMT_USD(o.total)}</td>
           <td class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td>
-          <td><span class="pill ${pillClass}">${rs}</span></td>
-          <td>${retryBtn}</td></tr>`;
+          <td><span class="pill ${payPillClass}">${ps.replace('_',' ')}</span></td>
+          <td><span class="pill ${rapidPillClass}">${rs}</span></td>
+          <td>${actionBtn}</td></tr>`;
     }).join('');
   } else {
-    ordBody.innerHTML = '<tr><td colspan="9" class="empty">No orders yet this month.</td></tr>';
+    ordBody.innerHTML = '<tr><td colspan="10" class="empty">No orders yet this month.</td></tr>';
+  }
+}
+
+async function markPaid(orderId) {
+  const ref = prompt(`Mark order ${orderId} as paid.\n\nEnter payment reference (Cash App handle, Zelle txn id, bank ref):`);
+  if (!ref || !ref.trim()) return;
+  const note = prompt('Optional note (leave blank to skip):') || '';
+  try {
+    const res = await fetch('/api/admin/mark-paid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ orderId, paymentReference: ref.trim(), note: note.trim() }),
+    });
+    const d = await res.json();
+    if (!d.ok) { alert('Mark-paid failed: ' + (d.error || 'unknown error')); return; }
+    if (d.dispatch && !d.dispatch.ok) {
+      alert(`Order marked paid, but dispatch to Rapid failed: ${d.dispatch.error}\n\nUse the Retry button to try again.`);
+    }
+    loadStats();
+  } catch (e) {
+    alert('Mark-paid failed: ' + e.message);
   }
 }
 

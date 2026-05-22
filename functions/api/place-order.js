@@ -229,6 +229,16 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true, status: "already_dispatched", rapidOrderId: order.rapidOrderId || null });
   }
 
+  // Payment gate: invoice orders cannot dispatch until admin marks them paid.
+  // /api/admin/mark-paid flips paymentStatus -> 'paid' and then calls this endpoint.
+  if (order.paymentStatus && order.paymentStatus !== "paid") {
+    return json({
+      ok: false,
+      error: `Order is ${order.paymentStatus}. Dispatch blocked until payment is confirmed.`,
+      retryable: false,
+    }, 409);
+  }
+
   // Require Rapid credentials
   if (!env.RAPID_API_USERNAME || !env.RAPID_API_PASSWORD) {
     // Don't fail loudly to customers — silently queue. Admin can retry once creds are set.

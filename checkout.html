@@ -6,7 +6,7 @@
 <title>Checkout — Stratus Biolabs</title>
 
 <!-- ═══ SECURITY META HEADERS ═══ -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://api.nowpayments.io https://global-stg.transak.com https://global.transak.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; frame-src https://global-stg.transak.com https://global.transak.com; img-src 'self' data: https:; connect-src 'self' https://api.nowpayments.io https://api.transak.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://api.nowpayments.io; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://api.nowpayments.io https://formspree.io;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta http-equiv="X-Frame-Options" content="SAMEORIGIN"/>
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
@@ -154,16 +154,6 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .crypto-symbol { font-size: 1.2rem; }
 .crypto-name { font-family: 'JetBrains Mono', monospace; font-size: 0.52rem; color: var(--mist); letter-spacing: 0.08em; }
 
-/* TRANSAK MODAL */
-.transak-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: none; align-items: center; justify-content: center; }
-.transak-modal-overlay.open { display: flex; }
-.transak-modal { background: #E2DCCE; border: 1px solid var(--border); width: 100%; max-width: 480px; max-height: 90vh; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-.transak-modal-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.transak-modal-title { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cirrus); }
-.transak-modal-close { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 1.1rem; }
-#transak-iframe-container { flex: 1; min-height: 600px; }
-#transak-iframe-container iframe { width: 100%; height: 100%; min-height: 600px; border: none; }
-
 /* FREE ORDER CONFIRM */
 .free-order-wrap { padding: 1.5rem; background: rgba(31,27,22,0.06); border: 1px solid rgba(31,27,22,0.2); display: none; text-align: center; }
 .free-order-wrap.show { display: block; }
@@ -198,6 +188,25 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .btn-outline { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: 1px solid var(--border); color: var(--silver); text-decoration: none; display: inline-block; transition: all 0.3s; }
 .btn-outline:hover { border-color: var(--cirrus); color: var(--cirrus); }
 
+/* Invoice payment-instructions block (shown on success-state for invoice orders) */
+.payment-instructions { display: none; max-width: 540px; margin: 0 auto 2rem; padding: 1.75rem 1.75rem 1.5rem; background: #E2DCCE; border: 1px solid var(--border); text-align: left; position: relative; }
+.payment-instructions.show { display: block; }
+.payment-instructions::before { content: ''; position: absolute; top: -1px; left: -1px; width: 28px; height: 1px; background: var(--cirrus); }
+.payment-instructions::after  { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 28px; background: var(--cirrus); }
+.payment-instructions h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.payment-instructions .pay-total { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 300; color: var(--fog); margin-bottom: 0.25rem; }
+.payment-instructions .pay-ref { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--mist); letter-spacing: 0.1em; margin-bottom: 1.25rem; }
+.payment-instructions .pay-method { padding: 0.85rem 0; border-top: 1px solid rgba(31,27,22,0.1); }
+.payment-instructions .pay-method:first-of-type { border-top: none; padding-top: 0; }
+.payment-instructions .pay-method-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); margin-bottom: 0.3rem; }
+.payment-instructions .pay-method-value { font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; color: var(--fog); }
+.payment-instructions .pay-note { font-size: 0.78rem; font-weight: 300; color: var(--mist); line-height: 1.6; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(31,27,22,0.1); }
+.payment-instructions .pay-note strong { color: var(--fog); font-weight: 500; }
+.payment-instructions .pay-note .code { font-family: 'JetBrains Mono', monospace; background: rgba(31,27,22,0.08); padding: 0.12rem 0.45rem; font-size: 0.72rem; color: var(--fog); letter-spacing: 0.08em; }
+.payment-instructions .pay-method-note { font-size: 0.78rem; font-weight: 300; color: var(--mist); line-height: 1.55; margin-top: 0.55rem; }
+.payment-instructions .pay-method-note strong { color: var(--fog); font-weight: 500; }
+.payment-instructions .pay-screenshot { display: block; max-width: 100%; width: 280px; height: auto; margin: 0.75rem auto 0.25rem; border: 1px solid var(--border); }
+
 /* RATE LIMIT BANNER */
 .rate-limit-banner { display: none; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.3); padding: 0.8rem 1.5rem; margin: 0 1.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--red); letter-spacing: 0.05em; text-align: center; }
 .rate-limit-banner.show { display: block; }
@@ -216,7 +225,6 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   .form-group.full { grid-column: 1 !important; }
   .crypto-grid { grid-template-columns: repeat(3, 1fr) !important; }
   footer { flex-direction: column; }
-  .transak-modal { max-height: 100vh; height: 100vh; }
 }
 </style>
 </head>
@@ -247,17 +255,6 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   <a href="contact.html">Contact</a>
 </div>
 
-<!-- TRANSAK MODAL -->
-<div class="transak-modal-overlay" id="transak-modal-overlay">
-  <div class="transak-modal">
-    <div class="transak-modal-header">
-      <span class="transak-modal-title">💳 Pay with Card — Powered by Transak</span>
-      <button class="transak-modal-close" onclick="closeTransakModal()">✕</button>
-    </div>
-    <div id="transak-iframe-container"></div>
-  </div>
-</div>
-
 <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
 <div class="cart-drawer" id="cart-drawer">
   <div class="cart-header">
@@ -277,7 +274,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
       <span class="cart-subtotal-value" id="cart-subtotal">$0.00</span>
     </div>
     <button class="btn-checkout" onclick="proceedToCheckout()">Proceed to Checkout →</button>
-    <p class="cart-note">🔒 Secure · Card & Crypto accepted · Research use only</p>
+    <p class="cart-note">🔒 Secure · Invoice & Crypto accepted · Research use only</p>
   </div>
 </div>
 
@@ -398,13 +395,13 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
 
           <div class="payment-methods" id="payment-methods-wrap">
-            <!-- Card -->
-            <label class="payment-option card-option selected" onclick="selectPayment('card', event)">
-              <input type="radio" name="payment" value="card" checked/>
-              <span class="payment-icon">💳</span>
+            <!-- Invoice / Direct Payment -->
+            <label class="payment-option card-option selected" onclick="selectPayment('invoice', event)">
+              <input type="radio" name="payment" value="invoice" checked/>
+              <span class="payment-icon">📨</span>
               <div class="payment-info">
-                <div class="payment-name">Credit / Debit Card <span class="card-badge">New</span></div>
-                <div class="payment-desc">Visa, Mastercard, Apple Pay, Google Pay via Transak</div>
+                <div class="payment-name">Pay by Invoice <span class="card-badge">Direct</span></div>
+                <div class="payment-desc">Place order, receive payment instructions by email. Cash App, Zelle, or bank transfer accepted. Ships once payment is received.</div>
               </div>
             </label>
             <!-- Crypto -->
@@ -413,7 +410,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
               <span class="payment-icon">₿</span>
               <div class="payment-info">
                 <div class="payment-name">Cryptocurrency <span class="crypto-badge">100+ Coins</span></div>
-                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and more via NOWPayments</div>
+                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and more via NOWPayments. Ships within 72 hours of payment confirmation.</div>
               </div>
             </label>
           </div>
@@ -467,12 +464,12 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
 
           <div class="submit-wrap">
             <button class="btn-submit card-mode" id="submit-btn" onclick="submitOrder()">
-              Pay with Card →
+              Place Order — Receive Payment Email →
             </button>
             <div class="security-badges" id="security-badges">
-              <span class="security-badge">🔒 SSL Encrypted</span>
-              <span class="security-badge">💳 Transak Secure</span>
-              <span class="security-badge">📦 Ships within 72h</span>
+              <span class="security-badge">📨 Email instructions</span>
+              <span class="security-badge">✓ No card data stored</span>
+              <span class="security-badge">📦 Ships once paid</span>
             </div>
           </div>
         </div>
@@ -507,9 +504,36 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   <!-- SUCCESS STATE -->
   <div class="success-state" id="success-state">
     <div class="success-icon">✓</div>
-    <h2 class="success-title">Order Confirmed</h2>
+    <h2 class="success-title" id="success-title">Order Received</h2>
     <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
-    <p class="success-body">Thank you for your order. Your payment has been received and your order will be processed and shipped within 72 hours. A confirmation will be sent to your email.</p>
+    <p class="success-body" id="success-body">Thank you for your order.</p>
+
+    <!-- Invoice-only payment instructions block. Shown right on the success page so
+         the customer never has to wait for an email to know what to do next. -->
+    <div class="payment-instructions" id="payment-instructions">
+      <h3>// Payment Instructions</h3>
+      <div class="pay-total" id="pay-total">$0.00</div>
+      <div class="pay-ref">Reference: <span id="pay-ref-id">SB-000000</span></div>
+
+      <div class="pay-method">
+        <div class="pay-method-label">Cash App</div>
+        <div class="pay-method-value">$dfernandez555</div>
+        <div class="pay-method-note">
+          <strong>Important — Do NOT write anything in the Cash App note field.</strong> To bypass Cash App's required-note prompt, tap the sparkle icon (✨) at the top right of the &ldquo;Note (required)&rdquo; field — see screenshot below. Leaving the note blank keeps the transaction private.
+        </div>
+        <img src="/images/cashapp-bypass-note.png" alt="Cash App: tap the sparkle icon to bypass the required note" class="pay-screenshot" loading="lazy"/>
+      </div>
+      <div class="pay-method">
+        <div class="pay-method-label">Zelle</div>
+        <div class="pay-method-value">(909) 522-2875</div>
+        <div class="pay-method-note">Include your order ID <span class="code" id="pay-note-id-zelle">SB-000000</span> in the Zelle memo so we can match the payment.</div>
+      </div>
+
+      <p class="pay-note">
+        Your order ships within 72 hours of payment confirmation. After sending payment, you'll receive a shipping confirmation by email. Questions? Email <strong>info@stratusbiolabs.com</strong> with your order ID <span class="code" id="pay-note-id">SB-000000</span>.
+      </p>
+    </div>
+
     <a href="catalog.html" class="btn-outline">Continue Shopping →</a>
   </div>
 </div>
@@ -709,10 +733,10 @@ function updatePaymentUI() {
     btn.textContent = 'Confirm Free Order →';
     btn.className = 'btn-submit free-mode';
     badges.innerHTML = `<span class="security-badge">🎉 Promo Applied</span><span class="security-badge">📦 Ships within 72h</span>`;
-  } else if (selectedPayment === 'card') {
-    btn.textContent = 'Pay with Card →';
+  } else if (selectedPayment === 'invoice') {
+    btn.textContent = 'Place Order — Receive Payment Email →';
     btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">🔒 SSL Encrypted</span><span class="security-badge">💳 Transak Secure</span><span class="security-badge">📦 Ships within 72h</span>`;
+    badges.innerHTML = `<span class="security-badge">📨 Email instructions</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
   } else {
     btn.textContent = 'Place Order & Pay with Crypto →';
     btn.className = 'btn-submit';
@@ -730,7 +754,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const TRANSAK_API_KEY = '6b9cdffb-2eed-44b3-bb13-0ebb471ce23c';
 const NOWPAYMENTS_API_KEY = '9YDNCR0-MZYMGS2-M92FZS1-HTT4T0R';
 
 // ═══════════════════════════════════════════
@@ -738,7 +761,7 @@ const NOWPAYMENTS_API_KEY = '9YDNCR0-MZYMGS2-M92FZS1-HTT4T0R';
 // ═══════════════════════════════════════════
 let cart = JSON.parse(localStorage.getItem('sb-cart') || '[]');
 let selectedCrypto = 'BTC';
-let selectedPayment = 'card';
+let selectedPayment = 'invoice';
 
 function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
 
@@ -932,33 +955,30 @@ function validateForm() {
 }
 
 // ═══════════════════════════════════════════
-// TRANSAK
+// INVOICE ORDER SUBMISSION
+// Sends payment-instructions email to the customer and a copy to ops.
+// Formspree fans out to info@stratusbiolabs.com. Server-side log-order
+// records paymentStatus=awaiting_payment so admin can mark paid later.
 // ═══════════════════════════════════════════
-function openTransakModal(totalAmount, email) {
-  const orderId = 'SB-' + Date.now().toString().slice(-6);
-  localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart }));
-
-  const params = new URLSearchParams({
-    apiKey: TRANSAK_API_KEY,
-    environment: 'PRODUCTION',
-    fiatAmount: totalAmount.toFixed(2),
-    fiatCurrency: 'USD',
-    cryptoCurrencyCode: 'USDT',
-    network: 'ethereum',
-    email: email,
-    partnerOrderId: orderId,
-    redirectURL: window.location.origin + '/checkout.html?success=true',
-    themeColor: '5b8dd9',
-  });
-
-  document.getElementById('transak-iframe-container').innerHTML =
-    `<iframe src="https://global.transak.com/?${params.toString()}" allow="camera;microphone;payment" allowfullscreen></iframe>`;
-  document.getElementById('transak-modal-overlay').classList.add('open');
-}
-
-function closeTransakModal() {
-  document.getElementById('transak-modal-overlay').classList.remove('open');
-  document.getElementById('transak-iframe-container').innerHTML = '';
+async function submitInvoiceOrder(email, orderId, totalAmount) {
+  try {
+    await fetch('https://formspree.io/f/mkokwgog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        subject: `INVOICE ORDER #${orderId} — Awaiting Payment ($${totalAmount.toFixed(2)})`,
+        email: email,
+        order_id: orderId,
+        total: `$${totalAmount.toFixed(2)}`,
+        payment_method: 'Invoice (Cash App / Zelle / Bank Transfer)',
+        items: cart.map(i => `${i.name} (${i.variant}) x${i.qty}`).join(', '),
+        shipping_name: clean(document.getElementById('fname').value) + ' ' + clean(document.getElementById('lname').value),
+        shipping_address: clean(document.getElementById('address').value) + ', ' + clean(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + clean(document.getElementById('zip').value),
+        phone: clean(document.getElementById('phone').value || ''),
+        notes: clean(document.getElementById('notes').value || ''),
+      })
+    });
+  } catch (e) { console.warn('Invoice notification failed', e); }
 }
 
 // ═══════════════════════════════════════════
@@ -1054,13 +1074,26 @@ async function submitOrder() {
     return;
   }
 
-  // CARD via Transak
-  if (selectedPayment === 'card') {
-    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'card');
-    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code }));
-    btn.textContent = originalText;
-    btn.disabled = false;
-    openTransakModal(totalAmount, email);
+  // INVOICE (manual payment via Cash App / Zelle / Bank Transfer)
+  // Customer sees payment instructions inline on the success page. Admin gets
+  // a copy of the order details via Formspree → info@stratusbiolabs.com.
+  // DO NOT call dispatchToRapid here — that fires only after admin marks paid.
+  if (selectedPayment === 'invoice') {
+    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'invoice');
+    await submitInvoiceOrder(email, orderId, totalAmount);
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: 'invoice' }));
+    cart = []; saveCart(); updateCartCount();
+    document.getElementById('order-section').style.display = 'none';
+    document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
+    document.getElementById('success-title').textContent = 'Order Received';
+    document.getElementById('success-body').textContent = `Thank you. Please complete payment using Cash App or Zelle below — your order ships within 72 hours of payment confirmation.`;
+    // Populate inline payment instructions.
+    document.getElementById('pay-total').textContent  = '$' + totalAmount.toFixed(2);
+    document.getElementById('pay-ref-id').textContent = orderId;
+    document.getElementById('pay-note-id').textContent = orderId;
+    document.getElementById('pay-note-id-zelle').textContent = orderId;
+    document.getElementById('payment-instructions').classList.add('show');
+    document.getElementById('success-state').classList.add('show');
     return;
   }
 
@@ -1115,11 +1148,13 @@ function dispatchToRapid(orderId) {
   } catch (e) { /* swallow */ }
 }
 
-// Handle return after successful payment
+// Handle return after successful payment (crypto only — invoice flow does its own success state)
 if (window.location.search.includes('success=true')) {
   const pending = JSON.parse(localStorage.getItem('sb-pending-order') || '{}');
   if (pending.orderId) {
     document.getElementById('success-order-id').textContent = 'ORDER #' + pending.orderId;
+    document.getElementById('success-title').textContent = 'Order Confirmed';
+    document.getElementById('success-body').textContent = 'Thank you for your order. Your payment has been received and your order will be processed and shipped within 72 hours. A confirmation will be sent to your email.';
     dispatchToRapid(pending.orderId);
     cart = []; saveCart(); updateCartCount();
     localStorage.removeItem('sb-pending-order');

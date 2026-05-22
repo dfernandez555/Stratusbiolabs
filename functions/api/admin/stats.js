@@ -94,11 +94,14 @@ export async function onRequestGet({ request, env }) {
       code: a.code, platform: a.platform, audienceSize: a.audienceSize,
       status: a.status, createdAt: a.createdAt,
     })),
-    recentOrders: orders.slice(0, 50).map(o => ({
+    recentOrders: orders.slice(0, 100).map(o => ({
       orderId: o.orderId, total: o.total, promoCode: o.promoCode,
       affiliateId: o.affiliateId, commissionOwed: o.commissionOwed,
       paymentMethod: o.paymentMethod, createdAt: o.createdAt,
       customerEmail: o.customerEmail,
+      paymentStatus: o.paymentStatus || (o.paymentMethod === "invoice" ? "awaiting_payment" : "paid"),
+      paymentReceivedAt: o.paymentReceivedAt || null,
+      paymentReference: o.paymentReference || null,
       rapidStatus: o.rapidStatus || "pending",
       rapidError: o.rapidError || null,
       rapidDispatchedAt: o.rapidDispatchedAt || null,

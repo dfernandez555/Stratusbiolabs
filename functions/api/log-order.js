@@ -24,7 +24,7 @@ export async function onRequestPost({ request, env }) {
   const orderId = clean(body?.orderId, 40);
   const customerEmail = clean(body?.customerEmail, 120).toLowerCase();
   const promoCode = clean(body?.promoCode, 40).toUpperCase();
-  const paymentMethod = clean(body?.paymentMethod, 30); // 'card' | 'crypto' | 'free'
+  const paymentMethod = clean(body?.paymentMethod, 30); // 'invoice' | 'crypto' | 'free'
   const items = Array.isArray(body?.items) ? body.items.slice(0, 50) : [];
 
   if (!orderId || !customerEmail || items.length === 0) {
@@ -79,6 +79,14 @@ export async function onRequestPost({ request, env }) {
   };
 
   const now = new Date().toISOString();
+
+  // Invoice orders await manual admin approval before any dispatch fires.
+  // Crypto / free orders are paid by the time they hit this endpoint, so
+  // their dispatch can proceed automatically (place-order is called after this).
+  const isInvoice = paymentMethod === "invoice";
+  const paymentStatus = isInvoice ? "awaiting_payment" : "paid";
+  const rapidStatus   = isInvoice ? "blocked_pending_payment" : "pending";
+
   const record = {
     orderId, customerEmail, items,
     subtotal, shipping: shippingCost, discount, total,
@@ -87,7 +95,10 @@ export async function onRequestPost({ request, env }) {
     paymentMethod: paymentMethod || "unknown",
     shippingAddress,
     status: "logged",
-    rapidStatus: "pending",  // pending | dispatched | failed | cancelled
+    paymentStatus,           // awaiting_payment | paid | refunded
+    paymentReceivedAt: isInvoice ? null : now,
+    paymentReference: null,  // set by /api/admin/mark-paid (Cash App handle, Zelle txn, etc.)
+    rapidStatus,             // pending | dispatched | failed | cancelled | blocked_pending_payment
     rapidDispatchedAt: null,
     rapidError: null,
     createdAt: now,
