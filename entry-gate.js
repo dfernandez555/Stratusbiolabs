@@ -33,9 +33,13 @@
 
   // ── Styles (scoped under .sbl-gate-* so they can't collide with site CSS) ──
   var css =
-    ".sbl-gate-overlay{position:fixed;inset:0;z-index:99999;background:rgba(31,27,22,0.92);display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:'Inter',system-ui,sans-serif;animation:sbl-fade-in 0.3s ease;}" +
+    // Overlay is now scrollable on viewports that can't fit the modal vertically.
+    // padding-block creates breathing room top/bottom even when scrolled.
+    ".sbl-gate-overlay{position:fixed;inset:0;z-index:99999;background:rgba(31,27,22,0.92);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2rem 1rem;font-family:'Inter',system-ui,sans-serif;animation:sbl-fade-in 0.3s ease;}" +
     "@keyframes sbl-fade-in{from{opacity:0}to{opacity:1}}" +
-    ".sbl-gate-modal{background:#EFEAE0;max-width:500px;width:100%;padding:3rem 2.5rem;color:#1F1B16;position:relative;}" +
+    // Modal centers horizontally via margin auto, vertically lives at top + scrolls.
+    // On tall desktops there's plenty of headroom; on phones nothing gets clipped.
+    ".sbl-gate-modal{background:#EFEAE0;max-width:500px;width:100%;margin:0 auto;padding:3rem 2.5rem;color:#1F1B16;position:relative;}" +
     ".sbl-gate-modal::before{content:'';position:absolute;top:-1px;left:-1px;width:32px;height:1px;background:#1F1B16;}" +
     ".sbl-gate-modal::after{content:'';position:absolute;top:-1px;left:-1px;width:1px;height:32px;background:#1F1B16;}" +
     ".sbl-gate-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.28em;text-transform:uppercase;color:#7A746C;margin-bottom:1.25rem;}" +
@@ -53,7 +57,7 @@
     ".sbl-gate-leave{font-family:'JetBrains Mono',monospace;font-size:0.74rem;letter-spacing:0.16em;text-transform:uppercase;color:#7A746C;padding:1.05rem 1.2rem;background:none;border:1px solid rgba(31,27,22,0.18);cursor:pointer;transition:color 0.2s,border-color 0.2s;}" +
     ".sbl-gate-leave:hover{color:#1F1B16;border-color:#1F1B16;}" +
     ".sbl-gate-foot{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;color:#A39C92;text-transform:uppercase;margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(31,27,22,0.1);text-align:center;}" +
-    "@media (max-width:480px){.sbl-gate-modal{padding:2rem 1.5rem;}.sbl-gate-title{font-size:1.5rem;}.sbl-gate-actions{flex-direction:column;}.sbl-gate-enter,.sbl-gate-leave{flex:none;width:100%;}}";
+    "@media (max-width:480px){.sbl-gate-overlay{padding:1rem;}.sbl-gate-modal{padding:2rem 1.5rem;}.sbl-gate-title{font-size:1.5rem;}.sbl-gate-body{font-size:0.9rem;margin-bottom:1.5rem;}.sbl-gate-actions{flex-direction:column;}.sbl-gate-enter,.sbl-gate-leave{flex:none;width:100%;}.sbl-gate-foot{margin-top:1.5rem;padding-top:1rem;}}";
 
   var style = document.createElement("style");
   style.id = "sbl-gate-style";

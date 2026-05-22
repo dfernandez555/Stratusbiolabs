@@ -242,7 +242,19 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   .products-grid { grid-template-columns: 1fr !important; }
   .catalog-main { padding: 1rem; }
   .filters { padding: 0.8rem 1rem; }
+  /* RUO disclaimer banner: tighten padding + ease tracking so the line
+     doesn't get clipped at narrow viewport widths. */
+  .disclaimer { padding: 0.55rem 1rem; gap: 0.6rem; }
+  .disclaimer p { font-size: 0.52rem; letter-spacing: 0.08em; line-height: 1.4; }
+  .catalog-header { padding: 1.5rem 1rem 1.25rem; }
+  .header-sub { font-size: 0.72rem; line-height: 1.5; }
   footer { flex-direction: column; padding: 1.5rem; }
+}
+@media (max-width: 400px) {
+  /* On the very narrowest devices (small Android, old iPhone SE), allow the
+     disclaimer to wrap into two lines instead of squeezing one line. */
+  .disclaimer { flex-wrap: wrap; }
+  .disclaimer p { font-size: 0.5rem; letter-spacing: 0.06em; }
 }
 </style>
 </head>
