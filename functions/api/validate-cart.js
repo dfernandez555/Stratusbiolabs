@@ -28,9 +28,10 @@ const SKU_TABLE = {
 };
 
 // ── Global / non-affiliate promos (never exposed to the browser) ────────────
-const GLOBAL_PROMOS = {
-  "INTERNETMONEYBITCH": { type: "percent", value: 20, label: "20% OFF" },
-};
+// All promos now live in KV (key: `promo:<CODE>`) so they can be added,
+// disabled, or relabeled without a redeploy. Kept empty as a fallback bucket
+// in case we need a code that must survive KV being unreachable.
+const GLOBAL_PROMOS = {};
 
 const FREE_SHIPPING_THRESHOLD = 150;
 const SHIPPING_COST = 9.99;
