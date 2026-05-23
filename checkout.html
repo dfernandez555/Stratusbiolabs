@@ -759,7 +759,28 @@ const NOWPAYMENTS_API_KEY = '9YDNCR0-MZYMGS2-M92FZS1-HTT4T0R';
 // ═══════════════════════════════════════════
 // CART STATE
 // ═══════════════════════════════════════════
-let cart = JSON.parse(localStorage.getItem('sb-cart') || '[]');
+// Load + sanitize cart. A historical bug (~May 22) stored the SKU as the sizeKey
+// for single-size products. Items with sizeKey === sku (or with size keys that
+// don't match the server's SKU_TABLE format) fail server-side validation and
+// silently break promos + dispatch. Drop them on load so users with stale carts
+// don't get stuck. They can re-add the items from /catalog.
+let cart = (() => {
+  let raw;
+  try { raw = JSON.parse(localStorage.getItem('sb-cart') || '[]'); }
+  catch { raw = []; }
+  if (!Array.isArray(raw)) return [];
+  const valid = raw.filter(i =>
+    i && typeof i === 'object' &&
+    i.sku && i.sizeKey &&
+    i.sku !== i.sizeKey &&            // catches the historical bug
+    /^\d+(mg|mL)$/.test(i.sizeKey)    // canonical format: "10mg", "3mL", etc.
+  );
+  if (valid.length !== raw.length) {
+    // Silently rewrite localStorage so the bad items don't keep coming back.
+    localStorage.setItem('sb-cart', JSON.stringify(valid));
+  }
+  return valid;
+})();
 let selectedCrypto = 'BTC';
 let selectedPayment = 'invoice';
 
