@@ -401,7 +401,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
               <span class="payment-icon">📨</span>
               <div class="payment-info">
                 <div class="payment-name">Pay by Invoice <span class="card-badge">Direct</span></div>
-                <div class="payment-desc">Place order, receive payment instructions by email. Cash App, Zelle, or bank transfer accepted. Ships once payment is received.</div>
+                <div class="payment-desc">Place your order, then pay by Cash App or Zelle using the instructions shown on the next screen. Ships once payment is received.</div>
               </div>
             </label>
             <!-- Crypto -->
@@ -970,7 +970,7 @@ async function submitInvoiceOrder(email, orderId, totalAmount) {
         email: email,
         order_id: orderId,
         total: `$${totalAmount.toFixed(2)}`,
-        payment_method: 'Invoice (Cash App / Zelle / Bank Transfer)',
+        payment_method: 'Invoice (Cash App / Zelle)',
         items: cart.map(i => `${i.name} (${i.variant}) x${i.qty}`).join(', '),
         shipping_name: clean(document.getElementById('fname').value) + ' ' + clean(document.getElementById('lname').value),
         shipping_address: clean(document.getElementById('address').value) + ', ' + clean(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + clean(document.getElementById('zip').value),
@@ -1074,7 +1074,7 @@ async function submitOrder() {
     return;
   }
 
-  // INVOICE (manual payment via Cash App / Zelle / Bank Transfer)
+  // INVOICE (manual payment via Cash App / Zelle)
   // Customer sees payment instructions inline on the success page. Admin gets
   // a copy of the order details via Formspree → info@stratusbiolabs.com.
   // DO NOT call dispatchToRapid here — that fires only after admin marks paid.
