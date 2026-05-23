@@ -2,13 +2,15 @@
 //
 // POST /api/admin/mark-paid
 // Header: X-Admin-Password: <password>   (or password in body for legacy callers)
-// Body: { orderId, paymentReference, note? }
+// Body: { orderId, paymentChannel, paymentReference, note? }
+//   paymentChannel ∈ { 'Cash App', 'Zelle', 'Other' }  (UI-validated, server re-checks)
+//   paymentReference = sender name / txn id / free-form (depends on channel)
 //
 // Flow:
 //   1. Verify admin password
 //   2. Load order from KV
 //   3. Refuse if order isn't an invoice or is already paid (idempotent if already paid)
-//   4. Flip paymentStatus -> 'paid', stamp paymentReceivedAt + paymentReference
+//   4. Flip paymentStatus -> 'paid', stamp paymentReceivedAt + paymentChannel + paymentReference
 //   5. Reset rapidStatus to 'pending' so /api/place-order can now dispatch it
 //   6. Best-effort: call /api/place-order internally so dispatch happens immediately
 //      (admin can also retry manually from the dashboard if this fails)
@@ -35,11 +37,17 @@ export async function onRequestPost({ request, env }) {
   if (!isAuthed(request, env, body?.adminPassword)) return unauth();
   if (!env.STRATUS_DATA) return json({ ok: false, error: "Storage not configured" }, 503);
 
+  const ALLOWED_CHANNELS = ["Cash App", "Zelle", "Other"];
+
   const orderId = clean(body?.orderId, 40);
+  const paymentChannel = clean(body?.paymentChannel, 30);
   const paymentReference = clean(body?.paymentReference, 100);
   const note = clean(body?.note, 300);
   if (!orderId) return json({ ok: false, error: "Missing orderId" }, 400);
-  if (!paymentReference) return json({ ok: false, error: "Payment reference is required (Cash App handle, Zelle txn id, bank ref, etc.)" }, 400);
+  if (!ALLOWED_CHANNELS.includes(paymentChannel)) {
+    return json({ ok: false, error: `Invalid payment method. Must be one of: ${ALLOWED_CHANNELS.join(", ")}` }, 400);
+  }
+  if (!paymentReference) return json({ ok: false, error: "Payment reference is required (Cash App sender name, Zelle txn id, etc.)" }, 400);
 
   const raw = await env.STRATUS_DATA.get(`order:${orderId}`);
   if (!raw) return json({ ok: false, error: "Order not found" }, 404);
@@ -57,6 +65,7 @@ export async function onRequestPost({ request, env }) {
   const now = new Date().toISOString();
   order.paymentStatus     = "paid";
   order.paymentReceivedAt = now;
+  order.paymentChannel    = paymentChannel;    // 'Cash App' | 'Zelle' | 'Other'
   order.paymentReference  = paymentReference;
   if (note) order.paymentNote = note;
   // Free dispatch from the block. We don't pre-set "dispatched" — the actual SOAP call decides.

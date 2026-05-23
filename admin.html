@@ -61,11 +61,41 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 #dashboard.show { display: block; }
 .gate.hide { display: none; }
 
+/* ── Mark-paid modal ───────────────────────────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(31,27,22,0.55); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--cream); border: 1px solid var(--hairline); max-width: 460px; width: 100%; padding: 2rem 2rem 1.5rem; position: relative; max-height: 92vh; overflow-y: auto; }
+.modal::before { content: ''; position: absolute; top: -1px; left: -1px; width: 28px; height: 1px; background: var(--ink); }
+.modal::after  { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 28px; background: var(--ink); }
+.modal-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+.modal-title { font-family: 'Inter', sans-serif; font-size: 1.5rem; font-weight: 300; margin-bottom: 0.4rem; line-height: 1.15; }
+.modal-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1.5rem; }
+.modal-sub strong { color: var(--ink); font-weight: 500; }
+.modal-field { margin-bottom: 1rem; }
+.modal-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.45rem; }
+.modal-label .req { color: var(--ink); }
+.modal-input, .modal-select { width: 100%; padding: 0.75rem 0.9rem; background: var(--cream-2); border: 1px solid var(--hairline); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 300; outline: none; transition: border-color 0.2s; }
+.modal-input:focus, .modal-select:focus { border-color: var(--ink); }
+.modal-input.error, .modal-select.error { border-color: #e05a5a; }
+.modal-select { cursor: pointer; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A746C' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+.modal-hint { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.3rem; line-height: 1.5; }
+.modal-error { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #e05a5a; margin-top: 0.5rem; display: none; }
+.modal-error.show { display: block; }
+.modal-actions { display: flex; gap: 0.6rem; margin-top: 1.5rem; }
+.modal-btn { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.95rem 1rem; border: none; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.modal-btn-primary { background: var(--ink); color: var(--cream); }
+.modal-btn-primary:hover { background: #3D352C; }
+.modal-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.modal-btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--hairline); }
+.modal-btn-secondary:hover { color: var(--ink); border-color: var(--ink); }
+
 @media (max-width: 800px) {
   body { padding: 1rem; }
   .kpis { grid-template-columns: 1fr 1fr; }
   table { font-size: 0.78rem; }
   table th, table td { padding: 0.6rem 0.5rem; }
+  .modal { padding: 1.5rem 1.25rem 1.25rem; }
+  .modal-title { font-size: 1.3rem; }
 }
 </style>
 </head>
@@ -126,6 +156,43 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
     <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th><th>Payment</th><th>Rapid</th><th></th></tr></thead>
     <tbody id="orders-body"><tr><td colspan="10" class="empty">No orders yet this month.</td></tr></tbody>
   </table>
+</div>
+
+<!-- ─── Mark-paid modal ─── -->
+<div class="modal-overlay" id="mark-paid-overlay" onclick="if(event.target===this)closeMarkPaid()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mark-paid-title">
+    <p class="modal-eyebrow">// Confirm Payment</p>
+    <h3 class="modal-title" id="mark-paid-title">Mark order as paid</h3>
+    <p class="modal-sub">Order <strong id="mark-paid-order-id">SB-000000</strong> &middot; <strong id="mark-paid-amount">$0.00</strong></p>
+
+    <div class="modal-field">
+      <label class="modal-label" for="mp-channel">Payment Method <span class="req">*</span></label>
+      <select class="modal-select" id="mp-channel" onchange="updateMarkPaidHint()">
+        <option value="">Select method...</option>
+        <option value="Cash App">Cash App</option>
+        <option value="Zelle">Zelle</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label" for="mp-reference">Reference / Sender <span class="req">*</span></label>
+      <input class="modal-input" id="mp-reference" type="text" maxlength="100" placeholder="—" autocomplete="off"/>
+      <div class="modal-hint" id="mp-reference-hint">Select a payment method first</div>
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label" for="mp-note">Note (optional)</label>
+      <input class="modal-input" id="mp-note" type="text" maxlength="300" placeholder="Anything you want to remember about this payment" autocomplete="off"/>
+    </div>
+
+    <div class="modal-error" id="mp-error"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" onclick="closeMarkPaid()">Cancel</button>
+      <button class="modal-btn modal-btn-primary" id="mp-submit" onclick="submitMarkPaid()">Mark Paid</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -207,7 +274,7 @@ async function loadStats() {
         <td>${o.customerEmail}</td>
         <td class="num">$${FMT_USD(o.total)}</td>
         <td>${o.paymentMethod || 'invoice'}</td>
-        <td><button class="mark-paid-btn" onclick="markPaid('${o.orderId}')">Mark Paid</button></td>
+        <td><button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button></td>
       </tr>
     `).join('');
   } else {
@@ -227,7 +294,7 @@ async function loadStats() {
       //   otherwise         -> Dispatch / Retry
       let actionBtn = '—';
       if (ps === 'awaiting_payment') {
-        actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}')">Mark Paid</button>`;
+        actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button>`;
       } else if (rs !== 'dispatched') {
         const title = o.rapidError ? o.rapidError.replace(/"/g, '&quot;') : 'Dispatch to Rapid';
         actionBtn = `<button class="toggle-btn" title="${title}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`;
@@ -249,26 +316,130 @@ async function loadStats() {
   }
 }
 
-async function markPaid(orderId) {
-  const ref = prompt(`Mark order ${orderId} as paid.\n\nEnter payment reference (Cash App handle, Zelle txn id, bank ref):`);
-  if (!ref || !ref.trim()) return;
-  const note = prompt('Optional note (leave blank to skip):') || '';
+// ─── Mark-paid modal ──────────────────────────────────────────────
+// Per-channel hints make the reference field self-explanatory:
+//   Cash App  -> we need the sender's display name (no memo, so this is how we match)
+//   Zelle     -> we want the txn id (or sender name as fallback)
+//   Other     -> free-form
+const CHANNEL_HINTS = {
+  'Cash App': 'Sender’s Cash App display name (the customer didn’t leave a memo)',
+  'Zelle':    'Zelle transaction ID or confirmation number',
+  'Other':    'Free-form reference — anything that identifies the payment',
+};
+const CHANNEL_PLACEHOLDERS = {
+  'Cash App': 'e.g. John Smith',
+  'Zelle':    'e.g. ABC123XYZ',
+  'Other':    'e.g. wire ref / venmo handle / etc.',
+};
+let _markPaidCtx = null;  // { orderId, total }
+
+function openMarkPaid(orderId, total) {
+  _markPaidCtx = { orderId, total };
+  document.getElementById('mark-paid-order-id').textContent = orderId;
+  document.getElementById('mark-paid-amount').textContent = '$' + (Number(total) || 0).toFixed(2);
+  document.getElementById('mp-channel').value = '';
+  document.getElementById('mp-reference').value = '';
+  document.getElementById('mp-reference').placeholder = '—';
+  document.getElementById('mp-reference-hint').textContent = 'Select a payment method first';
+  document.getElementById('mp-note').value = '';
+  document.getElementById('mp-error').classList.remove('show');
+  document.getElementById('mp-submit').disabled = false;
+  document.getElementById('mp-submit').textContent = 'Mark Paid';
+  document.getElementById('mark-paid-overlay').classList.add('open');
+  // Focus the dropdown after the animation
+  setTimeout(() => document.getElementById('mp-channel').focus(), 100);
+}
+
+function closeMarkPaid() {
+  document.getElementById('mark-paid-overlay').classList.remove('open');
+  _markPaidCtx = null;
+}
+
+function updateMarkPaidHint() {
+  const ch = document.getElementById('mp-channel').value;
+  const hint = document.getElementById('mp-reference-hint');
+  const ref  = document.getElementById('mp-reference');
+  if (ch && CHANNEL_HINTS[ch]) {
+    hint.textContent = CHANNEL_HINTS[ch];
+    ref.placeholder = CHANNEL_PLACEHOLDERS[ch];
+    ref.focus();
+  } else {
+    hint.textContent = 'Select a payment method first';
+    ref.placeholder = '—';
+  }
+}
+
+async function submitMarkPaid() {
+  if (!_markPaidCtx) return;
+  const { orderId } = _markPaidCtx;
+  const channel = document.getElementById('mp-channel').value;
+  const reference = document.getElementById('mp-reference').value.trim();
+  const note = document.getElementById('mp-note').value.trim();
+  const err = document.getElementById('mp-error');
+  const channelEl = document.getElementById('mp-channel');
+  const refEl = document.getElementById('mp-reference');
+
+  // Clear prior error state
+  err.classList.remove('show');
+  channelEl.classList.remove('error');
+  refEl.classList.remove('error');
+
+  // Client-side validation
+  if (!channel) {
+    err.textContent = 'Select a payment method.';
+    err.classList.add('show');
+    channelEl.classList.add('error');
+    return;
+  }
+  if (!reference) {
+    err.textContent = 'Payment reference is required.';
+    err.classList.add('show');
+    refEl.classList.add('error');
+    return;
+  }
+
+  const btn = document.getElementById('mp-submit');
+  btn.disabled = true;
+  btn.textContent = 'Working...';
+
   try {
     const res = await fetch('/api/admin/mark-paid', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
-      body: JSON.stringify({ orderId, paymentReference: ref.trim(), note: note.trim() }),
+      body: JSON.stringify({ orderId, paymentChannel: channel, paymentReference: reference, note }),
     });
     const d = await res.json();
-    if (!d.ok) { alert('Mark-paid failed: ' + (d.error || 'unknown error')); return; }
+    if (!d.ok) {
+      err.textContent = 'Mark-paid failed: ' + (d.error || 'unknown error');
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Mark Paid';
+      return;
+    }
+    closeMarkPaid();
+    // Surface dispatch failure (Rapid creds missing, network issue, etc.) so admin
+    // knows to come back and click Retry once it's resolvable.
     if (d.dispatch && !d.dispatch.ok) {
-      alert(`Order marked paid, but dispatch to Rapid failed: ${d.dispatch.error}\n\nUse the Retry button to try again.`);
+      alert('Order marked paid, but dispatch to Rapid failed:\n\n' + d.dispatch.error + '\n\nUse the Retry button on the order row to try again.');
     }
     loadStats();
   } catch (e) {
-    alert('Mark-paid failed: ' + e.message);
+    err.textContent = 'Mark-paid failed: ' + e.message;
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Mark Paid';
   }
 }
+
+// Esc key closes the modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('mark-paid-overlay').classList.contains('open')) {
+    closeMarkPaid();
+  }
+});
+
+// Back-compat wrapper for the existing `onclick="markPaid(...)"` attrs in render code.
+function markPaid(orderId, total) { openMarkPaid(orderId, total); }
 
 async function dispatchOrder(orderId) {
   const btn = event.target;

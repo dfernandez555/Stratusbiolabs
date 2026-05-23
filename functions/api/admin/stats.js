@@ -101,6 +101,7 @@ export async function onRequestGet({ request, env }) {
       customerEmail: o.customerEmail,
       paymentStatus: o.paymentStatus || (o.paymentMethod === "invoice" ? "awaiting_payment" : "paid"),
       paymentReceivedAt: o.paymentReceivedAt || null,
+      paymentChannel: o.paymentChannel || null,    // 'Cash App' | 'Zelle' | 'Other'
       paymentReference: o.paymentReference || null,
       rapidStatus: o.rapidStatus || "pending",
       rapidError: o.rapidError || null,
