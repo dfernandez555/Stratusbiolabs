@@ -99,6 +99,14 @@ export async function onRequestPost({ request, env }) {
       discount = round2(((subtotal + shipping) * promo.value) / 100);
     } else if (promo.type === "shipping") {
       discount = shipping;
+    } else if (promo.type === "set_total") {
+      // Reduce the cart total to a specific dollar amount (used for admin
+      // test codes — e.g. TESTDRIVE lets staff push a real order through at
+      // $1 so the full Cash App / Zelle / mark-paid / dispatch chain can be
+      // exercised end-to-end). Clamped to non-negative so an already-cheap
+      // cart never ends up costing more than face value.
+      const target = Math.max(0, Number(promo.targetTotal) || 0);
+      discount = round2(Math.max(0, (subtotal + shipping) - target));
     }
     promoApplied = {
       code, label: promo.label, discountPct: promo.value,
