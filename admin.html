@@ -89,6 +89,36 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 .modal-btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--hairline); }
 .modal-btn-secondary:hover { color: var(--ink); border-color: var(--ink); }
 
+/* ── Order Details modal ──────────────────────────────────────────── */
+.details-modal { max-width: 640px; }
+.details-section { padding: 1.1rem 0; border-top: 1px solid var(--hairline); }
+.details-section:first-of-type { border-top: none; padding-top: 0; }
+.details-section-title { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; }
+.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem 1.2rem; }
+.details-row { display: flex; flex-direction: column; gap: 0.15rem; }
+.details-row.full { grid-column: 1 / -1; }
+.details-row-label { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.details-row-value { font-family: 'Inter', sans-serif; font-size: 0.86rem; font-weight: 400; color: var(--ink); word-break: break-word; }
+.details-row-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+.details-row-value .pill { font-size: 0.55rem; }
+.details-items { display: flex; flex-direction: column; gap: 0.5rem; }
+.details-item { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0.75rem; background: var(--cream-2); border: 1px solid var(--hairline); }
+.details-item-name { font-size: 0.85rem; font-weight: 400; }
+.details-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.15rem; }
+.details-item-total { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; white-space: nowrap; }
+.details-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--hairline); }
+.details-actions .modal-btn { flex: 1; min-width: 130px; padding: 0.85rem 0.8rem; font-size: 0.66rem; }
+.modal-btn-danger { background: #c44141; color: #fff; }
+.modal-btn-danger:hover { background: #a83434; }
+.modal-btn-warn { background: rgba(229,165,57,0.15); color: #9a6a17; border: 1px solid rgba(229,165,57,0.4); }
+.modal-btn-warn:hover { background: rgba(229,165,57,0.25); }
+.details-empty-action { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; text-align: center; padding: 1rem; font-style: italic; }
+
+/* Clickable order ID styling */
+.order-link { background: none; border: none; padding: 0; cursor: pointer; font-family: 'JetBrains Mono', monospace; color: var(--ink); text-decoration: underline; text-decoration-color: rgba(31,27,22,0.3); text-underline-offset: 3px; transition: text-decoration-color 0.2s; font-size: inherit; }
+.order-link:hover { text-decoration-color: var(--ink); }
+
+/* ── RESPONSIVE: tablet ─────────────────────────────────────────── */
 @media (max-width: 800px) {
   body { padding: 1rem; }
   .kpis { grid-template-columns: 1fr 1fr; }
@@ -96,6 +126,54 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   table th, table td { padding: 0.6rem 0.5rem; }
   .modal { padding: 1.5rem 1.25rem 1.25rem; }
   .modal-title { font-size: 1.3rem; }
+}
+
+/* ── RESPONSIVE: phone (≤760px) — turn tables into card stacks ─── */
+@media (max-width: 760px) {
+  body { padding: 0.75rem; }
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.2rem; margin: 1.75rem 0 0.8rem; }
+  .lead { font-size: 0.62rem; }
+
+  .kpis { grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.8rem; }
+  .kpi { padding: 1rem 0.9rem; }
+  .kpi-label { font-size: 0.52rem; margin-bottom: 0.5rem; }
+  .kpi-value { font-size: 1.7rem; }
+
+  /* Hide tabular layout, render each row as a stacked card */
+  table thead { display: none; }
+  table, table tbody, table tr, table td { display: block; width: 100%; }
+  table { background: transparent; }
+  table tr { background: var(--cream-2); border: 1px solid var(--hairline); margin-bottom: 0.7rem; padding: 0.85rem 0.9rem; }
+  table tr.awaiting-row { background: rgba(229,165,57,0.08); }
+  table td { padding: 0.3rem 0; border: none; display: grid; grid-template-columns: 92px 1fr; gap: 0.6rem; align-items: baseline; }
+  table td.num { text-align: left; }
+  table td::before {
+    content: attr(data-label);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.1rem;
+  }
+  table td.full-cell { grid-template-columns: 1fr; }
+  table td.full-cell::before { display: none; }
+  table td.empty { display: block; text-align: center; padding: 1.5rem 0.5rem; }
+  table td.empty::before { display: none; }
+  /* Action button cells — full width, hit-friendly */
+  table td.action-cell { grid-template-columns: 1fr; padding-top: 0.55rem; }
+  table td.action-cell::before { display: none; }
+  .mark-paid-btn, .toggle-btn { width: 100%; padding: 0.7rem 0.5rem; font-size: 0.7rem; }
+
+  /* Modals: full-bleed on phones */
+  .modal { padding: 1.5rem 1.1rem 1.2rem; max-height: 95vh; }
+  .modal-title { font-size: 1.2rem; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .modal-btn { width: 100%; }
+  .details-grid { grid-template-columns: 1fr; gap: 0.7rem; }
+  .details-actions { flex-direction: column; }
+  .details-actions .modal-btn { width: 100%; flex: none; }
 }
 </style>
 </head>
@@ -195,6 +273,27 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   </div>
 </div>
 
+<!-- ─── Order Details modal ─── -->
+<div class="modal-overlay" id="details-overlay" onclick="if(event.target===this)closeDetails()">
+  <div class="modal details-modal" role="dialog" aria-modal="true" aria-labelledby="details-title">
+    <p class="modal-eyebrow">// Order Details</p>
+    <h3 class="modal-title" id="details-title">Loading...</h3>
+    <p class="modal-sub" id="details-sub">—</p>
+
+    <div id="details-body">
+      <!-- Filled in by renderOrderDetails() -->
+    </div>
+
+    <div class="details-actions" id="details-actions">
+      <!-- Action buttons rendered based on order state -->
+    </div>
+
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button class="modal-btn modal-btn-secondary" onclick="closeDetails()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const FMT_USD = n => n.toFixed(2);
 const FMT_DATE = s => { try { return new Date(s).toLocaleDateString(); } catch { return s; } };
@@ -235,31 +334,31 @@ async function loadStats() {
   const affRevBody = document.getElementById('aff-rev-body');
   if (d.affiliatesByRevenue.length) {
     affRevBody.innerHTML = d.affiliatesByRevenue.map(a => `
-      <tr><td>${a.name || a.affiliateId}</td>
-          <td><span class="code">${a.code || '—'}</span></td>
-          <td>${a.platform || '—'}</td>
-          <td class="num">${a.orders}</td>
-          <td class="num">$${FMT_USD(a.revenue)}</td>
-          <td class="num">$${FMT_USD(a.commissionOwed)}</td></tr>
+      <tr><td data-label="Affiliate">${a.name || a.affiliateId}</td>
+          <td data-label="Code"><span class="code">${a.code || '—'}</span></td>
+          <td data-label="Platform">${a.platform || '—'}</td>
+          <td data-label="Orders" class="num">${a.orders}</td>
+          <td data-label="Revenue" class="num">$${FMT_USD(a.revenue)}</td>
+          <td data-label="Owed" class="num">$${FMT_USD(a.commissionOwed)}</td></tr>
     `).join('');
   } else {
-    affRevBody.innerHTML = '<tr><td colspan="6" class="empty">No revenue yet this month.</td></tr>';
+    affRevBody.innerHTML = '<tr><td colspan="6" class="empty full-cell">No revenue yet this month.</td></tr>';
   }
 
   const affBody = document.getElementById('aff-body');
   if (d.affiliates.length) {
     affBody.innerHTML = d.affiliates.map(a => `
-      <tr><td>${a.name}</td>
-          <td>${a.email}</td>
-          <td><span class="code">${a.code}</span></td>
-          <td>${a.platform}</td>
-          <td>${a.audienceSize}</td>
-          <td>${FMT_DATE(a.createdAt)}</td>
-          <td><span class="pill ${a.status}">${a.status}</span></td>
-          <td><button class="toggle-btn" onclick="toggleAff('${a.id}','${a.status === 'active' ? 'disabled' : 'active'}')">${a.status === 'active' ? 'Disable' : 'Enable'}</button></td></tr>
+      <tr><td data-label="Name">${a.name}</td>
+          <td data-label="Email">${a.email}</td>
+          <td data-label="Code"><span class="code">${a.code}</span></td>
+          <td data-label="Platform">${a.platform}</td>
+          <td data-label="Audience">${a.audienceSize}</td>
+          <td data-label="Joined">${FMT_DATE(a.createdAt)}</td>
+          <td data-label="Status"><span class="pill ${a.status}">${a.status}</span></td>
+          <td class="action-cell"><button class="toggle-btn" onclick="toggleAff('${a.id}','${a.status === 'active' ? 'disabled' : 'active'}')">${a.status === 'active' ? 'Disable' : 'Enable'}</button></td></tr>
     `).join('');
   } else {
-    affBody.innerHTML = '<tr><td colspan="8" class="empty">No affiliates yet.</td></tr>';
+    affBody.innerHTML = '<tr><td colspan="8" class="empty full-cell">No affiliates yet.</td></tr>';
   }
 
   // Awaiting payment (invoice orders that haven't been marked paid yet).
@@ -269,16 +368,16 @@ async function loadStats() {
   if (awaiting.length) {
     awaitingBody.innerHTML = awaiting.map(o => `
       <tr class="awaiting-row">
-        <td>${FMT_DATE(o.createdAt)}</td>
-        <td><span class="code">${o.orderId}</span></td>
-        <td>${o.customerEmail}</td>
-        <td class="num">$${FMT_USD(o.total)}</td>
-        <td>${o.paymentMethod || 'invoice'}</td>
-        <td><button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button></td>
+        <td data-label="Date">${FMT_DATE(o.createdAt)}</td>
+        <td data-label="Order"><button class="order-link" onclick="openDetails('${o.orderId}')">${o.orderId}</button></td>
+        <td data-label="Customer">${o.customerEmail}</td>
+        <td data-label="Total" class="num">$${FMT_USD(o.total)}</td>
+        <td data-label="Method">${o.paymentMethod || 'invoice'}</td>
+        <td class="action-cell"><button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button></td>
       </tr>
     `).join('');
   } else {
-    awaitingBody.innerHTML = '<tr><td colspan="6" class="empty">No orders awaiting payment.</td></tr>';
+    awaitingBody.innerHTML = '<tr><td colspan="6" class="empty full-cell">No orders awaiting payment.</td></tr>';
   }
 
   const ordBody = document.getElementById('orders-body');
@@ -300,19 +399,19 @@ async function loadStats() {
         actionBtn = `<button class="toggle-btn" title="${title}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`;
       }
       return `
-      <tr><td>${FMT_DATE(o.createdAt)}</td>
-          <td><span class="code">${o.orderId}</span></td>
-          <td>${o.customerEmail}</td>
-          <td>${o.promoCode ? `<span class="code">${o.promoCode}</span>` : '—'}</td>
-          <td>${o.paymentMethod}</td>
-          <td class="num">$${FMT_USD(o.total)}</td>
-          <td class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td>
-          <td><span class="pill ${payPillClass}">${ps.replace('_',' ')}</span></td>
-          <td><span class="pill ${rapidPillClass}">${rs}</span></td>
-          <td>${actionBtn}</td></tr>`;
+      <tr><td data-label="Date">${FMT_DATE(o.createdAt)}</td>
+          <td data-label="Order"><button class="order-link" onclick="openDetails('${o.orderId}')">${o.orderId}</button></td>
+          <td data-label="Customer">${o.customerEmail}</td>
+          <td data-label="Code">${o.promoCode ? `<span class="code">${o.promoCode}</span>` : '—'}</td>
+          <td data-label="Pay">${o.paymentMethod}</td>
+          <td data-label="Total" class="num">$${FMT_USD(o.total)}</td>
+          <td data-label="Commission" class="num">${o.commissionOwed ? '$' + FMT_USD(o.commissionOwed) : '—'}</td>
+          <td data-label="Payment"><span class="pill ${payPillClass}">${ps.replace('_',' ')}</span></td>
+          <td data-label="Rapid"><span class="pill ${rapidPillClass}">${rs}</span></td>
+          <td class="action-cell">${actionBtn}</td></tr>`;
     }).join('');
   } else {
-    ordBody.innerHTML = '<tr><td colspan="10" class="empty">No orders yet this month.</td></tr>';
+    ordBody.innerHTML = '<tr><td colspan="10" class="empty full-cell">No orders yet this month.</td></tr>';
   }
 }
 
@@ -440,6 +539,219 @@ document.addEventListener('keydown', (e) => {
 
 // Back-compat wrapper for the existing `onclick="markPaid(...)"` attrs in render code.
 function markPaid(orderId, total) { openMarkPaid(orderId, total); }
+
+// ─── Order Details modal ──────────────────────────────────────────
+// Fetches the full order record from /api/admin/order?orderId=...
+// Renders a 5-section breakdown + state-aware action buttons:
+//   awaiting_payment        -> [Mark Paid]      [Cancel Order]
+//   paid + not dispatched   -> [Un-mark Paid]   [Cancel Order]
+//   paid + dispatched       -> [Cancel Order]   (warns about Rapid)
+//   cancelled               -> read-only, no actions
+let _detailsCtx = null;
+
+async function openDetails(orderId) {
+  _detailsCtx = { orderId };
+  document.getElementById('details-overlay').classList.add('open');
+  document.getElementById('details-title').textContent = 'Loading...';
+  document.getElementById('details-sub').textContent = orderId;
+  document.getElementById('details-body').innerHTML =
+    '<p class="details-empty-action">Fetching order...</p>';
+  document.getElementById('details-actions').innerHTML = '';
+
+  try {
+    const res = await fetch('/api/admin/order?orderId=' + encodeURIComponent(orderId), {
+      headers: { 'X-Admin-Password': password },
+    });
+    if (res.status === 401) { closeDetails(); alert('Session expired — please log in again.'); return; }
+    const d = await res.json();
+    if (!d.ok) {
+      document.getElementById('details-body').innerHTML =
+        `<p class="details-empty-action">Could not load order: ${d.error || 'unknown'}</p>`;
+      return;
+    }
+    renderOrderDetails(d.order);
+  } catch (e) {
+    document.getElementById('details-body').innerHTML =
+      `<p class="details-empty-action">Network error: ${e.message}</p>`;
+  }
+}
+
+function closeDetails() {
+  document.getElementById('details-overlay').classList.remove('open');
+  _detailsCtx = null;
+}
+
+function renderOrderDetails(o) {
+  const ps = o.paymentStatus || (o.paymentMethod === 'invoice' ? 'awaiting_payment' : 'paid');
+  const rs = o.rapidStatus || 'pending';
+  const isCancelled = o.status === 'cancelled' || ps === 'cancelled';
+  const isPaid = ps === 'paid';
+  const isAwaiting = ps === 'awaiting_payment';
+  const isDispatched = rs === 'dispatched';
+
+  document.getElementById('details-title').textContent = isCancelled ? 'Order — CANCELLED' : 'Order';
+  document.getElementById('details-sub').innerHTML =
+    `<strong>${o.orderId}</strong> &middot; <strong>$${(Number(o.total)||0).toFixed(2)}</strong> &middot; ${FMT_DATE(o.createdAt)}`;
+
+  const addr = o.shippingAddress || {};
+  const items = Array.isArray(o.items) ? o.items : [];
+  const itemsHtml = items.length ? items.map(it => `
+    <div class="details-item">
+      <div>
+        <div class="details-item-name">${escapeHtml(it.name || it.sku || '—')} × ${it.qty || 1}</div>
+        <div class="details-item-meta">${escapeHtml(it.sku || '')}${it.sizeKey ? ' · ' + escapeHtml(it.sizeKey) : ''}</div>
+      </div>
+      <div class="details-item-total">$${((Number(it.price)||0) * (it.qty||1)).toFixed(2)}</div>
+    </div>
+  `).join('') : '<p class="details-empty-action">No items recorded</p>';
+
+  const payPillClass = ps === 'paid' ? 'active' : (ps === 'awaiting_payment' ? 'pending-pay' : 'disabled');
+  const rapidPillClass = rs === 'dispatched' ? 'active' : (rs === 'failed' ? 'disabled' : '');
+
+  document.getElementById('details-body').innerHTML = `
+    <div class="details-section">
+      <div class="details-section-title">// Customer</div>
+      <div class="details-grid">
+        <div class="details-row full">
+          <span class="details-row-label">Email</span>
+          <span class="details-row-value mono">${escapeHtml(o.customerEmail || '—')}</span>
+        </div>
+        ${addr.phone ? `<div class="details-row full">
+          <span class="details-row-label">Phone</span>
+          <span class="details-row-value">${escapeHtml(addr.phone)}</span>
+        </div>` : ''}
+        ${addr.institution ? `<div class="details-row full">
+          <span class="details-row-label">Institution</span>
+          <span class="details-row-value">${escapeHtml(addr.institution)}</span>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="details-section-title">// Ship To</div>
+      <div class="details-grid">
+        <div class="details-row full">
+          <span class="details-row-label">Name</span>
+          <span class="details-row-value">${escapeHtml((addr.firstName||'') + ' ' + (addr.lastName||''))}</span>
+        </div>
+        <div class="details-row full">
+          <span class="details-row-label">Address</span>
+          <span class="details-row-value">
+            ${escapeHtml(addr.address || '—')}${addr.address2 ? ', ' + escapeHtml(addr.address2) : ''}<br>
+            ${escapeHtml(addr.city || '')}, ${escapeHtml(addr.state || '')} ${escapeHtml(addr.zip || '')}<br>
+            ${escapeHtml(addr.country || '')}
+          </span>
+        </div>
+        ${addr.notes ? `<div class="details-row full">
+          <span class="details-row-label">Notes</span>
+          <span class="details-row-value">${escapeHtml(addr.notes)}</span>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="details-section-title">// Items</div>
+      <div class="details-items">${itemsHtml}</div>
+    </div>
+
+    <div class="details-section">
+      <div class="details-section-title">// Totals</div>
+      <div class="details-grid">
+        <div class="details-row"><span class="details-row-label">Subtotal</span><span class="details-row-value mono">$${(Number(o.subtotal)||0).toFixed(2)}</span></div>
+        <div class="details-row"><span class="details-row-label">Shipping</span><span class="details-row-value mono">$${(Number(o.shipping)||0).toFixed(2)}</span></div>
+        ${o.discount ? `<div class="details-row"><span class="details-row-label">Discount${o.promoCode ? ' (' + escapeHtml(o.promoCode) + ')' : ''}</span><span class="details-row-value mono">-$${(Number(o.discount)||0).toFixed(2)}</span></div>` : ''}
+        <div class="details-row"><span class="details-row-label">Total</span><span class="details-row-value mono"><strong>$${(Number(o.total)||0).toFixed(2)}</strong></span></div>
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="details-section-title">// Payment</div>
+      <div class="details-grid">
+        <div class="details-row"><span class="details-row-label">Method</span><span class="details-row-value">${escapeHtml(o.paymentMethod || '—')}</span></div>
+        <div class="details-row"><span class="details-row-label">Status</span><span class="details-row-value"><span class="pill ${payPillClass}">${ps.replace('_',' ')}</span></span></div>
+        ${o.paymentChannel ? `<div class="details-row"><span class="details-row-label">Channel</span><span class="details-row-value">${escapeHtml(o.paymentChannel)}</span></div>` : ''}
+        ${o.paymentReference ? `<div class="details-row"><span class="details-row-label">Reference</span><span class="details-row-value mono">${escapeHtml(o.paymentReference)}</span></div>` : ''}
+        ${o.paymentReceivedAt ? `<div class="details-row full"><span class="details-row-label">Received</span><span class="details-row-value">${new Date(o.paymentReceivedAt).toLocaleString()}</span></div>` : ''}
+        ${o.paymentNote ? `<div class="details-row full"><span class="details-row-label">Note</span><span class="details-row-value">${escapeHtml(o.paymentNote)}</span></div>` : ''}
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="details-section-title">// Fulfillment (Rapid)</div>
+      <div class="details-grid">
+        <div class="details-row"><span class="details-row-label">Status</span><span class="details-row-value"><span class="pill ${rapidPillClass}">${rs}</span></span></div>
+        ${o.rapidDispatchedAt ? `<div class="details-row"><span class="details-row-label">Dispatched</span><span class="details-row-value">${new Date(o.rapidDispatchedAt).toLocaleString()}</span></div>` : ''}
+        ${o.rapidOrderId ? `<div class="details-row"><span class="details-row-label">Rapid ID</span><span class="details-row-value mono">${escapeHtml(o.rapidOrderId)}</span></div>` : ''}
+        ${o.rapidError ? `<div class="details-row full"><span class="details-row-label">Last Error</span><span class="details-row-value mono" style="color:#c44141">${escapeHtml(o.rapidError)}</span></div>` : ''}
+      </div>
+    </div>
+
+    ${o.cancelledAt ? `<div class="details-section">
+      <div class="details-section-title">// Cancellation</div>
+      <div class="details-grid">
+        <div class="details-row"><span class="details-row-label">Cancelled at</span><span class="details-row-value">${new Date(o.cancelledAt).toLocaleString()}</span></div>
+        ${o.cancelReason ? `<div class="details-row full"><span class="details-row-label">Reason</span><span class="details-row-value">${escapeHtml(o.cancelReason)}</span></div>` : ''}
+      </div>
+    </div>` : ''}
+  `;
+
+  // Build state-aware action buttons
+  const acts = [];
+  if (isCancelled) {
+    // No actions on cancelled orders
+  } else {
+    if (isAwaiting) {
+      acts.push(`<button class="modal-btn modal-btn-primary" onclick="closeDetails();markPaid('${o.orderId}', ${o.total||0})">Mark Paid</button>`);
+    } else if (isPaid && !isDispatched) {
+      acts.push(`<button class="modal-btn modal-btn-warn" onclick="unmarkPaid('${o.orderId}')">Un-mark Paid</button>`);
+    }
+    acts.push(`<button class="modal-btn modal-btn-danger" onclick="cancelOrder('${o.orderId}', ${isDispatched ? 'true' : 'false'})">Cancel Order</button>`);
+  }
+  document.getElementById('details-actions').innerHTML = acts.join('') ||
+    '<p class="details-empty-action">This order has been cancelled — no further actions available.</p>';
+}
+
+// Simple HTML-escape for safe interpolation (admin is internal but defense-in-depth never hurts)
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                   .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
+async function unmarkPaid(orderId) {
+  if (!confirm('Un-mark this order as paid?\n\nThe order will return to "Awaiting Payment" status. Dispatch to Rapid will be blocked until you mark it paid again.')) return;
+  try {
+    const res = await fetch('/api/admin/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ orderId, action: 'unmark_paid' }),
+    });
+    const d = await res.json();
+    if (!d.ok) { alert('Failed: ' + (d.error || 'unknown')); return; }
+    // Re-fetch and re-render the details modal so admin sees the new state.
+    openDetails(orderId);
+    loadStats();
+  } catch (e) { alert('Network error: ' + e.message); }
+}
+
+async function cancelOrder(orderId, alreadyDispatched) {
+  const warn = alreadyDispatched
+    ? '⚠ This order has ALREADY been dispatched to Rapid Fulfillment.\n\nCancelling here ONLY updates your internal records. You must also cancel the shipment manually in the Rapid CRM at stratusbiolabs.rapidfulfillmentcrm.com.\n\nProceed?'
+    : 'Cancel this order? This cannot be undone.';
+  if (!confirm(warn)) return;
+  const reason = prompt('Reason (optional, for your records):') || '';
+  try {
+    const res = await fetch('/api/admin/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ orderId, action: 'cancel', reason: reason.trim() }),
+    });
+    const d = await res.json();
+    if (!d.ok) { alert('Failed: ' + (d.error || 'unknown')); return; }
+    openDetails(orderId);  // re-render so admin sees the cancelled state
+    loadStats();
+  } catch (e) { alert('Network error: ' + e.message); }
+}
 
 async function dispatchOrder(orderId) {
   const btn = event.target;

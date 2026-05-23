@@ -40,11 +40,14 @@ export async function onRequestGet({ request, env }) {
   );
   const orders = orderRecs.filter(Boolean).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  // Aggregate.
-  let totalRevenue = 0, orderCount = orders.length;
+  // Aggregate. Cancelled orders are listed in recentOrders so admin can see
+  // them, but they don't count toward revenue, order count, or affiliate
+  // commission payouts.
+  const liveOrders = orders.filter(o => o.status !== "cancelled" && o.paymentStatus !== "cancelled");
+  let totalRevenue = 0, orderCount = liveOrders.length;
   const byAffiliate = {}; // affiliateId -> { affiliateId, code, revenue, orders, commissionOwed }
 
-  for (const o of orders) {
+  for (const o of liveOrders) {
     totalRevenue += o.total || 0;
     if (o.affiliateId) {
       const key = o.affiliateId;
@@ -99,6 +102,7 @@ export async function onRequestGet({ request, env }) {
       affiliateId: o.affiliateId, commissionOwed: o.commissionOwed,
       paymentMethod: o.paymentMethod, createdAt: o.createdAt,
       customerEmail: o.customerEmail,
+      status: o.status || "active",  // 'active' | 'cancelled'
       paymentStatus: o.paymentStatus || (o.paymentMethod === "invoice" ? "awaiting_payment" : "paid"),
       paymentReceivedAt: o.paymentReceivedAt || null,
       paymentChannel: o.paymentChannel || null,    // 'Cash App' | 'Zelle' | 'Other'
@@ -106,6 +110,7 @@ export async function onRequestGet({ request, env }) {
       rapidStatus: o.rapidStatus || "pending",
       rapidError: o.rapidError || null,
       rapidDispatchedAt: o.rapidDispatchedAt || null,
+      cancelledAt: o.cancelledAt || null,
     })),
   });
 }
