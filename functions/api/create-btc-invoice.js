@@ -50,8 +50,18 @@ export async function onRequestPost({ request, env }) {
   if (!raw) return json({ ok: false, error: "Order not found. Place the order first." }, 404);
   const order = JSON.parse(raw);
 
+  // Refuse to create a new invoice if this order is already paid OR has
+  // already been dispatched to Rapid. Otherwise a customer hitting "back"
+  // after admin manually marked the order paid could end up paying twice.
+  // (BUG-009)
   if (order.paymentStatus === "paid") {
     return json({ ok: false, error: "Order is already paid" }, 409);
+  }
+  if (order.rapidStatus === "dispatched") {
+    return json({ ok: false, error: "Order has already been dispatched; no new invoice can be created" }, 409);
+  }
+  if (order.status === "cancelled") {
+    return json({ ok: false, error: "Order has been cancelled" }, 409);
   }
 
   const totalUsd = Number(order.total) || 0;

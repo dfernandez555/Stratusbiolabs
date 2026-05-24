@@ -224,9 +224,27 @@ export async function onRequestPost({ request, env }) {
   if (!raw) return json({ ok: false, error: "Order not found" }, 404);
   const order = JSON.parse(raw);
 
-  // Idempotency: if already dispatched, return ok
+  // Idempotency: if already dispatched, return ok.
   if (order.rapidStatus === "dispatched" && !isAdmin) {
     return json({ ok: true, status: "already_dispatched", rapidOrderId: order.rapidOrderId || null });
+  }
+
+  // BUG-003 mitigation — claim a "dispatching" lock by writing the status to
+  // KV BEFORE making the SOAP call. A concurrent webhook + admin-retry race
+  // will see this on its KV read and bail out instead of issuing a second
+  // SOAP create_order. The 10-minute staleness window protects against a
+  // crashed dispatch that never resolved (it's OK to retry after that).
+  const DISPATCH_LOCK_TTL_MS = 10 * 60 * 1000;
+  if (order.rapidStatus === "dispatching" && order.rapidDispatchingAt) {
+    const ageMs = Date.now() - Date.parse(order.rapidDispatchingAt);
+    if (ageMs < DISPATCH_LOCK_TTL_MS) {
+      return json({
+        ok: true,
+        status: "dispatch_in_progress",
+        message: "Another dispatch is already in flight for this order.",
+      });
+    }
+    // Else fall through — lock is stale, take it over.
   }
 
   // Payment gate: invoice orders cannot dispatch until admin marks them paid.
@@ -247,6 +265,11 @@ export async function onRequestPost({ request, env }) {
     await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
     return json({ ok: false, error: "Fulfillment integration not yet configured.", retryable: true }, 503);
   }
+
+  // Take the dispatch lock.
+  order.rapidStatus = "dispatching";
+  order.rapidDispatchingAt = new Date().toISOString();
+  await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
 
   let sessionId = null;
   try {

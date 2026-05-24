@@ -17,10 +17,11 @@ function unauth() {
 
 function isAuthed(request, env) {
   if (!env.ADMIN_PASSWORD) return false; // password not configured = locked down
+  // Header-only auth. We deliberately do NOT accept ?password=... in the query
+  // string because it would leak into browser history, server access logs,
+  // and the Referer header on any outbound link from an admin session.
   const hdr = request.headers.get("X-Admin-Password") || "";
-  const url = new URL(request.url);
-  const qp  = url.searchParams.get("password") || "";
-  return (hdr === env.ADMIN_PASSWORD) || (qp === env.ADMIN_PASSWORD);
+  return hdr === env.ADMIN_PASSWORD;
 }
 
 export async function onRequestGet({ request, env }) {

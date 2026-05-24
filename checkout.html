@@ -225,6 +225,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .rate-limit-banner { display: none; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.3); padding: 0.8rem 1.5rem; margin: 0 1.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--red); letter-spacing: 0.05em; text-align: center; }
 .rate-limit-banner.show { display: block; }
 
+/* FORM ERROR SUMMARY BANNER — shown next to the submit button when validateForm fails. Prevents the "I clicked place order and nothing happened" UX on mobile where the missing field is scrolled off-screen above. */
+.form-error-banner { display: none; background: rgba(224,90,90,0.08); border: 1px solid rgba(224,90,90,0.35); padding: 0.85rem 1rem; margin-bottom: 0.85rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; color: var(--red); line-height: 1.5; }
+.form-error-banner.show { display: block; }
+.form-error-banner strong { color: var(--red); font-weight: 500; display: block; margin-bottom: 0.2rem; font-size: 0.86rem; }
+.form-error-banner ul { margin: 0; padding-left: 1.25rem; }
+.form-error-banner li { margin-top: 0.15rem; }
+
 footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .footer-logo { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
 .footer-logo span { color: var(--cirrus); }
@@ -321,7 +328,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
             </div>
             <div class="form-group full">
               <label class="form-label">Email Address <span class="req">*</span></label>
-              <input class="form-input" id="email" type="email" placeholder="jane@university.edu" maxlength="100" autocomplete="email"/>
+              <input class="form-input" id="email" type="text" inputmode="email" placeholder="jane@university.edu" maxlength="100" autocomplete="email"/>
               <span class="error-msg" id="email-err">Valid email required</span>
             </div>
             <div class="form-group full">
@@ -525,6 +532,10 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           <span class="error-msg" id="ruo-err" style="padding:0 1.5rem 0.5rem;display:none;">You must confirm research use to proceed.</span>
 
           <div class="submit-wrap">
+            <div class="form-error-banner" id="form-error-banner" role="alert" aria-live="polite">
+              <strong>Please complete the highlighted fields:</strong>
+              <ul id="form-error-list"></ul>
+            </div>
             <button class="btn-submit card-mode" id="submit-btn" onclick="submitOrder()">
               Place Order — Receive Payment Email →
             </button>
@@ -1153,22 +1164,69 @@ function validate(id, errId, condition) {
   else { el.classList.add('error'); err.classList.add('show'); return false; }
 }
 
+// Returns { valid: bool, firstInvalidId: string|null, errors: string[] }
+// so the caller (submitOrder) can render a banner near the submit button AND
+// scroll the offending field into view. Without this, mobile users tap
+// "Place Order", nothing visible happens (the failing field is up the page,
+// off-screen), and they think the button is broken.
 function validateForm() {
-  let valid = true;
-  valid = validate('fname', 'fname-err', document.getElementById('fname').value.trim().length > 0) && valid;
-  valid = validate('lname', 'lname-err', document.getElementById('lname').value.trim().length > 0) && valid;
-  const email = document.getElementById('email').value.trim();
-  valid = validate('email', 'email-err', isValidEmail(email)) && valid;
-  valid = validate('address', 'address-err', document.getElementById('address').value.trim().length > 0) && valid;
-  valid = validate('city', 'city-err', document.getElementById('city').value.trim().length > 0) && valid;
-  valid = validate('state', 'state-err', document.getElementById('state').value !== '') && valid;
-  valid = validate('zip', 'zip-err', document.getElementById('zip').value.trim().length > 0) && valid;
+  const errors = [];
+  let firstInvalid = null;
+
+  const check = (id, errId, ok, label) => {
+    const passed = validate(id, errId, ok);
+    if (!passed) {
+      errors.push(label);
+      if (!firstInvalid) firstInvalid = id;
+    }
+    return passed;
+  };
+
+  check('fname', 'fname-err', document.getElementById('fname').value.trim().length > 0, 'First Name');
+  check('lname', 'lname-err', document.getElementById('lname').value.trim().length > 0, 'Last Name');
+  check('email', 'email-err', isValidEmail(document.getElementById('email').value.trim()), 'A valid Email Address');
+  check('address', 'address-err', document.getElementById('address').value.trim().length > 0, 'Street Address');
+  check('city', 'city-err', document.getElementById('city').value.trim().length > 0, 'City');
+  check('state', 'state-err', document.getElementById('state').value !== '', 'State');
+  check('zip', 'zip-err', document.getElementById('zip').value.trim().length > 0, 'ZIP Code');
   // Required for Ally Pay compliance — customer must declare their research field.
-  valid = validate('researchField', 'researchField-err', document.getElementById('researchField').value !== '') && valid;
+  check('researchField', 'researchField-err', document.getElementById('researchField').value !== '', 'Research Field');
+
   const ruo = document.getElementById('ruo-check').checked;
   const ruoErr = document.getElementById('ruo-err');
-  if (!ruo) { ruoErr.classList.add('show'); valid = false; } else { ruoErr.classList.remove('show'); }
-  return valid;
+  if (!ruo) {
+    ruoErr.classList.add('show');
+    errors.push('Research-use confirmation (checkbox at bottom)');
+    if (!firstInvalid) firstInvalid = 'ruo-check';
+  } else {
+    ruoErr.classList.remove('show');
+  }
+
+  return { valid: errors.length === 0, firstInvalidId: firstInvalid, errors };
+}
+
+// Renders the validation-error banner near the submit button + scrolls the
+// first invalid field into view. Hides the banner when called with empty errors.
+function showFormErrors({ errors, firstInvalidId }) {
+  const banner = document.getElementById('form-error-banner');
+  const list = document.getElementById('form-error-list');
+  if (!banner || !list) return;
+  if (!errors || errors.length === 0) {
+    banner.classList.remove('show');
+    return;
+  }
+  list.innerHTML = errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
+  banner.classList.add('show');
+  // Scroll the first invalid field into view, with a small offset so the
+  // sticky nav doesn't cover it. Smooth scroll is iOS-friendly.
+  if (firstInvalidId) {
+    const el = document.getElementById(firstInvalidId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Focus after the scroll settles so the keyboard doesn't fight scrolling.
+      setTimeout(() => { try { el.focus({ preventScroll: true }); } catch {} }, 350);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1267,7 +1325,13 @@ async function logOrderToServer(orderId, email, totalAmount, shipping, discount,
 // ═══════════════════════════════════════════
 async function submitOrder() {
   if (cart.length === 0) { alert('Your cart is empty. Please add products before checking out.'); return; }
-  if (!validateForm()) return;
+  const v = validateForm();
+  if (!v.valid) {
+    showFormErrors(v);
+    return;
+  }
+  // Clear any prior banner state on a successful pass.
+  showFormErrors({ errors: [] });
   if (!RateLimit.check()) return;
 
   const btn = document.getElementById('submit-btn');

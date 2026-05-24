@@ -1,13 +1,15 @@
 // Cloudflare Pages Function — log a completed order.
 //
 // POST /api/log-order
-// Body: { orderId, items, subtotal, shipping, discount, total, promoCode?,
-//         customerEmail, paymentMethod,
-//         shipping: { firstName, lastName, address, address2, city, state, zip, country, phone? } }
+// Body: { orderId, items, promoCode?, customerEmail, paymentMethod,
+//         shippingAddress: { firstName, lastName, address, ..., researchField } }
 //
-// Writes the order to KV so the admin dashboard can aggregate revenue,
-// affiliate commissions owed, and so /api/place-order has the full data
-// needed to dispatch to Rapid Fulfillment.
+// IMPORTANT: server re-computes subtotal/shipping/discount/total from
+// authoritative SKU table (functions/_lib/pricing.js). Browser-supplied
+// totals are IGNORED. This closes BUG-019 — without this, a tampered
+// browser could submit a $0 cart for $1000 of products and we'd log $0.
+
+import { computeCart } from "../_lib/pricing.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -24,10 +26,9 @@ export async function onRequestPost({ request, env }) {
   const orderId = clean(body?.orderId, 40);
   const customerEmail = clean(body?.customerEmail, 120).toLowerCase();
   const promoCode = clean(body?.promoCode, 40).toUpperCase();
-  const paymentMethod = clean(body?.paymentMethod, 30); // 'invoice' | 'crypto' | 'free'
-  const items = Array.isArray(body?.items) ? body.items.slice(0, 50) : [];
+  const paymentMethod = clean(body?.paymentMethod, 30); // 'cashapp' | 'zelle' | 'btcbuddies' | 'crypto' | 'free'
 
-  if (!orderId || !customerEmail || items.length === 0) {
+  if (!orderId || !customerEmail) {
     return json({ ok: false, error: "Missing required fields" }, 400);
   }
   if (!isValidEmail(customerEmail)) return json({ ok: false, error: "Invalid email" }, 400);
@@ -36,30 +37,36 @@ export async function onRequestPost({ request, env }) {
   const existing = await env.STRATUS_DATA.get(`order:${orderId}`);
   if (existing) return json({ ok: true, deduped: true });
 
-  // Pull authoritative totals by re-validating via the same logic the storefront used.
-  // We import nothing — just trust the client totals for now but flag the affiliate via promo lookup.
-  // (Future: call validate-cart internally and compare; mismatch → flag.)
+  // AUTHORITATIVE pricing. We pass only items (sku + sizeKey + qty) and the
+  // promo code through the shared computeCart pipeline so the SAME logic
+  // that powers /api/validate-cart determines the money. Whatever totals
+  // the browser sent are discarded.
+  const items = Array.isArray(body?.items) ? body.items.slice(0, 50) : [];
+  if (items.length === 0) {
+    return json({ ok: false, error: "Cart is empty" }, 400);
+  }
+  const priced = await computeCart({ items, promoCode: promoCode || null }, env);
+  if (!priced.ok) {
+    return json({ ok: false, error: priced.error }, 400);
+  }
+  const subtotal     = priced.subtotal;
+  const shippingCost = priced.shipping;
+  const discount     = priced.discount;
+  const total        = priced.total;
 
+  // Affiliate attribution comes from the validated promo record (if any).
+  // commissionPct is bounded to a sane 0-100 range to prevent a misconfigured
+  // promo from creating a giant commission liability.
   let affiliateId = null;
   let commissionPct = 0;
-  if (promoCode) {
-    const raw = await env.STRATUS_DATA.get(`promo:${promoCode}`);
-    if (raw) {
-      try {
-        const p = JSON.parse(raw);
-        if (p && p.affiliateId) {
-          affiliateId = p.affiliateId;
-          commissionPct = p.affiliateCommission || 0;
-        }
-      } catch { /* ignore */ }
-    }
+  if (priced.promoRaw && priced.promoRaw.affiliateId) {
+    affiliateId  = priced.promoRaw.affiliateId;
+    const rawPct = Number(priced.promoRaw.affiliateCommission) || 0;
+    commissionPct = Math.max(0, Math.min(100, rawPct));
   }
-
-  const subtotal = Number(body?.subtotal) || 0;
-  const shippingCost = Number(body?.shipping) || 0;
-  const discount = Number(body?.discount) || 0;
-  const total    = Number(body?.total)    || 0;
-  const commissionOwed = affiliateId ? Math.round(subtotal * commissionPct) / 100 : 0;
+  const commissionOwed = affiliateId
+    ? Math.round((subtotal * commissionPct)) / 100
+    : 0;
 
   // Capture full shipping address — needed by /api/place-order to dispatch
   // to Rapid. Defensive: missing pieces fall through; dispatcher will reject.
@@ -103,8 +110,21 @@ export async function onRequestPost({ request, env }) {
   const paymentStatus = isManual ? "awaiting_payment" : "paid";
   const rapidStatus   = isManual ? "blocked_pending_payment" : "pending";
 
+  // Store the SERVER-validated line items on the record (with authoritative
+  // names + unit prices from SKU_TABLE), not whatever the browser sent. The
+  // shape matches what place-order.js + the admin order-details modal
+  // already expect: { sku, sizeKey, name, qty, price }.
+  const serverItems = priced.lineItems.map(li => ({
+    sku:      li.sku,
+    sizeKey:  li.sizeKey,
+    name:     li.name,
+    qty:      li.qty,
+    price:    li.unitPrice,
+  }));
+
   const record = {
-    orderId, customerEmail, items,
+    orderId, customerEmail,
+    items: serverItems,
     subtotal, shipping: shippingCost, discount, total,
     promoCode: promoCode || null,
     affiliateId, commissionPct, commissionOwed,
