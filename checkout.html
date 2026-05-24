@@ -139,10 +139,17 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .payment-option input[type=radio] { accent-color: var(--cirrus); width: 16px; height: 16px; flex-shrink: 0; }
 .payment-icon { font-size: 1.4rem; }
 .payment-info { flex: 1; }
-.payment-name { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
+.payment-name { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); line-height: 1.5; }
 .payment-desc { font-size: 0.75rem; font-weight: 200; color: var(--mist); margin-top: 0.15rem; }
-.crypto-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(31,27,22,0.4); color: var(--gold); letter-spacing: 0.08em; }
-.card-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(74,154,106,0.4); color: var(--green); letter-spacing: 0.08em; }
+/* Payment-method badges (e.g. "100+ Coins", "Direct"). inline-block keeps the
+   chip's border tight around the text; white-space:nowrap prevents the chip
+   itself from being broken in the middle (e.g. "100+ / Coins" across two
+   lines). vertical-align + small left margin keeps it sitting cleanly next
+   to the label whether the line wraps or not. */
+.crypto-badge,
+.card-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; padding: 0.22rem 0.45rem; line-height: 1; letter-spacing: 0.08em; display: inline-block; white-space: nowrap; vertical-align: middle; margin: 0.1rem 0 0.1rem 0.3rem; border: 1px solid rgba(31,27,22,0.4); }
+.crypto-badge { color: var(--gold); }
+.card-badge   { color: var(--green); border-color: rgba(74,154,106,0.4); }
 .free-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(31,27,22,0.6); color: var(--gold); background: rgba(31,27,22,0.08); letter-spacing: 0.08em; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 .crypto-select-wrap { padding: 0 1.5rem 1.5rem; display: none; }
