@@ -80,11 +80,14 @@ export async function onRequestPost({ request, env }) {
 
   const now = new Date().toISOString();
 
-  // Cash App and Zelle orders await manual admin approval before any dispatch
-  // fires. Crypto / free orders are paid by the time they hit this endpoint
-  // ('invoice' kept for back-compat with any in-flight orders from the prior
-  // single-option flow), so their dispatch can proceed automatically.
-  const MANUAL_METHODS = new Set(["cashapp", "zelle", "invoice"]);
+  // Cash App, Zelle, and BTC Buddies orders all start in 'awaiting_payment'
+  // and only flip to 'paid' after confirmation:
+  //   - Cash App / Zelle: admin manually marks paid in /admin
+  //   - BTC Buddies: NOWPayments IPN webhook auto-marks paid when BTC arrives
+  // Crypto / free orders are already paid by the time they hit this endpoint.
+  // 'invoice' kept for back-compat with any in-flight orders from the prior
+  // single-option flow.
+  const MANUAL_METHODS = new Set(["cashapp", "zelle", "invoice", "btcbuddies"]);
   const isManual = MANUAL_METHODS.has(paymentMethod);
   const paymentStatus = isManual ? "awaiting_payment" : "paid";
   const rapidStatus   = isManual ? "blocked_pending_payment" : "pending";

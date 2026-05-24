@@ -207,6 +207,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .payment-instructions .pay-method-note strong { color: var(--fog); font-weight: 500; }
 .payment-instructions .pay-screenshot { display: block; max-width: 100%; width: 280px; height: auto; margin: 0.75rem auto 0.25rem; border: 1px solid var(--border); }
 
+/* BTC Buddies copy buttons + CTA */
+.btcb-copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.35rem 0.65rem; background: transparent; border: 1px solid rgba(31,27,22,0.25); color: var(--fog); cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.btcb-copy-btn:hover { background: var(--fog); color: var(--ink); border-color: var(--fog); }
+.btcb-copy-btn.copied { background: var(--green); color: var(--ink); border-color: var(--green); }
+.btcb-cta { display: block; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; padding: 1.05rem 1.4rem; background: var(--fog); color: var(--ink); text-decoration: none; margin-top: 1rem; transition: background 0.2s, transform 0.15s; }
+.btcb-cta:hover { background: #3D352C; transform: translateY(-1px); }
+
 /* RATE LIMIT BANNER */
 .rate-limit-banner { display: none; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.3); padding: 0.8rem 1.5rem; margin: 0 1.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--red); letter-spacing: 0.05em; text-align: center; }
 .rate-limit-banner.show { display: block; }
@@ -413,6 +420,15 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
                 <div class="payment-desc">Send payment via Zelle bank transfer. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
               </div>
             </label>
+            <!-- Card via BTC Buddies -->
+            <label class="payment-option" onclick="selectPayment('btcbuddies', event)">
+              <input type="radio" name="payment" value="btcbuddies"/>
+              <span class="payment-icon">💳</span>
+              <div class="payment-info">
+                <div class="payment-name">Credit / Debit Card <span class="card-badge">via BTC Buddies</span></div>
+                <div class="payment-desc">Pay with Visa, Mastercard, Amex, or Venmo through BTC Buddies — they convert to BTC and send to us. Confirms automatically once payment lands. Ships within 72 hours.</div>
+              </div>
+            </label>
             <!-- Crypto -->
             <label class="payment-option" onclick="selectPayment('crypto', event)">
               <input type="radio" name="payment" value="crypto"/>
@@ -556,6 +572,57 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
       </p>
     </div>
 
+    <!-- BTC Buddies: customer pays fiat (card/Zelle/Cash App/Venmo) to BTC
+         Buddies, who converts to BTC and sends to our NOWPayments-issued
+         address. We display the three values they need to paste into BTC
+         Buddies' form. Auto-confirms via NOWPayments IPN webhook. -->
+    <div class="payment-instructions" id="payment-instructions-btcbuddies">
+      <h3>// Pay with Card via BTC Buddies</h3>
+      <div class="pay-total" id="pay-total-btcb">$0.00</div>
+      <div class="pay-ref">Order: <span id="pay-ref-id-btcb">SB-000000</span></div>
+
+      <div id="btcb-loading" style="text-align:center;padding:1.5rem 0;font-family:'JetBrains Mono', monospace;font-size:0.7rem;color:var(--mist);letter-spacing:0.1em;">
+        Generating BTC payment address...
+      </div>
+
+      <div id="btcb-error" style="display:none;text-align:center;padding:1.5rem 0;font-family:'JetBrains Mono', monospace;font-size:0.75rem;color:var(--red);letter-spacing:0.05em;">
+        <span id="btcb-error-msg">Something went wrong.</span><br/>
+        Please email <strong>info@stratusbiolabs.com</strong> with your order ID and we'll send payment instructions manually.
+      </div>
+
+      <div id="btcb-ready" style="display:none;">
+        <div class="pay-method">
+          <div class="pay-method-label">1. BTC Amount to Send</div>
+          <div class="pay-method-value" id="btcb-btc-amount" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
+            <span id="btcb-btc-amount-value">—</span>
+            <button type="button" class="btcb-copy-btn" onclick="copyToClipboard('btcb-btc-amount-value', this)">Copy</button>
+          </div>
+        </div>
+        <div class="pay-method">
+          <div class="pay-method-label">2. Recipient BTC Address (paste into BTC Buddies)</div>
+          <div class="pay-method-value" id="btcb-address" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;word-break:break-all;">
+            <span id="btcb-address-value" style="font-size:0.78rem;">—</span>
+            <button type="button" class="btcb-copy-btn" onclick="copyToClipboard('btcb-address-value', this)">Copy</button>
+          </div>
+        </div>
+        <div class="pay-method">
+          <div class="pay-method-label">3. Reference / Order Info</div>
+          <div class="pay-method-value" id="btcb-orderref" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
+            <span id="btcb-orderref-value">SB-000000</span>
+            <button type="button" class="btcb-copy-btn" onclick="copyToClipboard('btcb-orderref-value', this)">Copy</button>
+          </div>
+        </div>
+
+        <a href="https://btcbuddies.com/" target="_blank" rel="noopener" class="btcb-cta">
+          Open BTC Buddies →
+        </a>
+
+        <p class="pay-note" style="margin-top:1rem;">
+          <strong>How this works:</strong> Click "Open BTC Buddies" above. In their form: enter the USD amount above, paste the BTC address above as the recipient, paste your order ID into the reference field, pick your payment method (card / Zelle / Cash App / Venmo), and complete payment. Once BTC Buddies sends the BTC, your order auto-confirms — no further action needed. BTC Buddies is a third-party service; their fees and terms apply.
+        </p>
+      </div>
+    </div>
+
     <a href="catalog.html" class="btn-outline">Continue Shopping →</a>
   </div>
 </div>
@@ -599,6 +666,34 @@ function isValidEmail(email) {
 
 function isValidZip(zip) {
   return /^\d{5}(-\d{4})?$/.test(zip.trim());
+}
+
+// Copy helper for BTC Buddies success-page buttons. Uses the modern
+// clipboard API with a textarea fallback for browsers that block it on
+// non-secure contexts (the live site is HTTPS so this should rarely fire).
+function copyToClipboard(sourceId, btn) {
+  const el = document.getElementById(sourceId);
+  if (!el) return;
+  const text = (el.textContent || '').trim();
+  const after = (ok) => {
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = ok ? 'Copied' : 'Failed';
+    btn.classList.toggle('copied', ok);
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1600);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => after(true)).catch(() => after(false));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); after(true); }
+    catch { after(false); }
+    document.body.removeChild(ta);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -763,6 +858,10 @@ function updatePaymentUI() {
     btn.textContent = 'Place Order — Pay by Zelle →';
     btn.className = 'btn-submit card-mode';
     badges.innerHTML = `<span class="security-badge">🏦 Zelle</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
+  } else if (selectedPayment === 'btcbuddies') {
+    btn.textContent = 'Place Order — Pay with Card →';
+    btn.className = 'btn-submit card-mode';
+    badges.innerHTML = `<span class="security-badge">💳 Card via BTC Buddies</span><span class="security-badge">⚡ Auto-confirms</span><span class="security-badge">📦 Ships once paid</span>`;
   } else {
     btn.textContent = 'Place Order & Pay with Crypto →';
     btn.className = 'btn-submit';
@@ -1127,6 +1226,49 @@ async function submitOrder() {
   // Customer sees payment instructions inline on the success page. Admin gets
   // a copy of the order details via Formspree → info@stratusbiolabs.com.
   // DO NOT call dispatchToRapid here — that fires only after admin marks paid.
+  // CARD via BTC Buddies — log the order, then fetch a NOWPayments BTC
+  // invoice server-side so the customer can hand the address to BTC Buddies.
+  // Auto-confirms when NOWPayments' IPN webhook fires.
+  if (selectedPayment === 'btcbuddies') {
+    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'btcbuddies');
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: 'btcbuddies' }));
+    cart = []; saveCart(); updateCartCount();
+    document.getElementById('order-section').style.display = 'none';
+    document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
+    document.getElementById('success-title').textContent = 'Order Received';
+    document.getElementById('success-body').textContent =
+      'Thank you. Follow the steps below to pay with your card via BTC Buddies. Your order auto-confirms once payment lands — usually within 10-30 minutes.';
+
+    document.getElementById('pay-total-btcb').textContent = '$' + totalAmount.toFixed(2);
+    document.getElementById('pay-ref-id-btcb').textContent = orderId;
+    document.getElementById('btcb-orderref-value').textContent = orderId;
+    document.getElementById('payment-instructions-btcbuddies').classList.add('show');
+    document.getElementById('success-state').classList.add('show');
+
+    // Now fetch the actual BTC invoice from our server.
+    try {
+      const res = await fetch('/api/create-btc-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok || !data.payAddress) {
+        throw new Error(data.error || 'Could not generate BTC address');
+      }
+      document.getElementById('btcb-btc-amount-value').textContent = data.payAmount + ' BTC';
+      document.getElementById('btcb-address-value').textContent = data.payAddress;
+      document.getElementById('btcb-loading').style.display = 'none';
+      document.getElementById('btcb-ready').style.display = 'block';
+    } catch (err) {
+      console.error('BTC invoice error:', err);
+      document.getElementById('btcb-loading').style.display = 'none';
+      document.getElementById('btcb-error-msg').textContent = err.message || 'Could not generate BTC payment address.';
+      document.getElementById('btcb-error').style.display = 'block';
+    }
+    return;
+  }
+
   if (selectedPayment === 'cashapp' || selectedPayment === 'zelle') {
     const isCash = selectedPayment === 'cashapp';
     const methodLabel = isCash ? 'Cash App' : 'Zelle';
