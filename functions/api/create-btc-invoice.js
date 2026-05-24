@@ -22,6 +22,8 @@
 // Order pre-condition: must have been logged via /api/log-order first so we
 // know the total + can update its NOWPayments invoice ID on the record.
 
+import { sendBtcBuddiesOrderEmail } from "../_lib/resend.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -96,6 +98,27 @@ export async function onRequestPost({ request, env }) {
   // Secondary index so the webhook can look up an order by NOWPayments
   // payment_id without scanning all keys.
   await env.STRATUS_DATA.put(`np-payment:${npData.payment_id}`, orderId);
+
+  // Fire-and-forget the order-receipt email. We don't block the response on
+  // it: if Resend is down, the customer still gets a working success page.
+  // Errors are logged + recorded on the order for admin visibility.
+  try {
+    const emailResult = await sendBtcBuddiesOrderEmail(env, {
+      order,
+      payAddress: order.nowpaymentsPayAddress,
+      payAmount: order.nowpaymentsPayAmount,
+    });
+    if (!emailResult.ok) {
+      order.orderEmailError = emailResult.error;
+      await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+    } else {
+      order.orderEmailSentAt = new Date().toISOString();
+      order.orderEmailId = emailResult.id;
+      await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+    }
+  } catch (e) {
+    // Best effort. Already logged via console; KV update is non-critical.
+  }
 
   return json({
     ok: true,

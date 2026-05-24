@@ -35,6 +35,8 @@
 // log status changes; we never auto-mark paid. This lets us see traffic during
 // initial setup without trusting unauthenticated payloads.
 
+import { sendPaymentConfirmedEmail } from "../_lib/resend.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -139,6 +141,19 @@ export async function onRequestPost({ request, env }) {
     order.rapidError = null;
 
     await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+
+    // Send the customer their payment-confirmed email. Best-effort; failure
+    // recorded on the order but doesn't block dispatch.
+    try {
+      const emailResult = await sendPaymentConfirmedEmail(env, { order });
+      if (!emailResult.ok) {
+        order.paymentEmailError = emailResult.error;
+      } else {
+        order.paymentEmailSentAt = new Date().toISOString();
+        order.paymentEmailId = emailResult.id;
+      }
+      await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+    } catch (e) { /* best-effort */ }
 
     // Trigger Rapid dispatch in the background — same pattern as mark-paid.js.
     try {

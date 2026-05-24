@@ -1,0 +1,267 @@
+// Shared helper for sending email via Resend.
+//
+// All customer-facing transactional emails route through here so we have one
+// place to set the From address, branding, and error-handling policy.
+//
+// Calls are fire-and-forget from the caller's perspective: we log failures
+// but never throw, so an email outage doesn't break checkout or webhook
+// processing.
+
+const RESEND_API = "https://api.resend.com/emails";
+
+// We send "from" an address at the root domain — Resend uses the verified
+// `send.stratusbiolabs.com` subdomain for the envelope-from (Return-Path,
+// where bounces land and where SPF is checked), but customers see this in
+// their inbox.
+const FROM = "Stratus Biolabs <orders@stratusbiolabs.com>";
+const REPLY_TO = "info@stratusbiolabs.com";
+
+/**
+ * Send an email via Resend.
+ * @param {object} env  - Cloudflare Pages env (must contain RESEND_API_KEY)
+ * @param {object} opts - { to, subject, html, text? }
+ * @returns {Promise<{ok: boolean, id?: string, error?: string}>}
+ */
+export async function sendEmail(env, { to, subject, html, text }) {
+  if (!env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured; skipping email", { to, subject });
+    return { ok: false, error: "RESEND_API_KEY not set" };
+  }
+  if (!to || !subject || !html) {
+    return { ok: false, error: "Missing required field (to/subject/html)" };
+  }
+
+  try {
+    const res = await fetch(RESEND_API, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM,
+        to: [to],
+        reply_to: REPLY_TO,
+        subject,
+        html,
+        text: text || stripHtml(html),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, error: data.message || `HTTP ${res.status}` };
+    }
+    return { ok: true, id: data.id };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+}
+
+// Small util: derive a plain-text fallback from HTML for clients that
+// can't render rich email (rare in 2026 but Resend wants both).
+function stripHtml(html) {
+  return String(html)
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Small util: HTML-escape a value before interpolating into the template.
+function esc(s) {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
+/**
+ * Order-received email for the BTC Buddies flow.
+ * Includes the BTC address + amount + step-by-step instructions so the
+ * customer can come back to it any time.
+ */
+export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmount }) {
+  const orderId = order.orderId;
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemRows = items.map(it => `
+    <tr>
+      <td style="padding:8px 0;font-size:14px;color:#1F1B16;">
+        ${esc(it.name)} ${it.sizeKey ? `<span style="color:#7A746C;font-size:12px;">(${esc(it.sizeKey)})</span>` : ""}
+      </td>
+      <td style="padding:8px 0;font-size:14px;color:#7A746C;text-align:right;">× ${esc(it.qty)}</td>
+      <td style="padding:8px 0;font-size:14px;color:#1F1B16;text-align:right;font-family:monospace;">$${((Number(it.price) || 0) * (Number(it.qty) || 1)).toFixed(2)}</td>
+    </tr>
+  `).join("");
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Order Received — ${esc(orderId)}</title></head>
+<body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:32px 32px 24px;">
+    <div style="font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:8px;">// Order Received</div>
+    <h1 style="margin:0 0 4px;font-size:28px;font-weight:300;color:#1F1B16;line-height:1.2;">Thank you for your order.</h1>
+    <div style="font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.1em;">Order ${esc(orderId)}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.6;">
+    <p style="margin:0 0 16px;">We've received your order. To complete it, please send your Bitcoin payment via <strong>BTC Buddies</strong> using the steps below. Your order ships within 72 hours of payment confirmation.</p>
+  </td></tr>
+
+  <tr><td style="padding:0 32px;">
+    <div style="background:#EFEAE0;border:1px solid rgba(31,27,22,0.12);padding:20px;">
+      <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// Payment Details</div>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">USD Amount</td>
+          <td style="padding:6px 0;font-size:15px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">BTC Amount</td>
+          <td style="padding:6px 0;font-size:15px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>${esc(payAmount)} BTC</strong></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding-top:10px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Recipient BTC Address</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:4px 0 6px;font-size:12px;color:#1F1B16;font-family:monospace;word-break:break-all;background:rgba(31,27,22,0.04);padding:10px;">${esc(payAddress)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:10px 0 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Reference / Order ID</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:4px 0;font-size:13px;color:#1F1B16;font-family:monospace;"><strong>${esc(orderId)}</strong></td>
+        </tr>
+      </table>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 0;">
+    <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// How to Pay via BTC Buddies</div>
+    <ol style="margin:0;padding-left:20px;color:#1F1B16;font-size:14px;line-height:1.7;">
+      <li>Visit <a href="https://www.btcbuddies.com/" style="color:#1F1B16;font-weight:500;">www.btcbuddies.com</a></li>
+      <li>Click <strong>"Request a Transaction"</strong> at the top.</li>
+      <li>Enter the <strong>USD amount</strong> shown above.</li>
+      <li>Paste the <strong>BTC address</strong> above as the recipient. Double-check the first 3 and last 3 characters match.</li>
+      <li>Include your <strong>Order ID</strong> (${esc(orderId)}) in the reference field so we can match your payment.</li>
+      <li>Choose your payment method (credit card, Zelle, Cash App, or Venmo) and complete the payment.</li>
+    </ol>
+    <p style="margin:16px 0 0;font-size:12px;color:#7A746C;line-height:1.6;"><strong style="color:#1F1B16;">Note:</strong> BTC Buddies is a third-party service. Stratus Biolabs is not responsible for your transaction with BTC Buddies — please verify the wallet address carefully before submitting. Once BTC arrives at our address, your order auto-confirms and ships within 72 hours.</p>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 0;">
+    <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// Order Summary</div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid rgba(31,27,22,0.12);">
+      ${itemRows}
+      <tr style="border-top:1px solid rgba(31,27,22,0.12);">
+        <td style="padding:8px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Subtotal</td>
+        <td></td>
+        <td style="padding:8px 0;text-align:right;font-family:monospace;font-size:14px;">$${(Number(order.subtotal) || 0).toFixed(2)}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Shipping</td>
+        <td></td>
+        <td style="padding:4px 0;text-align:right;font-family:monospace;font-size:14px;">${Number(order.shipping) === 0 ? "Free" : "$" + (Number(order.shipping) || 0).toFixed(2)}</td>
+      </tr>
+      ${Number(order.discount) > 0 ? `<tr>
+        <td style="padding:4px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Discount${order.promoCode ? " (" + esc(order.promoCode) + ")" : ""}</td>
+        <td></td>
+        <td style="padding:4px 0;text-align:right;font-family:monospace;font-size:14px;">-$${(Number(order.discount) || 0).toFixed(2)}</td>
+      </tr>` : ""}
+      <tr style="border-top:1px solid rgba(31,27,22,0.12);">
+        <td style="padding:10px 0;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;font-family:monospace;"><strong>Total</strong></td>
+        <td></td>
+        <td style="padding:10px 0;text-align:right;font-family:monospace;font-size:16px;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Payment Method</td>
+        <td></td>
+        <td style="padding:6px 0;text-align:right;font-size:13px;">Credit / Debit Card via BTC Buddies</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
+    <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
+    <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
+    <p style="margin:12px 0 0;">Questions? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: order.customerEmail,
+    subject: `Order Received — ${orderId} — Payment Required via BTC Buddies`,
+    html,
+  });
+}
+
+/**
+ * Payment-confirmed email, sent when NOWPayments IPN reports the BTC payment
+ * arrived and the order has been auto-marked paid.
+ */
+export async function sendPaymentConfirmedEmail(env, { order }) {
+  const orderId = order.orderId;
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Payment Confirmed — ${esc(orderId)}</title></head>
+<body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:32px 32px 24px;">
+    <div style="font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#4a9a6a;font-family:monospace;margin-bottom:8px;">// Payment Confirmed</div>
+    <h1 style="margin:0 0 4px;font-size:28px;font-weight:300;color:#1F1B16;line-height:1.2;">Your payment arrived.</h1>
+    <div style="font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.1em;">Order ${esc(orderId)}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.7;">
+    <p style="margin:0 0 16px;">We've received and confirmed your Bitcoin payment. Your order is now in fulfillment and will ship within 72 hours.</p>
+    <p style="margin:0;color:#7A746C;font-size:13px;">You'll receive a separate email with tracking information once your order ships.</p>
+  </td></tr>
+
+  <tr><td style="padding:0 32px;">
+    <div style="background:rgba(74,154,106,0.08);border:1px solid rgba(74,154,106,0.25);padding:16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Amount Paid</td>
+          <td style="font-size:15px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+        </tr>
+        ${order.paymentChannel ? `<tr>
+          <td style="padding-top:6px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Channel</td>
+          <td style="padding-top:6px;font-size:13px;color:#1F1B16;text-align:right;">${esc(order.paymentChannel)}</td>
+        </tr>` : ""}
+        ${order.paymentReference ? `<tr>
+          <td style="padding-top:6px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Reference</td>
+          <td style="padding-top:6px;font-size:12px;color:#1F1B16;text-align:right;font-family:monospace;word-break:break-all;">${esc(order.paymentReference)}</td>
+        </tr>` : ""}
+      </table>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
+    <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
+    <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
+    <p style="margin:12px 0 0;">Questions? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: order.customerEmail,
+    subject: `Payment Confirmed — Order ${orderId} is shipping soon`,
+    html,
+  });
+}
