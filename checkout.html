@@ -470,12 +470,28 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
 
           <!-- PROMO CODE -->
+          <!-- Wrapping in its own <form autocomplete="off"> defeats iOS's
+               heuristic of auto-filling address fragments into nearby text
+               inputs. data-* attrs block 1Password / LastPass for good
+               measure. inputmode keeps the keyboard appropriate. -->
           <div class="promo-wrap">
             <span class="promo-label">Promo Code</span>
-            <div class="promo-row">
-              <input class="promo-input" id="promo-input" type="text" placeholder="ENTER CODE" maxlength="20" autocomplete="off" spellcheck="false"/>
-              <button class="promo-btn" onclick="applyPromo()">Apply</button>
-            </div>
+            <form class="promo-row" autocomplete="off" onsubmit="event.preventDefault();applyPromo();">
+              <input class="promo-input" id="promo-input" type="text"
+                     name="sb-promo-code"
+                     placeholder="ENTER CODE"
+                     maxlength="20"
+                     autocomplete="off"
+                     autocorrect="off"
+                     autocapitalize="characters"
+                     spellcheck="false"
+                     inputmode="text"
+                     data-lpignore="true"
+                     data-1p-ignore=""
+                     data-form-type="other"
+                     aria-autocomplete="none"/>
+              <button type="button" class="promo-btn" onclick="applyPromo()">Apply</button>
+            </form>
             <div class="promo-feedback" id="promo-feedback"></div>
           </div>
 

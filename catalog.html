@@ -243,9 +243,12 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   .catalog-main { padding: 1rem; }
   .filters { padding: 0.8rem 1rem; }
   /* RUO disclaimer banner: tighten padding + ease tracking so the line
-     doesn't get clipped at narrow viewport widths. */
-  .disclaimer { padding: 0.55rem 1rem; gap: 0.6rem; }
-  .disclaimer p { font-size: 0.52rem; letter-spacing: 0.08em; line-height: 1.4; }
+     doesn't get clipped at narrow viewport widths. Allow wrap at all
+     phone-sized viewports (iPhone Pro Max is 430px, so we can't gate
+     wrap on a sub-400px breakpoint alone). min-width:0 lets the <p>
+     shrink inside the flex container instead of overflowing. */
+  .disclaimer { padding: 0.55rem 1rem; gap: 0.6rem; flex-wrap: wrap; }
+  .disclaimer p { font-size: 0.52rem; letter-spacing: 0.08em; line-height: 1.4; min-width: 0; flex: 1; }
   .catalog-header { padding: 1.5rem 1rem 1.25rem; }
   .header-sub { font-size: 0.72rem; line-height: 1.5; }
   footer { flex-direction: column; padding: 1.5rem; }
