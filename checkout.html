@@ -377,10 +377,24 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
         </div>
 
-        <!-- Order Notes -->
+        <!-- Research Information -->
         <div class="form-section">
-          <div class="section-head">Order Notes</div>
+          <div class="section-head">Research Information</div>
           <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Research Field <span class="req">*</span></label>
+              <select class="form-select" id="researchField" required>
+                <option value="">Select your primary research field...</option>
+                <option>Pharmacology</option>
+                <option>Molecular Biology</option>
+                <option>Medicinal Chemistry</option>
+                <option>Biochemistry</option>
+                <option>Endocrinology</option>
+                <option>Pharmaceutical Research</option>
+                <option>Other</option>
+              </select>
+              <span class="error-msg" id="researchField-err">Please select your research field</span>
+            </div>
             <div class="form-group full">
               <label class="form-label">Institution / Lab (optional)</label>
               <input class="form-input" id="institution" type="text" placeholder="University of California San Diego" maxlength="100"/>
@@ -626,6 +640,19 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <a href="catalog.html" class="btn-outline">Continue Shopping →</a>
   </div>
 </div>
+
+<!-- Compliance & Disclaimers (Ally Pay-mandated verbiage; do not edit copy) -->
+<section class="compliance-disclaimer" style="background:#E2DCCE;padding:2.5rem 2rem;border-top:1px solid rgba(31,27,22,0.12);">
+  <div style="max-width:900px;margin:0 auto;">
+    <p style="font-family:'JetBrains Mono', monospace;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:#7A746C;margin:0 0 1.25rem;text-align:center;">// Compliance &amp; Disclaimers</p>
+    <div style="font-family:'Inter', sans-serif;font-size:0.85rem;line-height:1.75;color:#1F1B16;">
+      <p style="margin:0 0 0.75rem;"><strong>All products currently listed on this site are for research purposes ONLY.</strong></p>
+      <p style="margin:0 0 0.75rem;">All products sold on this website are intended for research and identification purposes only.</p>
+      <p style="margin:0 0 0.75rem;">These products are not intended for human dosing, injections, or ingestion.</p>
+      <p style="margin:0;">Peptides are strictly for laboratory, academic, or institutional research and not for human or animal consumption.</p>
+    </div>
+  </div>
+</section>
 
 <footer>
   <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
@@ -1113,6 +1140,8 @@ function validateForm() {
   valid = validate('city', 'city-err', document.getElementById('city').value.trim().length > 0) && valid;
   valid = validate('state', 'state-err', document.getElementById('state').value !== '') && valid;
   valid = validate('zip', 'zip-err', document.getElementById('zip').value.trim().length > 0) && valid;
+  // Required for Ally Pay compliance — customer must declare their research field.
+  valid = validate('researchField', 'researchField-err', document.getElementById('researchField').value !== '') && valid;
   const ruo = document.getElementById('ruo-check').checked;
   const ruoErr = document.getElementById('ruo-err');
   if (!ruo) { ruoErr.classList.add('show'); valid = false; } else { ruoErr.classList.remove('show'); }
@@ -1178,17 +1207,18 @@ async function submitFreeOrder(email, orderId) {
 function readShippingAddress() {
   const v = id => (document.getElementById(id)?.value || '').trim();
   return {
-    firstName:   v('fname'),
-    lastName:    v('lname'),
-    address:     v('address'),
-    address2:    v('address2'),
-    city:        v('city'),
-    state:       v('state'),
-    zip:         v('zip'),
-    country:     v('country'),
-    phone:       v('phone'),
-    institution: v('institution'),
-    notes:       v('notes'),
+    firstName:     v('fname'),
+    lastName:      v('lname'),
+    address:       v('address'),
+    address2:      v('address2'),
+    city:          v('city'),
+    state:         v('state'),
+    zip:           v('zip'),
+    country:       v('country'),
+    phone:         v('phone'),
+    institution:   v('institution'),
+    researchField: v('researchField'),
+    notes:         v('notes'),
   };
 }
 async function logOrderToServer(orderId, email, totalAmount, shipping, discount, subtotal, paymentMethod) {

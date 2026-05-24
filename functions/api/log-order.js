@@ -63,7 +63,17 @@ export async function onRequestPost({ request, env }) {
 
   // Capture full shipping address — needed by /api/place-order to dispatch
   // to Rapid. Defensive: missing pieces fall through; dispatcher will reject.
+  // researchField is required by Ally Pay compliance and re-validated here so
+  // a tampered browser can't bypass the dropdown.
+  const ALLOWED_RESEARCH_FIELDS = new Set([
+    "Pharmacology", "Molecular Biology", "Medicinal Chemistry",
+    "Biochemistry", "Endocrinology", "Pharmaceutical Research", "Other",
+  ]);
   const shipObj = body?.shippingAddress || {};
+  const researchField = clean(shipObj.researchField, 60);
+  if (!ALLOWED_RESEARCH_FIELDS.has(researchField)) {
+    return json({ ok: false, error: "Valid research field selection required" }, 400);
+  }
   const shippingAddress = {
     firstName: clean(shipObj.firstName, 50),
     lastName:  clean(shipObj.lastName, 50),
@@ -74,7 +84,8 @@ export async function onRequestPost({ request, env }) {
     zip:       clean(shipObj.zip, 20),
     country:   clean(shipObj.country, 60),
     phone:     clean(shipObj.phone, 30),
-    institution: clean(shipObj.institution, 100),
+    institution:   clean(shipObj.institution, 100),
+    researchField,
     notes:     clean(shipObj.notes, 400),
   };
 

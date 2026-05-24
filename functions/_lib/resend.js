@@ -158,6 +158,13 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
     <p style="margin:16px 0 0;font-size:12px;color:#7A746C;line-height:1.6;"><strong style="color:#1F1B16;">Note:</strong> BTC Buddies is a third-party service. Stratus Biolabs is not responsible for your transaction with BTC Buddies — please verify the wallet address carefully before submitting. Once BTC arrives at our address, your order auto-confirms and ships within 72 hours.</p>
   </td></tr>
 
+  ${order.shippingAddress?.researchField ? `<tr><td style="padding:24px 32px 0;">
+    <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// Research Information</div>
+    <div style="font-family:'Inter',sans-serif;font-size:13px;color:#1F1B16;line-height:1.6;">
+      You certified your primary research field as: <strong>${esc(order.shippingAddress.researchField)}</strong>${order.shippingAddress?.institution ? ` &middot; ${esc(order.shippingAddress.institution)}` : ""}
+    </div>
+  </td></tr>` : ""}
+
   <tr><td style="padding:24px 32px 0;">
     <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// Order Summary</div>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid rgba(31,27,22,0.12);">

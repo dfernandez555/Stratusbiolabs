@@ -646,6 +646,10 @@ function renderOrderDetails(o) {
           <span class="details-row-label">Phone</span>
           <span class="details-row-value">${escapeHtml(addr.phone)}</span>
         </div>` : ''}
+        ${addr.researchField ? `<div class="details-row full">
+          <span class="details-row-label">Research Field</span>
+          <span class="details-row-value">${escapeHtml(addr.researchField)}</span>
+        </div>` : ''}
         ${addr.institution ? `<div class="details-row full">
           <span class="details-row-label">Institution</span>
           <span class="details-row-value">${escapeHtml(addr.institution)}</span>
