@@ -883,6 +883,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // Browser calls our /api/create-crypto-invoice and /api/create-btc-invoice
 // endpoints; the key never leaves the server.
 
+// Payment-method feature flags. Flip a value to true to bring a method back
+// without restructuring code. The HTML for hidden options is kept intact —
+// we just hide the visible radio + redirect the default selection.
+// In-flight orders that used a now-hidden method still resolve correctly on
+// the success page (the instruction blocks aren't removed).
+const ENABLED_PAYMENT_METHODS = {
+  cashapp:    false,  // hidden: pending Ally Pay launch
+  zelle:      false,  // hidden: pending Ally Pay launch
+  btcbuddies: true,
+  crypto:     true,
+};
+
 // ═══════════════════════════════════════════
 // CART STATE
 // ═══════════════════════════════════════════
@@ -909,7 +921,12 @@ let cart = (() => {
   return valid;
 })();
 let selectedCrypto = 'BTC';
-let selectedPayment = 'cashapp';  // 'cashapp' | 'zelle' | 'crypto'
+// Default to the first enabled method in display order. Falls back to crypto
+// if everything else is disabled (shouldn't happen but defensive).
+let selectedPayment = (() => {
+  const order = ['cashapp', 'zelle', 'btcbuddies', 'crypto'];
+  return order.find(m => ENABLED_PAYMENT_METHODS[m]) || 'btcbuddies';
+})();
 
 function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
 
@@ -1332,6 +1349,30 @@ async function submitOrder() {
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+
+// Hide payment-method radios whose feature flag is off, and ensure the
+// 'selected' visual class is on the right one. Runs once at load.
+(function applyPaymentMethodFlags() {
+  document.querySelectorAll('.payment-option').forEach(label => {
+    const radio = label.querySelector('input[type=radio]');
+    const value = radio?.value;
+    if (value && !ENABLED_PAYMENT_METHODS[value]) {
+      label.style.display = 'none';
+      radio.checked = false;
+      label.classList.remove('selected');
+    }
+  });
+  // Make sure exactly the default-selected radio is checked + visually active.
+  document.querySelectorAll('.payment-option').forEach(l => l.classList.remove('selected'));
+  const def = document.querySelector(`.payment-option input[value="${selectedPayment}"]`);
+  if (def) {
+    def.checked = true;
+    def.closest('.payment-option').classList.add('selected');
+  }
+  // The crypto-coin selector only shows for the crypto method.
+  document.getElementById('crypto-select').classList.toggle('show', selectedPayment === 'crypto');
+})();
+
 updateCartCount();
 renderOrderSummary();
 updatePaymentUI();
