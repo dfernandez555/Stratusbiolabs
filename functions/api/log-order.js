@@ -80,12 +80,14 @@ export async function onRequestPost({ request, env }) {
 
   const now = new Date().toISOString();
 
-  // Invoice orders await manual admin approval before any dispatch fires.
-  // Crypto / free orders are paid by the time they hit this endpoint, so
-  // their dispatch can proceed automatically (place-order is called after this).
-  const isInvoice = paymentMethod === "invoice";
-  const paymentStatus = isInvoice ? "awaiting_payment" : "paid";
-  const rapidStatus   = isInvoice ? "blocked_pending_payment" : "pending";
+  // Cash App and Zelle orders await manual admin approval before any dispatch
+  // fires. Crypto / free orders are paid by the time they hit this endpoint
+  // ('invoice' kept for back-compat with any in-flight orders from the prior
+  // single-option flow), so their dispatch can proceed automatically.
+  const MANUAL_METHODS = new Set(["cashapp", "zelle", "invoice"]);
+  const isManual = MANUAL_METHODS.has(paymentMethod);
+  const paymentStatus = isManual ? "awaiting_payment" : "paid";
+  const rapidStatus   = isManual ? "blocked_pending_payment" : "pending";
 
   const record = {
     orderId, customerEmail, items,
@@ -96,7 +98,7 @@ export async function onRequestPost({ request, env }) {
     shippingAddress,
     status: "logged",
     paymentStatus,           // awaiting_payment | paid | refunded
-    paymentReceivedAt: isInvoice ? null : now,
+    paymentReceivedAt: isManual ? null : now,
     paymentReference: null,  // set by /api/admin/mark-paid (Cash App handle, Zelle txn, etc.)
     rapidStatus,             // pending | dispatched | failed | cancelled | blocked_pending_payment
     rapidDispatchedAt: null,

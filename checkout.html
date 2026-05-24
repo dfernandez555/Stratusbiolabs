@@ -395,13 +395,22 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
 
           <div class="payment-methods" id="payment-methods-wrap">
-            <!-- Invoice / Direct Payment -->
-            <label class="payment-option card-option selected" onclick="selectPayment('invoice', event)">
-              <input type="radio" name="payment" value="invoice" checked/>
-              <span class="payment-icon">📨</span>
+            <!-- Cash App -->
+            <label class="payment-option card-option selected" onclick="selectPayment('cashapp', event)">
+              <input type="radio" name="payment" value="cashapp" checked/>
+              <span class="payment-icon">💵</span>
               <div class="payment-info">
-                <div class="payment-name">Pay by Invoice <span class="card-badge">Direct</span></div>
-                <div class="payment-desc">Place your order, then pay by Cash App or Zelle using the instructions shown on the next screen. Ships once payment is received.</div>
+                <div class="payment-name">Cash App <span class="card-badge">Direct</span></div>
+                <div class="payment-desc">Send payment via Cash App. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
+              </div>
+            </label>
+            <!-- Zelle -->
+            <label class="payment-option" onclick="selectPayment('zelle', event)">
+              <input type="radio" name="payment" value="zelle"/>
+              <span class="payment-icon">🏦</span>
+              <div class="payment-info">
+                <div class="payment-name">Zelle <span class="card-badge">Direct</span></div>
+                <div class="payment-desc">Send payment via Zelle bank transfer. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
               </div>
             </label>
             <!-- Crypto -->
@@ -508,29 +517,42 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
     <p class="success-body" id="success-body">Thank you for your order.</p>
 
-    <!-- Invoice-only payment instructions block. Shown right on the success page so
-         the customer never has to wait for an email to know what to do next. -->
-    <div class="payment-instructions" id="payment-instructions">
-      <h3>// Payment Instructions</h3>
-      <div class="pay-total" id="pay-total">$0.00</div>
-      <div class="pay-ref">Reference: <span id="pay-ref-id">SB-000000</span></div>
+    <!-- Payment instructions — only one block is shown, matching the method
+         the customer picked at checkout (Cash App OR Zelle). -->
+    <div class="payment-instructions" id="payment-instructions-cashapp">
+      <h3>// Cash App Payment Instructions</h3>
+      <div class="pay-total" id="pay-total-cashapp">$0.00</div>
+      <div class="pay-ref">Order: <span id="pay-ref-id-cashapp">SB-000000</span></div>
 
       <div class="pay-method">
-        <div class="pay-method-label">Cash App</div>
+        <div class="pay-method-label">Send to</div>
         <div class="pay-method-value">$dfernandez555</div>
         <div class="pay-method-note">
           <strong>Important — Do NOT write anything in the Cash App note field.</strong> To bypass Cash App's required-note prompt, tap the sparkle icon (✨) at the top right of the &ldquo;Note (required)&rdquo; field — see screenshot below. Leaving the note blank keeps the transaction private.
         </div>
         <img src="/images/cashapp-bypass-note.jpg" alt="Cash App: tap the sparkle icon to bypass the required note" class="pay-screenshot" loading="lazy"/>
       </div>
+
+      <p class="pay-note">
+        Your order ships within 72 hours of payment confirmation. Questions? Email <strong>info@stratusbiolabs.com</strong> with your order ID <span class="code" id="pay-note-id-cashapp">SB-000000</span>.
+      </p>
+    </div>
+
+    <div class="payment-instructions" id="payment-instructions-zelle">
+      <h3>// Zelle Payment Instructions</h3>
+      <div class="pay-total" id="pay-total-zelle">$0.00</div>
+      <div class="pay-ref">Order: <span id="pay-ref-id-zelle">SB-000000</span></div>
+
       <div class="pay-method">
-        <div class="pay-method-label">Zelle</div>
+        <div class="pay-method-label">Send to</div>
         <div class="pay-method-value">(909) 522-2875</div>
-        <div class="pay-method-note">Include your order ID <span class="code" id="pay-note-id-zelle">SB-000000</span> in the Zelle memo so we can match the payment.</div>
+        <div class="pay-method-note">
+          <strong>Include your order ID <span class="code" id="pay-note-memo-zelle">SB-000000</span> in the Zelle memo</strong> so we can match the payment to your order. Most banks (Chase, Bank of America, Wells Fargo, etc.) support Zelle via their mobile app.
+        </div>
       </div>
 
       <p class="pay-note">
-        Your order ships within 72 hours of payment confirmation. After sending payment, you'll receive a shipping confirmation by email. Questions? Email <strong>info@stratusbiolabs.com</strong> with your order ID <span class="code" id="pay-note-id">SB-000000</span>.
+        Your order ships within 72 hours of payment confirmation. Questions? Email <strong>info@stratusbiolabs.com</strong> with your order ID <span class="code" id="pay-note-id-zelle">SB-000000</span>.
       </p>
     </div>
 
@@ -733,10 +755,14 @@ function updatePaymentUI() {
     btn.textContent = 'Confirm Free Order →';
     btn.className = 'btn-submit free-mode';
     badges.innerHTML = `<span class="security-badge">🎉 Promo Applied</span><span class="security-badge">📦 Ships within 72h</span>`;
-  } else if (selectedPayment === 'invoice') {
-    btn.textContent = 'Place Order — Receive Payment Email →';
+  } else if (selectedPayment === 'cashapp') {
+    btn.textContent = 'Place Order — Pay by Cash App →';
     btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">📨 Email instructions</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
+    badges.innerHTML = `<span class="security-badge">💵 Cash App</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
+  } else if (selectedPayment === 'zelle') {
+    btn.textContent = 'Place Order — Pay by Zelle →';
+    btn.className = 'btn-submit card-mode';
+    badges.innerHTML = `<span class="security-badge">🏦 Zelle</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
   } else {
     btn.textContent = 'Place Order & Pay with Crypto →';
     btn.className = 'btn-submit';
@@ -782,7 +808,7 @@ let cart = (() => {
   return valid;
 })();
 let selectedCrypto = 'BTC';
-let selectedPayment = 'invoice';
+let selectedPayment = 'cashapp';  // 'cashapp' | 'zelle' | 'crypto'
 
 function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
 
@@ -976,22 +1002,24 @@ function validateForm() {
 }
 
 // ═══════════════════════════════════════════
-// INVOICE ORDER SUBMISSION
-// Sends payment-instructions email to the customer and a copy to ops.
-// Formspree fans out to info@stratusbiolabs.com. Server-side log-order
-// records paymentStatus=awaiting_payment so admin can mark paid later.
+// INVOICE-STYLE ORDER NOTIFICATION (Cash App OR Zelle)
+// Both payment methods follow the same flow:
+//   1. customer places order → server records paymentStatus=awaiting_payment
+//   2. we fan out to ops inbox via Formspree
+//   3. admin confirms the payment in /admin → triggers Rapid dispatch
+// The subject line names the specific method so admin knows what to look for.
 // ═══════════════════════════════════════════
-async function submitInvoiceOrder(email, orderId, totalAmount) {
+async function submitInvoiceOrder(email, orderId, totalAmount, methodLabel) {
   try {
     await fetch('https://formspree.io/f/mkokwgog', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        subject: `INVOICE ORDER #${orderId} — Awaiting Payment ($${totalAmount.toFixed(2)})`,
+        subject: `${methodLabel.toUpperCase()} ORDER #${orderId} — Awaiting Payment ($${totalAmount.toFixed(2)})`,
         email: email,
         order_id: orderId,
         total: `$${totalAmount.toFixed(2)}`,
-        payment_method: 'Invoice (Cash App / Zelle)',
+        payment_method: methodLabel,
         items: cart.map(i => `${i.name} (${i.variant}) x${i.qty}`).join(', '),
         shipping_name: clean(document.getElementById('fname').value) + ' ' + clean(document.getElementById('lname').value),
         shipping_address: clean(document.getElementById('address').value) + ', ' + clean(document.getElementById('city').value) + ', ' + document.getElementById('state').value + ' ' + clean(document.getElementById('zip').value),
@@ -1099,21 +1127,32 @@ async function submitOrder() {
   // Customer sees payment instructions inline on the success page. Admin gets
   // a copy of the order details via Formspree → info@stratusbiolabs.com.
   // DO NOT call dispatchToRapid here — that fires only after admin marks paid.
-  if (selectedPayment === 'invoice') {
-    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'invoice');
-    await submitInvoiceOrder(email, orderId, totalAmount);
-    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: 'invoice' }));
+  if (selectedPayment === 'cashapp' || selectedPayment === 'zelle') {
+    const isCash = selectedPayment === 'cashapp';
+    const methodLabel = isCash ? 'Cash App' : 'Zelle';
+
+    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), selectedPayment);
+    await submitInvoiceOrder(email, orderId, totalAmount, methodLabel);
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: selectedPayment }));
     cart = []; saveCart(); updateCartCount();
     document.getElementById('order-section').style.display = 'none';
     document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
     document.getElementById('success-title').textContent = 'Order Received';
-    document.getElementById('success-body').textContent = `Thank you. Please complete payment using Cash App or Zelle below — your order ships within 72 hours of payment confirmation.`;
-    // Populate inline payment instructions.
-    document.getElementById('pay-total').textContent  = '$' + totalAmount.toFixed(2);
-    document.getElementById('pay-ref-id').textContent = orderId;
-    document.getElementById('pay-note-id').textContent = orderId;
-    document.getElementById('pay-note-id-zelle').textContent = orderId;
-    document.getElementById('payment-instructions').classList.add('show');
+    document.getElementById('success-body').textContent =
+      'Thank you. Please complete payment via ' + methodLabel + ' below. Your order ships within 72 hours of payment confirmation.';
+
+    if (isCash) {
+      document.getElementById('pay-total-cashapp').textContent = '$' + totalAmount.toFixed(2);
+      document.getElementById('pay-ref-id-cashapp').textContent = orderId;
+      document.getElementById('pay-note-id-cashapp').textContent = orderId;
+      document.getElementById('payment-instructions-cashapp').classList.add('show');
+    } else {
+      document.getElementById('pay-total-zelle').textContent = '$' + totalAmount.toFixed(2);
+      document.getElementById('pay-ref-id-zelle').textContent = orderId;
+      document.getElementById('pay-note-id-zelle').textContent = orderId;
+      document.getElementById('pay-note-memo-zelle').textContent = orderId;
+      document.getElementById('payment-instructions-zelle').classList.add('show');
+    }
     document.getElementById('success-state').classList.add('show');
     return;
   }

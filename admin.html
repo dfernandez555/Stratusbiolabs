@@ -366,16 +366,23 @@ async function loadStats() {
   const awaiting = d.recentOrders.filter(o => o.paymentStatus === 'awaiting_payment');
   const awaitingBody = document.getElementById('awaiting-body');
   if (awaiting.length) {
-    awaitingBody.innerHTML = awaiting.map(o => `
+    awaitingBody.innerHTML = awaiting.map(o => {
+      // Render the customer-friendly method label, and pre-fill the Mark Paid
+      // dropdown to match what the customer chose at checkout (admin can still override).
+      const methodLabel =
+        o.paymentMethod === 'cashapp' ? 'Cash App' :
+        o.paymentMethod === 'zelle'   ? 'Zelle'    :
+        (o.paymentMethod || 'invoice');
+      return `
       <tr class="awaiting-row">
         <td data-label="Date">${FMT_DATE(o.createdAt)}</td>
         <td data-label="Order"><button class="order-link" onclick="openDetails('${o.orderId}')">${o.orderId}</button></td>
         <td data-label="Customer">${o.customerEmail}</td>
         <td data-label="Total" class="num">$${FMT_USD(o.total)}</td>
-        <td data-label="Method">${o.paymentMethod || 'invoice'}</td>
-        <td class="action-cell"><button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button></td>
-      </tr>
-    `).join('');
+        <td data-label="Method">${methodLabel}</td>
+        <td class="action-cell"><button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0}, '${methodLabel}')">Mark Paid</button></td>
+      </tr>`;
+    }).join('');
   } else {
     awaitingBody.innerHTML = '<tr><td colspan="6" class="empty full-cell">No orders awaiting payment.</td></tr>';
   }
@@ -393,7 +400,10 @@ async function loadStats() {
       //   otherwise         -> Dispatch / Retry
       let actionBtn = '—';
       if (ps === 'awaiting_payment') {
-        actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0})">Mark Paid</button>`;
+        const methodLabel = o.paymentMethod === 'cashapp' ? 'Cash App'
+                          : o.paymentMethod === 'zelle'   ? 'Zelle'
+                          : '';
+        actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0}, '${methodLabel}')">Mark Paid</button>`;
       } else if (rs !== 'dispatched') {
         const title = o.rapidError ? o.rapidError.replace(/"/g, '&quot;') : 'Dispatch to Rapid';
         actionBtn = `<button class="toggle-btn" title="${title}" onclick="dispatchOrder('${o.orderId}')">${rs === 'failed' ? 'Retry' : 'Dispatch'}</button>`;
@@ -430,23 +440,31 @@ const CHANNEL_PLACEHOLDERS = {
   'Zelle':    'e.g. ABC123XYZ',
   'Other':    'e.g. wire ref / venmo handle / etc.',
 };
-let _markPaidCtx = null;  // { orderId, total }
+let _markPaidCtx = null;  // { orderId, total, expectedChannel }
 
-function openMarkPaid(orderId, total) {
-  _markPaidCtx = { orderId, total };
+function openMarkPaid(orderId, total, expectedChannel) {
+  _markPaidCtx = { orderId, total, expectedChannel };
   document.getElementById('mark-paid-order-id').textContent = orderId;
   document.getElementById('mark-paid-amount').textContent = '$' + (Number(total) || 0).toFixed(2);
-  document.getElementById('mp-channel').value = '';
+  // Pre-select the channel the customer chose at checkout, if it matches our
+  // dropdown options. Admin can still override (e.g. customer said Cash App
+  // but actually paid via Zelle).
+  const validChannels = ['Cash App', 'Zelle', 'Other'];
+  const initialChannel = validChannels.includes(expectedChannel) ? expectedChannel : '';
+  document.getElementById('mp-channel').value = initialChannel;
   document.getElementById('mp-reference').value = '';
   document.getElementById('mp-reference').placeholder = '—';
-  document.getElementById('mp-reference-hint').textContent = 'Select a payment method first';
   document.getElementById('mp-note').value = '';
   document.getElementById('mp-error').classList.remove('show');
   document.getElementById('mp-submit').disabled = false;
   document.getElementById('mp-submit').textContent = 'Mark Paid';
+  // Apply hint matching the pre-selected channel (or generic if none).
+  updateMarkPaidHint();
   document.getElementById('mark-paid-overlay').classList.add('open');
-  // Focus the dropdown after the animation
-  setTimeout(() => document.getElementById('mp-channel').focus(), 100);
+  // Auto-focus the reference field if a channel was pre-selected; dropdown otherwise.
+  setTimeout(() => {
+    document.getElementById(initialChannel ? 'mp-reference' : 'mp-channel').focus();
+  }, 100);
 }
 
 function closeMarkPaid() {
@@ -538,7 +556,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Back-compat wrapper for the existing `onclick="markPaid(...)"` attrs in render code.
-function markPaid(orderId, total) { openMarkPaid(orderId, total); }
+function markPaid(orderId, total, expectedChannel) { openMarkPaid(orderId, total, expectedChannel); }
 
 // ─── Order Details modal ──────────────────────────────────────────
 // Fetches the full order record from /api/admin/order?orderId=...
@@ -701,7 +719,10 @@ function renderOrderDetails(o) {
     // No actions on cancelled orders
   } else {
     if (isAwaiting) {
-      acts.push(`<button class="modal-btn modal-btn-primary" onclick="closeDetails();markPaid('${o.orderId}', ${o.total||0})">Mark Paid</button>`);
+      const expectedChannel = o.paymentMethod === 'cashapp' ? 'Cash App'
+                            : o.paymentMethod === 'zelle'   ? 'Zelle'
+                            : '';
+      acts.push(`<button class="modal-btn modal-btn-primary" onclick="closeDetails();markPaid('${o.orderId}', ${o.total||0}, '${expectedChannel}')">Mark Paid</button>`);
     } else if (isPaid && !isDispatched) {
       acts.push(`<button class="modal-btn modal-btn-warn" onclick="unmarkPaid('${o.orderId}')">Un-mark Paid</button>`);
     }
