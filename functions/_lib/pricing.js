@@ -18,7 +18,6 @@
 export const SKU_TABLE = {
   "SBL-RT10":  { name: "G3-R",                 sizes: { "10mg":  100 }, wholesaleSizes: { "10mg":  30 } },
   "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 }, wholesaleSizes: { "10mg":  29 } },
-  "SBL-IG1":   { name: "IGF1-LR3",             sizes: { "1mg":    70 }, wholesaleSizes: { "1mg":   30 } },
   "SBL-NJ500": { name: "NAD+",                 sizes: { "500mg":  75 }, wholesaleSizes: { "500mg": 26 } },
   "SBL-CU50":  { name: "GHK-CU",               sizes: { "50mg":   65 }, wholesaleSizes: { "50mg":  11 } },
   "SBL-BBG70": { name: "GLOW",                 sizes: { "70mg":  120 }, wholesaleSizes: { "70mg":  35 } },
