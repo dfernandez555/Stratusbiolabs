@@ -135,7 +135,7 @@ export async function onRequestPost({ request, env }) {
   if (isPaid && order.paymentStatus !== "paid") {
     order.paymentStatus = "paid";
     order.paymentReceivedAt = now;
-    order.paymentChannel = order.paymentMethod === "crypto" ? "NOWPayments (crypto)" : "Card (BTC Buddies)";
+    order.paymentChannel = order.paymentMethod === "crypto" ? "NOWPayments (crypto)" : "BTC Buddies (Zelle)";
     order.paymentReference = payload.payin_hash || payload.outcome_hash || `np-${paymentId}`;
     order.rapidStatus = "pending";
     order.rapidError = null;

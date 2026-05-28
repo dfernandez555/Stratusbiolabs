@@ -139,7 +139,7 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
   </td></tr>
 
   <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.6;">
-    <p style="margin:0 0 16px;">We've received your order. To complete it, please send your Bitcoin payment via <strong>BTC Buddies</strong> using the steps below. Your order ships within 72 hours of payment confirmation.</p>
+    <p style="margin:0 0 16px;">We've received your order. To complete it, please send your payment via <strong>Zelle through BTC Buddies</strong> using the steps below — they convert your Zelle payment to Bitcoin and forward it to us. Your order ships within 72 hours of payment confirmation.</p>
   </td></tr>
 
   <tr><td style="padding:0 32px;">
@@ -179,7 +179,7 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
       <li>Enter the <strong>USD amount</strong> shown above.</li>
       <li>Paste the <strong>BTC address</strong> above as the recipient. Double-check the first 3 and last 3 characters match.</li>
       <li>Include your <strong>Order ID</strong> (${esc(orderId)}) in the reference field so we can match your payment.</li>
-      <li>Choose your payment method (credit card, Zelle, Cash App, or Venmo) and complete the payment.</li>
+      <li>Complete the payment via <strong>Zelle</strong>. BTC Buddies will convert your Zelle payment into BTC and send it to our wallet automatically.</li>
     </ol>
     <p style="margin:16px 0 0;font-size:12px;color:#7A746C;line-height:1.6;"><strong style="color:#1F1B16;">Note:</strong> BTC Buddies is a third-party service. Stratus Biolabs is not responsible for your transaction with BTC Buddies — please verify the wallet address carefully before submitting. Once BTC arrives at our address, your order auto-confirms and ships within 72 hours.</p>
   </td></tr>
@@ -218,7 +218,7 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
       <tr>
         <td style="padding:6px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Payment Method</td>
         <td></td>
-        <td style="padding:6px 0;text-align:right;font-size:13px;">Credit / Debit Card via BTC Buddies</td>
+        <td style="padding:6px 0;text-align:right;font-size:13px;">Zelle via BTC Buddies</td>
       </tr>
     </table>
   </td></tr>
@@ -325,10 +325,10 @@ export async function sendAdminOrderNotificationEmail(env, { order }) {
   const addr  = order.shippingAddress || {};
 
   const methodLabel =
-    method === "btcbuddies" ? "Card via BTC Buddies" :
+    method === "btcbuddies" ? "Zelle via BTC Buddies" :
     method === "crypto"     ? "Cryptocurrency (NOWPayments)" :
     method === "cashapp"    ? "Cash App" :
-    method === "zelle"      ? "Zelle" :
+    method === "zelle"      ? "Zelle (direct)" :
     method === "free"       ? "Free order (100% promo)" :
     method;
 

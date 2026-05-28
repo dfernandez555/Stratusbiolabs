@@ -474,13 +474,13 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
                 <div class="payment-desc">Send payment via Zelle bank transfer. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
               </div>
             </label>
-            <!-- Card via BTC Buddies -->
+            <!-- BTC Buddies (Zelle-based conversion service) -->
             <label class="payment-option" onclick="selectPayment('btcbuddies', event)">
               <input type="radio" name="payment" value="btcbuddies"/>
-              <span class="payment-icon">💳</span>
+              <span class="payment-icon">🪙</span>
               <div class="payment-info">
-                <div class="payment-name">Credit / Debit Card <span class="card-badge">via BTC Buddies</span></div>
-                <div class="payment-desc">Pay with Visa, Mastercard, Amex, or Venmo through BTC Buddies — they convert to BTC and send to us. Confirms automatically once payment lands. Ships within 72 hours.</div>
+                <div class="payment-name">BTC Buddies <span class="card-badge">Zelle → BTC</span></div>
+                <div class="payment-desc">Pay via Zelle through BTC Buddies — they convert your payment to BTC and send to us. Order confirms <strong>automatically</strong> once BTC lands (no manual approval needed). Ships within 72 hours.</div>
               </div>
             </label>
             <!-- Crypto -->
@@ -664,12 +664,12 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
       </p>
     </div>
 
-    <!-- BTC Buddies: customer pays fiat (card/Zelle/Cash App/Venmo) to BTC
-         Buddies, who converts to BTC and sends to our NOWPayments-issued
-         address. We display the three values they need to paste into BTC
-         Buddies' form. Auto-confirms via NOWPayments IPN webhook. -->
+    <!-- BTC Buddies: customer pays via Zelle to BTC Buddies, who converts
+         to BTC and sends to our NOWPayments-issued address. We display the
+         three values they need to paste into BTC Buddies' form.
+         Auto-confirms via NOWPayments IPN webhook. -->
     <div class="payment-instructions" id="payment-instructions-btcbuddies">
-      <h3>// Pay with Card via BTC Buddies</h3>
+      <h3>// Pay via Zelle through BTC Buddies</h3>
       <div class="pay-total" id="pay-total-btcb">$0.00</div>
       <div class="pay-ref">Order: <span id="pay-ref-id-btcb">SB-000000</span></div>
 
@@ -717,7 +717,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
         </a>
 
         <p class="pay-note" style="margin-top:1rem;">
-          <strong>How this works:</strong> Click "Open BTC Buddies" above. In their form: enter the USD amount above, paste the BTC address above as the recipient, paste your order ID into the reference field, pick your payment method (card / Zelle / Cash App / Venmo), and complete payment. Once BTC Buddies sends the BTC, your order auto-confirms — no further action needed. BTC Buddies is a third-party service; their fees and terms apply.
+          <strong>How this works:</strong> Click "Open BTC Buddies" above. In their form: enter the USD amount, paste the BTC address as the recipient, paste your order ID into the reference field, then complete payment <strong>via Zelle</strong>. BTC Buddies converts your Zelle payment into BTC and sends it to our address. Your order auto-confirms once the BTC arrives — no further action needed on your end. BTC Buddies is a third-party service; their fees and terms apply.
         </p>
       </div>
     </div>
@@ -810,7 +810,7 @@ function renderSuccessNextSteps(method, email) {
     items = [
       { done: true,  text: `Your order has been received and saved.` },
       { done: true,  text: `An order confirmation email has been sent ${mail} with these payment instructions.` },
-      { done: false, text: `Complete your payment below via BTC Buddies (Visa, Mastercard, Amex, Cash App, Zelle, or Venmo — they convert to BTC for us).` },
+      { done: false, text: `Send your payment via <strong>Zelle</strong> through BTC Buddies using the address and amount below. BTC Buddies converts your Zelle payment to BTC and sends it to us.` },
       { done: false, text: `Your order auto-confirms within ~10-30 minutes of BTC arriving and ships within 72 hours.` },
     ];
   } else if (method === 'cashapp') {
@@ -1040,9 +1040,9 @@ function updatePaymentUI() {
     btn.className = 'btn-submit card-mode';
     badges.innerHTML = `<span class="security-badge">🏦 Zelle</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
   } else if (selectedPayment === 'btcbuddies') {
-    btn.textContent = 'Place Order — Pay with Card →';
+    btn.textContent = 'Place Order — Pay via Zelle (BTC Buddies) →';
     btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">💳 Card via BTC Buddies</span><span class="security-badge">⚡ Auto-confirms</span><span class="security-badge">📦 Ships once paid</span>`;
+    badges.innerHTML = `<span class="security-badge">🪙 Zelle → BTC Buddies</span><span class="security-badge">⚡ Auto-confirms</span><span class="security-badge">📦 Ships once paid</span>`;
   } else {
     btn.textContent = 'Place Order & Pay with Crypto →';
     btn.className = 'btn-submit';

@@ -37,7 +37,7 @@ export async function onRequestPost({ request, env }) {
   if (!isAuthed(request, env, body?.adminPassword)) return unauth();
   if (!env.STRATUS_DATA) return json({ ok: false, error: "Storage not configured" }, 503);
 
-  const ALLOWED_CHANNELS = ["Cash App", "Zelle", "Card (BTC Buddies)", "NOWPayments (crypto)", "Other"];
+  const ALLOWED_CHANNELS = ["Cash App", "Zelle", "BTC Buddies (Zelle)", "NOWPayments (crypto)", "Other"];
 
   const orderId = clean(body?.orderId, 40);
   const paymentChannel = clean(body?.paymentChannel, 30);

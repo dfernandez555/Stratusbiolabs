@@ -356,7 +356,7 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
         <option value="">Select method...</option>
         <option value="Cash App">Cash App</option>
         <option value="Zelle">Zelle</option>
-        <option value="Card (BTC Buddies)">Card (BTC Buddies)</option>
+        <option value="BTC Buddies (Zelle)">BTC Buddies (Zelle → BTC)</option>
         <option value="NOWPayments (crypto)">NOWPayments (crypto)</option>
         <option value="Other">Other</option>
       </select>
@@ -523,7 +523,7 @@ async function loadStats() {
       const methodLabel =
         o.paymentMethod === 'cashapp'    ? 'Cash App' :
         o.paymentMethod === 'zelle'      ? 'Zelle'    :
-        o.paymentMethod === 'btcbuddies' ? 'Card (BTC Buddies)' :
+        o.paymentMethod === 'btcbuddies' ? 'BTC Buddies (Zelle)' :
         (o.paymentMethod || 'invoice');
       return `
       <tr class="awaiting-row">
@@ -554,7 +554,7 @@ async function loadStats() {
       if (ps === 'awaiting_payment') {
         const methodLabel = o.paymentMethod === 'cashapp'    ? 'Cash App'
                           : o.paymentMethod === 'zelle'      ? 'Zelle'
-                          : o.paymentMethod === 'btcbuddies' ? 'Card (BTC Buddies)'
+                          : o.paymentMethod === 'btcbuddies' ? 'BTC Buddies (Zelle)'
                           : '';
         actionBtn = `<button class="mark-paid-btn" onclick="markPaid('${o.orderId}', ${o.total || 0}, '${methodLabel}')">Mark Paid</button>`;
       } else if (rs !== 'dispatched') {
@@ -586,14 +586,14 @@ async function loadStats() {
 const CHANNEL_HINTS = {
   'Cash App':              'Sender’s Cash App display name (the customer didn’t leave a memo)',
   'Zelle':                 'Zelle transaction ID or confirmation number',
-  'Card (BTC Buddies)':    'NOWPayments payment_id or BTC tx hash (normally auto-marked by webhook — use this if webhook missed it)',
+  'BTC Buddies (Zelle)':    'NOWPayments payment_id or BTC tx hash (normally auto-marked by webhook — use this if webhook missed it)',
   'NOWPayments (crypto)':  'NOWPayments payment_id or coin tx hash (normally auto-marked by webhook)',
   'Other':                 'Free-form reference — anything that identifies the payment',
 };
 const CHANNEL_PLACEHOLDERS = {
   'Cash App':              'e.g. John Smith',
   'Zelle':                 'e.g. ABC123XYZ',
-  'Card (BTC Buddies)':    'e.g. np-12345678 or 0xabc...',
+  'BTC Buddies (Zelle)':    'e.g. np-12345678 or 0xabc...',
   'NOWPayments (crypto)':  'e.g. np-12345678',
   'Other':                 'e.g. wire ref / venmo handle / etc.',
 };
@@ -944,7 +944,7 @@ function renderOrderDetails(o) {
     if (isAwaiting) {
       const expectedChannel = o.paymentMethod === 'cashapp'    ? 'Cash App'
                             : o.paymentMethod === 'zelle'      ? 'Zelle'
-                            : o.paymentMethod === 'btcbuddies' ? 'Card (BTC Buddies)'
+                            : o.paymentMethod === 'btcbuddies' ? 'BTC Buddies (Zelle)'
                             : '';
       acts.push(`<button class="modal-btn modal-btn-primary" onclick="closeDetails();markPaid('${o.orderId}', ${o.total||0}, '${expectedChannel}')">Mark Paid</button>`);
     } else if (isPaid && !isDispatched) {
