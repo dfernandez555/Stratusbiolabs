@@ -49,6 +49,18 @@ export async function sendEmail(env, { to, subject, html, text }) {
         subject,
         html,
         text: text || stripHtml(html),
+        // Deliverability headers. List-Unsubscribe + Auto-Submitted help us
+        // pass Gmail/Outlook's "is this transactional?" heuristics — most
+        // major filters score senders higher when these are present, even
+        // on transactional mail. The mailto unsubscribe handler is just
+        // info@ since we're not running a bulk list yet; any customer
+        // emailing it asking to stop will reach the ops inbox.
+        headers: {
+          "List-Unsubscribe": "<mailto:info@stratusbiolabs.com?subject=unsubscribe>",
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          "Auto-Submitted": "auto-generated",
+          "X-Entity-Ref-ID": "stratusbiolabs-transactional",
+        },
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -213,7 +225,9 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
 
   return sendEmail(env, {
     to: order.customerEmail,
-    subject: `Order Received — ${orderId} — Payment Required via BTC Buddies`,
+    // Cleaner subject — avoid trigger words like "Payment Required" that
+    // tip-off spam filters. Brand + order ID + neutral next-steps phrasing.
+    subject: `Your Stratus Biolabs order ${orderId} — next steps`,
     html,
   });
 }
@@ -272,7 +286,7 @@ export async function sendPaymentConfirmedEmail(env, { order }) {
 
   return sendEmail(env, {
     to: order.customerEmail,
-    subject: `Payment Confirmed — Order ${orderId} is shipping soon`,
+    subject: `Your Stratus Biolabs order ${orderId} is shipping soon`,
     html,
   });
 }
