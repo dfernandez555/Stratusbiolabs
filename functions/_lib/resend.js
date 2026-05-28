@@ -16,6 +16,10 @@ const RESEND_API = "https://api.resend.com/emails";
 const FROM = "Stratus Biolabs <orders@stratusbiolabs.com>";
 const REPLY_TO = "info@stratusbiolabs.com";
 
+// Where admin notifications go. Override via the ADMIN_NOTIFICATION_EMAIL
+// env var if you want a different inbox (e.g. once Martin needs alerts too).
+const DEFAULT_ADMIN_INBOX = "info@stratusbiolabs.com";
+
 /**
  * Send an email via Resend.
  * @param {object} env  - Cloudflare Pages env (must contain RESEND_API_KEY)
@@ -269,6 +273,97 @@ export async function sendPaymentConfirmedEmail(env, { order }) {
   return sendEmail(env, {
     to: order.customerEmail,
     subject: `Payment Confirmed — Order ${orderId} is shipping soon`,
+    html,
+  });
+}
+
+/**
+ * Admin notification — fired from log-order whenever a new order is created.
+ * Per-method actionability hint helps you decide whether to do anything:
+ *   - btcbuddies / crypto / free → auto-confirms; FYI only
+ *   - cashapp / zelle           → action needed: verify funds + Mark Paid in /admin
+ */
+export async function sendAdminOrderNotificationEmail(env, { order }) {
+  const orderId = order.orderId;
+  const method = String(order.paymentMethod || "").toLowerCase();
+  const items = Array.isArray(order.items) ? order.items : [];
+  const addr  = order.shippingAddress || {};
+
+  const methodLabel =
+    method === "btcbuddies" ? "Card via BTC Buddies" :
+    method === "crypto"     ? "Cryptocurrency (NOWPayments)" :
+    method === "cashapp"    ? "Cash App" :
+    method === "zelle"      ? "Zelle" :
+    method === "free"       ? "Free order (100% promo)" :
+    method;
+
+  const needsAction =
+    method === "cashapp" || method === "zelle";
+  const actionHtml = needsAction
+    ? `<div style="margin-top:6px;padding:10px 14px;background:rgba(229,165,57,0.12);border:1px solid rgba(229,165,57,0.4);font-size:13px;color:#9a6a17;">
+         <strong>Action needed:</strong> verify funds in your ${method === "cashapp" ? "Cash App" : "bank Zelle"} app, then click <strong>Mark Paid</strong> in /admin.
+       </div>`
+    : `<div style="margin-top:6px;padding:10px 14px;background:rgba(74,154,106,0.10);border:1px solid rgba(74,154,106,0.35);font-size:13px;color:#3a6d4f;">
+         <strong>No action needed.</strong> Auto-confirms via NOWPayments webhook, then dispatches to Rapid automatically.
+       </div>`;
+
+  const itemRows = items.map(it => `
+    <tr>
+      <td style="padding:4px 0;font-size:13px;">${esc(it.name || it.sku)} ${it.sizeKey ? `<span style="color:#7A746C;font-size:11px;">(${esc(it.sizeKey)})</span>` : ""}</td>
+      <td style="padding:4px 0;font-size:12px;color:#7A746C;text-align:right;">×${esc(it.qty)}</td>
+      <td style="padding:4px 0;font-family:monospace;font-size:12px;text-align:right;">$${((Number(it.price) || 0) * (Number(it.qty) || 1)).toFixed(2)}</td>
+    </tr>
+  `).join("");
+
+  const html = `<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:24px 28px 16px;">
+    <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:6px;">// New Order</div>
+    <h1 style="margin:0;font-size:22px;font-weight:400;color:#1F1B16;line-height:1.2;">
+      $${(Number(order.total) || 0).toFixed(2)} &middot; ${esc(methodLabel)}
+    </h1>
+    <div style="margin-top:6px;font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.08em;">
+      Order ${esc(orderId)}
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 28px 16px;">
+    ${actionHtml}
+  </td></tr>
+
+  <tr><td style="padding:0 28px 16px;">
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:8px;">// Items</div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      ${itemRows || `<tr><td style="color:#7A746C;font-size:12px;font-style:italic;">no items</td></tr>`}
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:0 28px 16px;">
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:8px;">// Customer</div>
+    <div style="font-size:13px;line-height:1.5;color:#1F1B16;">
+      <div><strong>${esc((addr.firstName || "") + " " + (addr.lastName || ""))}</strong></div>
+      <div style="font-family:monospace;font-size:12px;color:#7A746C;">${esc(order.customerEmail || "")}</div>
+      ${addr.researchField ? `<div style="font-size:12px;color:#7A746C;margin-top:4px;">Research field: ${esc(addr.researchField)}</div>` : ""}
+      <div style="margin-top:6px;font-size:12px;color:#7A746C;">
+        ${esc(addr.city || "")}${addr.state ? ", " + esc(addr.state) : ""} ${esc(addr.zip || "")}${addr.country && addr.country !== "United States" ? " &middot; " + esc(addr.country) : ""}
+      </div>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:14px 28px 22px;border-top:1px solid rgba(31,27,22,0.1);font-size:11px;color:#7A746C;line-height:1.6;">
+    Open in admin: <a href="https://stratusbiolabs.com/admin" style="color:#1F1B16;font-family:monospace;">stratusbiolabs.com/admin</a>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: env.ADMIN_NOTIFICATION_EMAIL || DEFAULT_ADMIN_INBOX,
+    subject: `[Order] $${(Number(order.total) || 0).toFixed(2)} — ${orderId} — ${methodLabel}`,
     html,
   });
 }

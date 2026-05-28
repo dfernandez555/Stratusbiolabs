@@ -10,6 +10,7 @@
 // browser could submit a $0 cart for $1000 of products and we'd log $0.
 
 import { computeCart } from "../_lib/pricing.js";
+import { sendAdminOrderNotificationEmail } from "../_lib/resend.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -144,6 +145,15 @@ export async function onRequestPost({ request, env }) {
   // Secondary index by date (YYYY-MM) for fast monthly aggregation.
   const month = now.slice(0, 7); // 2026-05
   await env.STRATUS_DATA.put(`order-month:${month}:${orderId}`, "1");
+
+  // Fire-and-forget admin notification — every new order. We don't block the
+  // response on Resend, and we don't fail the order if Resend is down.
+  try {
+    await sendAdminOrderNotificationEmail(env, { order: record });
+  } catch (e) {
+    // Best effort; admin can still see the order in /admin even if the
+    // notification email failed.
+  }
 
   return json({ ok: true, orderId });
 }
