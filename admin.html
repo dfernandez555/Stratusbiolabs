@@ -127,6 +127,14 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 .modal-btn-warn:hover { background: rgba(229,165,57,0.25); }
 .details-empty-action { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; text-align: center; padding: 1rem; font-style: italic; }
 
+/* Toast — slides up from bottom, auto-dismisses. Used for ephemeral
+   confirmations after admin actions (order cancelled, payment marked, etc.)
+   so the customer doesnt feel like the page is frozen. */
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(120%); background: var(--ink); color: var(--cream); padding: 0.85rem 1.5rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; box-shadow: 0 8px 24px rgba(31,27,22,0.25); z-index: 1000; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 90vw; text-align: center; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error { background: #c44141; }
+
 /* Clickable order ID styling */
 .order-link { background: none; border: none; padding: 0; cursor: pointer; font-family: 'JetBrains Mono', monospace; color: var(--ink); text-decoration: underline; text-decoration-color: rgba(31,27,22,0.3); text-underline-offset: 3px; transition: text-decoration-color 0.2s; font-size: inherit; }
 .order-link:hover { text-decoration-color: var(--ink); }
@@ -323,6 +331,39 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
     </div>
   </div>
 </div>
+
+<!-- ─── Confirm-cancel modal (replaces native confirm/prompt for the
+       cancel-order action; styled to match the rest of /admin and works
+       properly on phones with full-screen sheet behavior) ─── -->
+<div class="modal-overlay" id="cancel-overlay" onclick="if(event.target===this)closeCancelConfirm()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+    <button class="modal-close-x" aria-label="Close" onclick="closeCancelConfirm()">✕</button>
+    <p class="modal-eyebrow" id="cancel-eyebrow">// Cancel Order</p>
+    <h3 class="modal-title" id="cancel-title">Cancel this order?</h3>
+    <p class="modal-sub" id="cancel-sub"><strong id="cancel-order-id">SB-000000</strong></p>
+
+    <div class="modal-field" style="margin-top:1rem;">
+      <p style="font-size:0.88rem;line-height:1.5;color:var(--ink);margin:0 0 1rem;" id="cancel-warning-text">
+        This cannot be undone. The customer's payment will need to be refunded manually.
+      </p>
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label" for="cancel-reason">Reason (optional, for your records)</label>
+      <input class="modal-input" id="cancel-reason" type="text" maxlength="300" placeholder="e.g. customer request, out of stock, suspicious order"/>
+    </div>
+
+    <div class="modal-error" id="cancel-error"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" onclick="closeCancelConfirm()">Keep Order</button>
+      <button class="modal-btn modal-btn-danger" id="cancel-submit" onclick="submitCancel()">Cancel Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast (lightweight feedback after cancel / mark paid) ─── -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <!-- ─── Order Details modal ─── -->
 <div class="modal-overlay" id="details-overlay" onclick="if(event.target===this)closeDetails()">
@@ -826,24 +867,93 @@ async function unmarkPaid(orderId) {
   } catch (e) { alert('Network error: ' + e.message); }
 }
 
-async function cancelOrder(orderId, alreadyDispatched) {
-  const warn = alreadyDispatched
-    ? '⚠ This order has ALREADY been dispatched to Rapid Fulfillment.\n\nCancelling here ONLY updates your internal records. You must also cancel the shipment manually in the Rapid CRM at stratusbiolabs.rapidfulfillmentcrm.com.\n\nProceed?'
-    : 'Cancel this order? This cannot be undone.';
-  if (!confirm(warn)) return;
-  const reason = prompt('Reason (optional, for your records):') || '';
+// ─── Cancel-confirm modal flow ───────────────────────────────────
+// Replaces native confirm()/prompt(). Opens a styled in-page modal so
+// the customer (admin user) actually sees what they're confirming and
+// can interact with it cleanly on a phone.
+let _cancelCtx = null;
+
+function cancelOrder(orderId, alreadyDispatched) {
+  _cancelCtx = { orderId, alreadyDispatched };
+  document.getElementById('cancel-order-id').textContent = orderId;
+  const warning = document.getElementById('cancel-warning-text');
+  if (alreadyDispatched) {
+    warning.innerHTML = '<strong style="color:#c44141;">This order has already been dispatched to Rapid Fulfillment.</strong> Cancelling here also cancels it on the Rapid side via their SOAP API. Any payment the customer made will need to be refunded manually.';
+  } else {
+    warning.innerHTML = 'This cannot be undone. The order will be marked cancelled in our system AND on the Rapid side (if it had been queued there). Any payment the customer made will need to be refunded manually.';
+  }
+  document.getElementById('cancel-reason').value = '';
+  document.getElementById('cancel-error').classList.remove('show');
+  document.getElementById('cancel-submit').disabled = false;
+  document.getElementById('cancel-submit').textContent = 'Cancel Order';
+  document.getElementById('cancel-overlay').classList.add('open');
+  setTimeout(() => { try { document.getElementById('cancel-reason').focus(); } catch {} }, 100);
+}
+
+function closeCancelConfirm() {
+  document.getElementById('cancel-overlay').classList.remove('open');
+  _cancelCtx = null;
+}
+
+async function submitCancel() {
+  if (!_cancelCtx) return;
+  const { orderId } = _cancelCtx;
+  const reason = document.getElementById('cancel-reason').value.trim();
+  const btn = document.getElementById('cancel-submit');
+  const err = document.getElementById('cancel-error');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Cancelling...';
   try {
     const res = await fetch('/api/admin/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
-      body: JSON.stringify({ orderId, action: 'cancel', reason: reason.trim() }),
+      body: JSON.stringify({ orderId, action: 'cancel', reason }),
     });
     const d = await res.json();
-    if (!d.ok) { alert('Failed: ' + (d.error || 'unknown')); return; }
-    openDetails(orderId);  // re-render so admin sees the cancelled state
+    if (!d.ok) {
+      err.textContent = 'Failed: ' + (d.error || 'unknown error');
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Cancel Order';
+      return;
+    }
+    // Success path: close BOTH modals (cancel confirm + order details)
+    // and drop the admin back on the dashboard with a toast. No re-render
+    // of the now-cancelled order in the details modal — the order is dead,
+    // there's nothing more to do with it.
+    closeCancelConfirm();
+    closeDetails();
+    showToast(`Order ${orderId} cancelled${d.rapidCancelled ? ' (Rapid sync ✓)' : d.rapidCancelError ? ' (Rapid sync failed — verify manually)' : ''}.`, d.rapidCancelError ? 'error' : 'success');
     loadStats();
-  } catch (e) { alert('Network error: ' + e.message); }
+  } catch (e) {
+    err.textContent = 'Network error: ' + e.message;
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Cancel Order';
+  }
 }
+
+// Toast helper — shows a brief sliding message at the bottom of the screen.
+let _toastTimer = null;
+function showToast(message, type = 'success') {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.className = 'toast ' + (type === 'error' ? 'error' : 'success');
+  t.textContent = message;
+  // Force a reflow so the class change re-triggers the transition if called rapidly.
+  void t.offsetWidth;
+  t.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// Esc closes whichever modal is on top.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('cancel-overlay')?.classList.contains('open')) closeCancelConfirm();
+  }
+});
 
 async function dispatchOrder(orderId) {
   const btn = event.target;
