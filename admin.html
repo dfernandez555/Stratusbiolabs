@@ -695,13 +695,10 @@ async function openDetails(orderId) {
       return;
     }
     renderOrderDetails(d.order);
-
-    // Auto-sync this one order from Rapid in the background. If Rapid says
-    // it's been cancelled (e.g., ops voided it in their CRM), our display
-    // updates and the admin sees the truth without having to manually
-    // refresh. Best-effort; failures are silent because the user already
-    // sees the data we have.
-    syncOrderFromRapid(orderId, { silent: true });
+    // Deliberately NOT auto-syncing from Rapid here. Auto-sync on every
+    // detail-modal open hit Rapid's API too aggressively (3 SOAP calls
+    // per open: login → orders_get → logout). Admin can pull fresh status
+    // via the "Sync from Rapid" button on the dashboard when they want it.
   } catch (e) {
     document.getElementById('details-body').innerHTML =
       `<p class="details-empty-action">Network error: ${e.message}</p>`;
