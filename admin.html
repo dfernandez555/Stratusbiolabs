@@ -246,7 +246,7 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 
 <div id="dashboard">
   <h1>Stratus <em>Admin</em></h1>
-  <p class="lead">Reporting period: <span class="month" id="month-display">—</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <input type="month" id="month-picker" class="month-picker" onchange="loadStats()"/></p>
+  <p class="lead">Reporting period: <span class="month" id="month-display">—</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <input type="month" id="month-picker" class="month-picker" onchange="loadStats()"/> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <button class="toggle-btn" onclick="syncAllFromRapid(this)" title="Pull fresh statuses from Rapid Fulfillment for every order in KV. Cancellations or shipments made directly in their CRM will sync back here.">Sync from Rapid</button></p>
 
   <div class="kpis">
     <div class="kpi">
@@ -695,9 +695,74 @@ async function openDetails(orderId) {
       return;
     }
     renderOrderDetails(d.order);
+
+    // Auto-sync this one order from Rapid in the background. If Rapid says
+    // it's been cancelled (e.g., ops voided it in their CRM), our display
+    // updates and the admin sees the truth without having to manually
+    // refresh. Best-effort; failures are silent because the user already
+    // sees the data we have.
+    syncOrderFromRapid(orderId, { silent: true });
   } catch (e) {
     document.getElementById('details-body').innerHTML =
       `<p class="details-empty-action">Network error: ${e.message}</p>`;
+  }
+}
+
+// Pull fresh status from Rapid into our KV record + optionally re-render.
+// silent=true: don't show toasts on success/no-change; only flag actual
+// state-changes (e.g. cancelled on Rapid side) to the user via a banner.
+async function syncOrderFromRapid(orderId, { silent } = {}) {
+  try {
+    const res = await fetch('/api/admin/sync-rapid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ orderId }),
+    });
+    const d = await res.json();
+    if (!d.ok) {
+      if (!silent) showToast('Sync from Rapid failed: ' + (d.error || 'unknown'), 'error');
+      return;
+    }
+    if (d.changed) {
+      // Re-open details to show fresh state. Show a toast so the admin
+      // knows something updated under their feet.
+      if (_detailsCtx && _detailsCtx.orderId === orderId) {
+        openDetails(orderId);
+      }
+      showToast(`Rapid sync: order ${orderId} updated (now ${d.rapidStatus}).`, 'success');
+      loadStats();
+    } else if (!silent) {
+      showToast(`Rapid sync: no changes for ${orderId}.`, 'success');
+    }
+  } catch (e) {
+    if (!silent) showToast('Sync error: ' + e.message, 'error');
+  }
+}
+
+// Bulk sync — used by the "Refresh from Rapid" button on the dashboard.
+async function syncAllFromRapid(triggerBtn) {
+  const original = triggerBtn ? triggerBtn.textContent : null;
+  if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Syncing...'; }
+  try {
+    const res = await fetch('/api/admin/sync-rapid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ all: true }),
+    });
+    const d = await res.json();
+    if (!d.ok) {
+      showToast('Bulk sync failed: ' + (d.error || 'unknown'), 'error');
+      return;
+    }
+    const msg = `Synced ${d.checked} orders` +
+                (d.changed ? `, ${d.changed} updated` : ', no changes') +
+                (d.failed ? `, ${d.failed} failed` : '') + '.';
+    showToast(msg, d.failed ? 'error' : 'success');
+    loadStats();
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+  } finally {
+    if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = original || 'Sync from Rapid'; }
   }
 }
 

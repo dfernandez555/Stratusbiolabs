@@ -22,6 +22,8 @@
 // Both actions stamp an audit trail (cancelledAt, unmarkedPaidAt) so we can
 // reconstruct order history later if needed.
 
+import { rapidCancelOrder, orderIdToRapidNumeric } from "../../_lib/rapid.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -105,20 +107,45 @@ export async function onRequestPost({ request, env }) {
   if (action === "cancel") {
     // Cancellation is allowed from any state — admin's call.
     const wasDispatched = order.rapidStatus === "dispatched";
+    const wasInRapidQueue = wasDispatched || order.rapidStatus === "dispatching" || order.rapidStatus === "failed";
+
+    // Attempt to cancel on the Rapid side if the order made it (or tried to
+    // make it) into Rapid's queue. Skipped for orders that were blocked
+    // pending payment — they never reached Rapid so there's nothing to cancel
+    // there.
+    let rapidCancelled = false;
+    let rapidCancelError = null;
+    if (wasInRapidQueue) {
+      const numericId = orderIdToRapidNumeric(orderId);
+      const result = await rapidCancelOrder(env, numericId);
+      if (result.ok) {
+        rapidCancelled = true;
+      } else {
+        rapidCancelError = result.error;
+        // We still proceed with the local cancel below. Admin will see the
+        // sync failure in the response and can manually verify in Rapid CRM.
+      }
+    }
+
     order.status = "cancelled";
     order.paymentStatus = "cancelled";
     order.rapidStatus = wasDispatched ? "dispatched_then_cancelled" : "cancelled";
     order.cancelledAt = now;
     if (reason) order.cancelReason = reason;
+    order.rapidCancelSynced = rapidCancelled || null;
+    if (rapidCancelError) order.rapidCancelError = rapidCancelError;
 
     await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+
     return json({
       ok: true,
       orderId,
       action: "cancel",
       wasDispatched,
-      warning: wasDispatched
-        ? "Order was already dispatched to Rapid — you must cancel manually in the Rapid CRM as well."
+      rapidCancelled,                  // true if SOAP cancel succeeded
+      rapidCancelError,                // populated if SOAP cancel failed
+      warning: rapidCancelError
+        ? `Rapid SOAP cancel failed: ${rapidCancelError}. Verify the order is cancelled in the Rapid CRM manually.`
         : null,
     });
   }
