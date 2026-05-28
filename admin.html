@@ -63,6 +63,13 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 
 /* ── Mark-paid modal ───────────────────────────────────────────────── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(31,27,22,0.55); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+/* Cancel-confirm and Mark-paid are CHILD modals — opened from on top of the
+   Order Details modal. They need a higher z-index than .modal-overlay's
+   default 500 so they sit ABOVE details (which is also z:500) instead of
+   behind it. Without this, clicking Cancel Order in the details modal
+   opened the confirm modal silently behind the details, so the user saw
+   no change and clicked-through to the details overlay underneath. */
+#cancel-overlay, #mark-paid-overlay { z-index: 700; }
 .modal-overlay.open { display: flex; }
 .modal { background: var(--cream); border: 1px solid var(--hairline); max-width: 460px; width: 100%; padding: 2rem 2rem 1.5rem; position: relative; max-height: 92vh; overflow-y: auto; }
 .modal::before { content: ''; position: absolute; top: -1px; left: -1px; width: 28px; height: 1px; background: var(--ink); }
