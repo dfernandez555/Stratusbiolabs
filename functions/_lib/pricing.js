@@ -10,17 +10,22 @@
 // only the 10 approved SKUs may be sold. Listing format mandated by the
 // agreement: SBL-<sku> -- <product name> -- <mg strength>.
 
+// `sizes`           — retail price (what customers normally pay)
+// `wholesaleSizes`  — C&C wholesale cost per unit (Exhibit A, 0-499 volume tier).
+//                     Used by the `at_cost` promo type (family/staff pricing)
+//                     and by the masteradmin accounting view to compute margin.
+//                     Update both when contract terms change.
 export const SKU_TABLE = {
-  "SBL-RT10":  { name: "G3-R",                 sizes: { "10mg":  100 } },
-  "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 } },
-  "SBL-IG1":   { name: "IGF1-LR3",             sizes: { "1mg":    70 } },
-  "SBL-NJ500": { name: "NAD+",                 sizes: { "500mg":  75 } },
-  "SBL-CU50":  { name: "GHK-CU",               sizes: { "50mg":   65 } },
-  "SBL-BBG70": { name: "GLOW",                 sizes: { "70mg":  120 } },
-  "SBL-KBT80": { name: "KLOW",                 sizes: { "80mg":  140 } },
-  "SBL-XA30":  { name: "Semax",                sizes: { "30mg":   85 } },
-  "SBL-WA3":   { name: "Bacteriostatic Water", sizes: { "3mL":     8 } },
-  "SBL-WA10":  { name: "Bacteriostatic Water", sizes: { "10mL":   15 } },
+  "SBL-RT10":  { name: "G3-R",                 sizes: { "10mg":  100 }, wholesaleSizes: { "10mg":  30 } },
+  "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 }, wholesaleSizes: { "10mg":  29 } },
+  "SBL-IG1":   { name: "IGF1-LR3",             sizes: { "1mg":    70 }, wholesaleSizes: { "1mg":   30 } },
+  "SBL-NJ500": { name: "NAD+",                 sizes: { "500mg":  75 }, wholesaleSizes: { "500mg": 26 } },
+  "SBL-CU50":  { name: "GHK-CU",               sizes: { "50mg":   65 }, wholesaleSizes: { "50mg":  11 } },
+  "SBL-BBG70": { name: "GLOW",                 sizes: { "70mg":  120 }, wholesaleSizes: { "70mg":  35 } },
+  "SBL-KBT80": { name: "KLOW",                 sizes: { "80mg":  140 }, wholesaleSizes: { "80mg":  42 } },
+  "SBL-XA30":  { name: "Semax",                sizes: { "30mg":   85 }, wholesaleSizes: { "30mg":  26 } },
+  "SBL-WA3":   { name: "Bacteriostatic Water", sizes: { "3mL":     8 }, wholesaleSizes: { "3mL":    5 } },
+  "SBL-WA10":  { name: "Bacteriostatic Water", sizes: { "10mL":   15 }, wholesaleSizes: { "10mL":  10 } },
 };
 
 // Promos now live in KV under `promo:<CODE>`. Kept as an empty fallback bucket
@@ -111,6 +116,36 @@ export async function computeCart({ items, promoCode }, env) {
       // accidental targetTotal:0 from making any cart free).
       const target = Math.max(MIN_SET_TOTAL, Number(promo.targetTotal) || 0);
       discount = round2(Math.max(0, (subtotal + shipping) - target));
+    } else if (promo.type === "at_cost") {
+      // Family/staff pricing — items priced at C&C wholesale instead of
+      // retail. Shipping rules are UNCHANGED: free shipping kicks in if the
+      // RETAIL subtotal would have qualified (so the holder still benefits
+      // from the $150 free-shipping threshold rather than getting punished
+      // for paying less per item). Final total = wholesale subtotal + shipping.
+      let wholesaleSubtotal = 0;
+      let anyMissingCost = false;
+      for (const li of lineItems) {
+        const sku = SKU_TABLE[li.sku];
+        const w = sku && sku.wholesaleSizes && sku.wholesaleSizes[li.sizeKey];
+        if (typeof w !== "number") {
+          anyMissingCost = true;
+          // Defensive: if we can't price this item at cost, charge retail for
+          // it (no discount on the unknown-cost item). Safer than free.
+          wholesaleSubtotal += round2(li.unitPrice * li.qty);
+          continue;
+        }
+        wholesaleSubtotal += round2(w * li.qty);
+      }
+      wholesaleSubtotal = round2(wholesaleSubtotal);
+      // discount = how much we reduce the retail subtotal to get to the
+      // wholesale subtotal. Shipping passes through unchanged.
+      discount = round2(Math.max(0, subtotal - wholesaleSubtotal));
+      // If any SKU is missing wholesale data, the function above falls back
+      // to retail for that line (no free items). Surface via console for
+      // admin visibility — should never happen if SKU_TABLE is in sync.
+      if (anyMissingCost) {
+        console.warn("at_cost promo applied but one or more SKUs lack wholesale cost", { items: lineItems.map(li => li.sku) });
+      }
     }
     // Defensive: discount can never be negative (BUG-008).
     if (discount < 0) discount = 0;
