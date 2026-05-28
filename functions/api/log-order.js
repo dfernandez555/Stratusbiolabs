@@ -97,6 +97,14 @@ export async function onRequestPost({ request, env }) {
     notes:     clean(shipObj.notes, 400),
   };
 
+  // Generate a status token so the customer can re-visit their order's live
+  // status from any device via /track?id=...&t=... — the token makes it
+  // unguessable so other customers can't enumerate order IDs to peek at
+  // someone else's order. 20 hex chars = ~80 bits of entropy.
+  const tokenBytes = new Uint8Array(10);
+  crypto.getRandomValues(tokenBytes);
+  const statusToken = Array.from(tokenBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+
   const now = new Date().toISOString();
 
   // Cash App, Zelle, and BTC Buddies orders all start in 'awaiting_payment'
@@ -138,6 +146,7 @@ export async function onRequestPost({ request, env }) {
     rapidStatus,             // pending | dispatched | failed | cancelled | blocked_pending_payment
     rapidDispatchedAt: null,
     rapidError: null,
+    statusToken,             // public-but-unguessable handle for /track page + email links
     createdAt: now,
   };
 
@@ -155,5 +164,7 @@ export async function onRequestPost({ request, env }) {
     // notification email failed.
   }
 
-  return json({ ok: true, orderId });
+  // Return statusToken so the browser can build the /track URL on the
+  // success page (and so the BTC Buddies fetch sees the same token).
+  return json({ ok: true, orderId, statusToken });
 }

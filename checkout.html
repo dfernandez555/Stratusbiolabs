@@ -202,7 +202,20 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .success-nextsteps h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mist); margin: 0 0 0.85rem; font-weight: 500; }
 .success-nextsteps ul { list-style: none; margin: 0; padding: 0; }
 .success-nextsteps li { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.35rem 0; font-size: 0.86rem; line-height: 1.5; color: var(--fog); }
+/* min-width:0 + overflow-wrap:anywhere lets long customer emails wrap inside
+   the flex item instead of pushing the container wider than the screen. */
+.success-nextsteps li > span:last-child { min-width: 0; flex: 1; overflow-wrap: anywhere; word-break: break-word; }
+.success-nextsteps li strong { overflow-wrap: anywhere; word-break: break-word; }
 .success-nextsteps li .step-mark { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-top: 0.18rem; }
+
+/* "Check your junk folder" reminder shown right under the order received
+   header. Important — customers who don't see the email get confused fast. */
+.spam-reminder { max-width: 520px; margin: -0.5rem auto 1.75rem; padding: 0.85rem 1.25rem; background: rgba(229,165,57,0.10); border: 1px solid rgba(229,165,57,0.35); font-family: 'Inter', sans-serif; font-size: 0.86rem; line-height: 1.5; color: var(--fog); text-align: left; }
+.spam-reminder strong { color: var(--fog); font-weight: 500; }
+
+/* Track-your-order button on the success page — links to /track?id=...&t=... */
+.track-cta { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; max-width: 520px; width: calc(100% - 4rem); margin: 0 auto 1.75rem; padding: 0.95rem 1.4rem; background: var(--fog); color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, transform 0.15s; }
+.track-cta:hover { background: #3D352C; transform: translateY(-1px); }
 .success-nextsteps li.done .step-mark { background: var(--green); color: #fff; }
 .success-nextsteps li.todo .step-mark { background: rgba(31,27,22,0.08); color: var(--mist); border: 1px solid var(--border); }
 .btn-outline { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: 1px solid var(--border); color: var(--silver); text-decoration: none; display: inline-block; transition: all 0.3s; }
@@ -593,6 +606,16 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
     <h2 class="success-title" id="success-title">Order Received!</h2>
     <p class="success-body" id="success-body"><strong>Your order has been placed successfully.</strong></p>
     <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
+
+    <!-- Spam reminder — shown for any order where we send an email. -->
+    <div class="spam-reminder" id="spam-reminder" style="display:none;">
+      <strong>📬 Check your spam / junk folder.</strong> Our emails sometimes land there at first. Mark them as <em>"Not Spam"</em> so future updates reach your inbox.
+    </div>
+
+    <!-- Track Your Order button — links to /track?id=...&t=... so customer
+         can re-visit the status from any device. URL is signed with a per-
+         order token so other customers can't enumerate IDs to peek at orders. -->
+    <a class="track-cta" id="track-cta" href="#" style="display:none;">Track Your Order →</a>
 
     <!-- Next-steps checklist (visible for invoice-style payments). Tells the
          customer exactly what's already happened and what they need to do
@@ -1399,9 +1422,12 @@ function readShippingAddress() {
     notes:         v('notes'),
   };
 }
+// Stash the most recent statusToken so the success-state render path can
+// build the /track URL without re-fetching. Cleared when the cart resets.
+let _lastStatusToken = null;
 async function logOrderToServer(orderId, email, totalAmount, shipping, discount, subtotal, paymentMethod) {
   try {
-    await fetch('/api/log-order', {
+    const res = await fetch('/api/log-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1414,7 +1440,22 @@ async function logOrderToServer(orderId, email, totalAmount, shipping, discount,
         shippingAddress: readShippingAddress(),
       }),
     });
+    const data = await res.json().catch(() => ({}));
+    if (data && data.statusToken) _lastStatusToken = data.statusToken;
   } catch (e) { /* best-effort, don't block checkout */ }
+}
+
+// Show the spam-folder reminder and Track Your Order button on the success
+// page. Called from every successful-submission branch right after the
+// success-state is shown.
+function showSpamReminderAndTrack(orderId) {
+  const banner = document.getElementById('spam-reminder');
+  if (banner) banner.style.display = 'block';
+  const cta = document.getElementById('track-cta');
+  if (cta && orderId && _lastStatusToken) {
+    cta.href = `/track?id=${encodeURIComponent(orderId)}&t=${encodeURIComponent(_lastStatusToken)}`;
+    cta.style.display = 'inline-flex';
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1455,6 +1496,7 @@ async function submitOrder() {
     document.getElementById('success-body').innerHTML = '<strong>Your free order has been placed and is shipping within 72 hours.</strong> A confirmation has been sent to your email.';
     renderSuccessNextSteps('free', email);
     document.getElementById('success-state').classList.add('show');
+    showSpamReminderAndTrack(orderId);
     scrollToSuccess();
     return;
   }
@@ -1484,6 +1526,7 @@ async function submitOrder() {
     document.getElementById('btcb-orderref-value').textContent = orderId;
     document.getElementById('payment-instructions-btcbuddies').classList.add('show');
     document.getElementById('success-state').classList.add('show');
+    showSpamReminderAndTrack(orderId);
     scrollToSuccess();
 
     // Now fetch the actual BTC invoice from our server.
@@ -1541,6 +1584,7 @@ async function submitOrder() {
       document.getElementById('payment-instructions-zelle').classList.add('show');
     }
     document.getElementById('success-state').classList.add('show');
+    showSpamReminderAndTrack(orderId);
     scrollToSuccess();
     return;
   }

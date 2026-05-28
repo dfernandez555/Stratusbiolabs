@@ -98,6 +98,15 @@ function esc(s) {
     .replace(/'/g, "&#x27;");
 }
 
+// Build the public tracking URL for an order. Includes the per-order
+// statusToken so the link works without auth but other customers can't
+// enumerate order IDs to peek at someone else's order.
+function trackUrl(env, order) {
+  const base = env.PUBLIC_BASE_URL || "https://stratusbiolabs.com";
+  if (!order || !order.orderId || !order.statusToken) return null;
+  return `${base}/track?id=${encodeURIComponent(order.orderId)}&t=${encodeURIComponent(order.statusToken)}`;
+}
+
 /**
  * Order-received email for the BTC Buddies flow.
  * Includes the BTC address + amount + step-by-step instructions so the
@@ -105,6 +114,7 @@ function esc(s) {
  */
 export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmount }) {
   const orderId = order.orderId;
+  const tUrl    = trackUrl(env, order);
   const items = Array.isArray(order.items) ? order.items : [];
   const itemRows = items.map(it => `
     <tr>
@@ -213,10 +223,16 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
     </table>
   </td></tr>
 
+  ${tUrl ? `<tr><td style="padding:24px 32px 0;">
+    <a href="${esc(tUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:#1F1B16;color:#EFEAE0;text-decoration:none;">Track Your Order →</a>
+    <p style="margin:8px 0 0;font-size:11px;color:#7A746C;">View live status, payment confirmation, and shipping updates any time.</p>
+  </td></tr>` : ""}
+
   <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
     <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
     <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
     <p style="margin:12px 0 0;">Questions? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID.</p>
+    <p style="margin:12px 0 0;font-size:10px;color:#A39C92;">📬 If our emails land in your spam/junk folder, mark them as "Not Spam" so future updates reach your inbox.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -238,6 +254,7 @@ export async function sendBtcBuddiesOrderEmail(env, { order, payAddress, payAmou
  */
 export async function sendPaymentConfirmedEmail(env, { order }) {
   const orderId = order.orderId;
+  const tUrl    = trackUrl(env, order);
   const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Payment Confirmed — ${esc(orderId)}</title></head>
 <body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
@@ -273,6 +290,10 @@ export async function sendPaymentConfirmedEmail(env, { order }) {
       </table>
     </div>
   </td></tr>
+
+  ${tUrl ? `<tr><td style="padding:24px 32px 0;">
+    <a href="${esc(tUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:#1F1B16;color:#EFEAE0;text-decoration:none;">Track Your Order →</a>
+  </td></tr>` : ""}
 
   <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
     <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
