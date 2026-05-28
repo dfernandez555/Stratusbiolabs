@@ -186,12 +186,25 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .security-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(141,152,179,0.5); display: flex; align-items: center; gap: 0.3rem; }
 
 /* SUCCESS */
-.success-state { display: none; text-align: center; padding: 5rem 2rem; }
+.success-state { display: none; text-align: center; padding: 4rem 2rem 2rem; }
 .success-state.show { display: block; }
-.success-icon { font-size: 3rem; margin-bottom: 1.5rem; }
-.success-title { font-family: 'Inter', sans-serif; font-size: 2.5rem; font-weight: 300; color: var(--white); margin-bottom: 1rem; }
-.success-body { font-size: 0.9rem; font-weight: 200; color: var(--mist); line-height: 1.8; max-width: 480px; margin: 0 auto 2rem; }
-.success-order-id { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--cirrus); letter-spacing: 0.15em; margin-bottom: 2rem; }
+/* Outer success-hero: green checkmark badge + headline, designed to scream
+   "your order went through" so the customer never has to wonder. */
+.success-icon { display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: var(--green); color: #fff; font-size: 2.4rem; margin-bottom: 1.25rem; box-shadow: 0 4px 16px rgba(74,154,106,0.25); }
+.success-title { font-family: 'Inter', sans-serif; font-size: clamp(2rem, 6vw, 2.6rem); font-weight: 300; color: var(--fog); margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+.success-body { font-size: 1rem; font-weight: 300; color: var(--fog); line-height: 1.6; max-width: 520px; margin: 0 auto 1.5rem; }
+.success-body strong { font-weight: 500; }
+.success-order-id { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--mist); letter-spacing: 0.18em; margin-bottom: 2rem; }
+
+/* "Next steps" checklist shown under the success header on the BTC Buddies
+   flow. Customer-readable list of what's been done and what's coming. */
+.success-nextsteps { max-width: 520px; margin: 0 auto 1.75rem; text-align: left; padding: 1.25rem 1.5rem; background: #E2DCCE; border: 1px solid var(--border); }
+.success-nextsteps h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mist); margin: 0 0 0.85rem; font-weight: 500; }
+.success-nextsteps ul { list-style: none; margin: 0; padding: 0; }
+.success-nextsteps li { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.35rem 0; font-size: 0.86rem; line-height: 1.5; color: var(--fog); }
+.success-nextsteps li .step-mark { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-top: 0.18rem; }
+.success-nextsteps li.done .step-mark { background: var(--green); color: #fff; }
+.success-nextsteps li.todo .step-mark { background: rgba(31,27,22,0.08); color: var(--mist); border: 1px solid var(--border); }
 .btn-outline { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: 1px solid var(--border); color: var(--silver); text-decoration: none; display: inline-block; transition: all 0.3s; }
 .btn-outline:hover { border-color: var(--cirrus); color: var(--cirrus); }
 
@@ -577,9 +590,17 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
   <!-- SUCCESS STATE -->
   <div class="success-state" id="success-state">
     <div class="success-icon">✓</div>
-    <h2 class="success-title" id="success-title">Order Received</h2>
+    <h2 class="success-title" id="success-title">Order Received!</h2>
+    <p class="success-body" id="success-body"><strong>Your order has been placed successfully.</strong></p>
     <div class="success-order-id" id="success-order-id">ORDER #SB-000000</div>
-    <p class="success-body" id="success-body">Thank you for your order.</p>
+
+    <!-- Next-steps checklist (visible for invoice-style payments). Tells the
+         customer exactly what's already happened and what they need to do
+         next, so the BTC Buddies hand-off feels intentional, not chaotic. -->
+    <div class="success-nextsteps" id="success-nextsteps" style="display:none;">
+      <h4>// What happens next</h4>
+      <ul id="success-nextsteps-list"></ul>
+    </div>
 
     <!-- Payment instructions — only one block is shown, matching the method
          the customer picked at checkout (Cash App OR Zelle). -->
@@ -633,9 +654,16 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
         Generating BTC payment address...
       </div>
 
-      <div id="btcb-error" style="display:none;text-align:center;padding:1.5rem 0;font-family:'JetBrains Mono', monospace;font-size:0.75rem;color:var(--red);letter-spacing:0.05em;">
-        <span id="btcb-error-msg">Something went wrong.</span><br/>
-        Please email <strong>info@stratusbiolabs.com</strong> with your order ID and we'll send payment instructions manually.
+      <!-- Soft fallback: if the BTC invoice generation fails (e.g. test
+           orders below NOWPayments' minimum, NOWPayments outage, etc.),
+           we don't want to scare the customer. Their order DID get placed
+           successfully — we just need to send them payment details out of
+           band. Neutral styling, reassuring copy. -->
+      <div id="btcb-error" style="display:none;text-align:left;padding:1.25rem 1.5rem;background:#E2DCCE;border:1px solid var(--border);font-size:0.88rem;line-height:1.6;color:var(--fog);">
+        <strong style="display:block;font-size:0.95rem;margin-bottom:0.5rem;">Generating your payment details...</strong>
+        We've received your order and we're preparing your payment instructions. You'll get an email at the address you provided within the next few minutes with the BTC address and full BTC Buddies instructions.
+        <br/><br/>
+        If you don't see the email within 30 minutes (check spam too), email <strong>info@stratusbiolabs.com</strong> with your order ID and we'll send instructions manually.
       </div>
 
       <div id="btcb-ready" style="display:none;">
@@ -727,6 +755,75 @@ function isValidEmail(email) {
 
 function isValidZip(zip) {
   return /^\d{5}(-\d{4})?$/.test(zip.trim());
+}
+
+// Scroll the success-state into view smoothly. Without this, on mobile a
+// customer clicking "Place Order" at the bottom of the form stays at the
+// bottom — the success block renders above their viewport and they see
+// (a) the now-empty submit area, or (b) any in-progress BTC instructions
+// rather than the green "order received" headline. Always pull them up.
+function scrollToSuccess() {
+  // Scroll instantly first (in case content height changes during smooth
+  // animation), then smooth-confirm. Belt-and-suspenders.
+  try {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } catch { window.scrollTo(0, 0); }
+  setTimeout(() => {
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+  }, 50);
+}
+
+// Renders the "What happens next" checklist on the success page. Each
+// payment method has slightly different copy. Email is shown back to the
+// customer so they know which inbox to watch.
+function renderSuccessNextSteps(method, email) {
+  const wrap = document.getElementById('success-nextsteps');
+  const list = document.getElementById('success-nextsteps-list');
+  if (!wrap || !list) return;
+  const mail = email ? `to <strong>${escapeHtml(email)}</strong>` : 'to the email you provided';
+
+  let items;
+  if (method === 'btcbuddies') {
+    items = [
+      { done: true,  text: `Your order has been received and saved.` },
+      { done: true,  text: `An order confirmation email has been sent ${mail} with these payment instructions.` },
+      { done: false, text: `Complete your payment below via BTC Buddies (Visa, Mastercard, Amex, Cash App, Zelle, or Venmo — they convert to BTC for us).` },
+      { done: false, text: `Your order auto-confirms within ~10-30 minutes of BTC arriving and ships within 72 hours.` },
+    ];
+  } else if (method === 'cashapp') {
+    items = [
+      { done: true,  text: `Your order has been received.` },
+      { done: false, text: `Send payment via Cash App using the details below.` },
+      { done: false, text: `We'll mark your order paid once we see the funds and ship within 72 hours.` },
+    ];
+  } else if (method === 'zelle') {
+    items = [
+      { done: true,  text: `Your order has been received.` },
+      { done: false, text: `Send payment via Zelle using the details below (include your order ID in the memo).` },
+      { done: false, text: `We'll mark your order paid once we see the funds and ship within 72 hours.` },
+    ];
+  } else if (method === 'crypto') {
+    items = [
+      { done: true,  text: `Your payment has been confirmed by NOWPayments.` },
+      { done: true,  text: `Your order is now in fulfillment.` },
+      { done: false, text: `You'll receive a shipping confirmation email when your order ships (within 72 hours).` },
+    ];
+  } else if (method === 'free') {
+    items = [
+      { done: true,  text: `Your free order has been confirmed.` },
+      { done: false, text: `You'll receive a shipping confirmation email when your order ships (within 72 hours).` },
+    ];
+  } else {
+    items = [];
+  }
+
+  list.innerHTML = items.map(i => `
+    <li class="${i.done ? 'done' : 'todo'}">
+      <span class="step-mark">${i.done ? '✓' : '•'}</span>
+      <span>${i.text}</span>
+    </li>
+  `).join('');
+  wrap.style.display = items.length ? 'block' : 'none';
 }
 
 // Copy helper for BTC Buddies success-page buttons. Uses the modern
@@ -1354,7 +1451,11 @@ async function submitOrder() {
     cart = []; saveCart(); updateCartCount();
     document.getElementById('order-section').style.display = 'none';
     document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
+    document.getElementById('success-title').textContent = 'Order Confirmed!';
+    document.getElementById('success-body').innerHTML = '<strong>Your free order has been placed and is shipping within 72 hours.</strong> A confirmation has been sent to your email.';
+    renderSuccessNextSteps('free', email);
     document.getElementById('success-state').classList.add('show');
+    scrollToSuccess();
     return;
   }
 
@@ -1369,17 +1470,21 @@ async function submitOrder() {
     await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), 'btcbuddies');
     localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: 'btcbuddies' }));
     cart = []; saveCart(); updateCartCount();
+
     document.getElementById('order-section').style.display = 'none';
     document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
-    document.getElementById('success-title').textContent = 'Order Received';
-    document.getElementById('success-body').textContent =
-      'Thank you. Follow the steps below to pay with your card via BTC Buddies. Your order auto-confirms once payment lands — usually within 10-30 minutes.';
+    document.getElementById('success-title').textContent = 'Order Received!';
+    document.getElementById('success-body').innerHTML =
+      '<strong>Your order has been placed successfully.</strong>';
+
+    renderSuccessNextSteps('btcbuddies', email);
 
     document.getElementById('pay-total-btcb').textContent = '$' + totalAmount.toFixed(2);
     document.getElementById('pay-ref-id-btcb').textContent = orderId;
     document.getElementById('btcb-orderref-value').textContent = orderId;
     document.getElementById('payment-instructions-btcbuddies').classList.add('show');
     document.getElementById('success-state').classList.add('show');
+    scrollToSuccess();
 
     // Now fetch the actual BTC invoice from our server.
     try {
@@ -1397,9 +1502,11 @@ async function submitOrder() {
       document.getElementById('btcb-loading').style.display = 'none';
       document.getElementById('btcb-ready').style.display = 'block';
     } catch (err) {
-      console.error('BTC invoice error:', err);
+      // Log the raw error for debugging but DON'T show it to the customer.
+      // Their order succeeded — they just need an out-of-band path to get
+      // payment details. The fallback block already explains this.
+      console.error('BTC invoice error (showing friendly fallback):', err);
       document.getElementById('btcb-loading').style.display = 'none';
-      document.getElementById('btcb-error-msg').textContent = err.message || 'Could not generate BTC payment address.';
       document.getElementById('btcb-error').style.display = 'block';
     }
     return;
@@ -1413,11 +1520,13 @@ async function submitOrder() {
     await submitInvoiceOrder(email, orderId, totalAmount, methodLabel);
     localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: selectedPayment }));
     cart = []; saveCart(); updateCartCount();
+
     document.getElementById('order-section').style.display = 'none';
     document.getElementById('success-order-id').textContent = 'ORDER #' + orderId;
-    document.getElementById('success-title').textContent = 'Order Received';
-    document.getElementById('success-body').textContent =
-      'Thank you. Please complete payment via ' + methodLabel + ' below. Your order ships within 72 hours of payment confirmation.';
+    document.getElementById('success-title').textContent = 'Order Received!';
+    document.getElementById('success-body').innerHTML = '<strong>Your order has been placed successfully.</strong>';
+
+    renderSuccessNextSteps(selectedPayment, email);
 
     if (isCash) {
       document.getElementById('pay-total-cashapp').textContent = '$' + totalAmount.toFixed(2);
@@ -1432,6 +1541,7 @@ async function submitOrder() {
       document.getElementById('payment-instructions-zelle').classList.add('show');
     }
     document.getElementById('success-state').classList.add('show');
+    scrollToSuccess();
     return;
   }
 
@@ -1512,14 +1622,16 @@ if (window.location.search.includes('success=true')) {
   const pending = JSON.parse(localStorage.getItem('sb-pending-order') || '{}');
   if (pending.orderId) {
     document.getElementById('success-order-id').textContent = 'ORDER #' + pending.orderId;
-    document.getElementById('success-title').textContent = 'Order Confirmed';
-    document.getElementById('success-body').textContent = 'Thank you for your order. Your payment has been received and your order will be processed and shipped within 72 hours. A confirmation will be sent to your email.';
+    document.getElementById('success-title').textContent = 'Order Confirmed!';
+    document.getElementById('success-body').innerHTML = '<strong>Your payment has been received and your order is shipping within 72 hours.</strong> A confirmation will be sent to your email.';
+    renderSuccessNextSteps('crypto', pending.email);
     dispatchToRapid(pending.orderId);
     cart = []; saveCart(); updateCartCount();
     localStorage.removeItem('sb-pending-order');
   }
   document.getElementById('order-section').style.display = 'none';
   document.getElementById('success-state').classList.add('show');
+  scrollToSuccess();
 }
 
 window.addToCart = addToCart;
