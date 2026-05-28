@@ -129,11 +129,33 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 
 /* Toast — slides up from bottom, auto-dismisses. Used for ephemeral
    confirmations after admin actions (order cancelled, payment marked, etc.)
-   so the customer doesnt feel like the page is frozen. */
-.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(120%); background: var(--ink); color: var(--cream); padding: 0.85rem 1.5rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; box-shadow: 0 8px 24px rgba(31,27,22,0.25); z-index: 1000; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 90vw; text-align: center; }
-.toast.show { transform: translateX(-50%) translateY(0); }
+   so admin doesnt feel like the page is frozen.
+   Hide state uses opacity:0 + pointer-events:none + a generous off-screen
+   translate so a sliver of the toast can never peek up from the bottom edge
+   when its supposed to be invisible (which was happening on iPhone — a
+   small dark strip was visible at the bottom of /admin). */
+.toast {
+  position: fixed;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(100% + 3rem));
+  opacity: 0;
+  pointer-events: none;
+  background: var(--ink); color: var(--cream);
+  padding: 0.85rem 1.5rem;
+  font-family: 'Inter', sans-serif; font-size: 0.88rem;
+  box-shadow: 0 8px 24px rgba(31,27,22,0.25);
+  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  max-width: 90vw; text-align: center;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
 .toast.success { background: var(--green); }
-.toast.error { background: #c44141; }
+.toast.error   { background: #c44141; }
 
 /* Clickable order ID styling */
 .order-link { background: none; border: none; padding: 0; cursor: pointer; font-family: 'JetBrains Mono', monospace; color: var(--ink); text-decoration: underline; text-decoration-color: rgba(31,27,22,0.3); text-underline-offset: 3px; transition: text-decoration-color 0.2s; font-size: inherit; }
