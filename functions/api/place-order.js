@@ -84,9 +84,13 @@ async function soapCall(env, method, paramsXml) {
   return text;
 }
 
-function parseReturnValue(xml) {
-  // Match <return ...>VALUE</return> or <ns1:loginReturn>VALUE</ns1:loginReturn>
-  const m = xml.match(/<(?:[a-z0-9:]+:)?(?:return|loginReturn|ordersNewReturn)[^>]*>([^<]+)<\/(?:[a-z0-9:]+:)?(?:return|loginReturn|ordersNewReturn)>/i);
+// Extract the named child element value out of a SOAP response body. Rapid's
+// actual responses wrap returns in named tags like <sessionId>, <orderId>,
+// etc. — not the generic <return> we initially assumed. Use this helper with
+// the expected child name per method.
+function parseElementValue(xml, tagName) {
+  const re = new RegExp(`<(?:[a-z0-9_-]+:)?${tagName}[^>]*>([^<]*)<\\/(?:[a-z0-9_-]+:)?${tagName}>`, "i");
+  const m = xml.match(re);
   return m ? m[1] : null;
 }
 
@@ -95,8 +99,10 @@ async function rapidLogin(env) {
     `<username xsi:type="xsd:string">${escapeXml(env.RAPID_API_USERNAME)}</username>` +
     `<password xsi:type="xsd:string">${escapeXml(env.RAPID_API_PASSWORD)}</password>`;
   const xml = await soapCall(env, "login", params);
-  const sessionId = parseReturnValue(xml);
-  if (!sessionId) throw new Error(`Login: no sessionId in response: ${xml.slice(0, 300)}`);
+  // Login response shape (confirmed against Rapid prod 2026-05-27):
+  //   <ns1:loginResponse><sessionId xsi:type="xsd:string">SESSION_TOKEN</sessionId>
+  const sessionId = parseElementValue(xml, "sessionId");
+  if (!sessionId) throw new Error(`Login: no sessionId in response. Raw: ${xml.slice(0, 1500)}`);
   return sessionId;
 }
 
@@ -275,19 +281,29 @@ export async function onRequestPost({ request, env }) {
   try {
     sessionId = await rapidLogin(env);
     const responseXml = await rapidCreateOrder(env, sessionId, order);
-    // SOAP response: <return xsi:type="xsd:boolean">true</return>
-    const success = /<(?:[a-z0-9:]+:)?return[^>]*>(true|1)<\/(?:[a-z0-9:]+:)?return>/i.test(responseXml);
+    // SOAP response shape (confirmed against Rapid prod 2026-05-27):
+    //   <ns1:orders_newResponse>
+    //     <result xsi:type="xsd:boolean">true</result>
+    //   </ns1:orders_newResponse>
+    // Rapid uses the order_id we sent (echoed back in result=true), so we
+    // don't get a Rapid-internal id in the response — we derive it from the
+    // numeric portion of our orderId below.
+    const returnedOrderId = parseElementValue(responseXml, "orderId");
+    const resultVal = (parseElementValue(responseXml, "result") || "").toLowerCase();
+    const success = !!returnedOrderId
+      || resultVal === "true" || resultVal === "1"
+      || /<(?:[a-z0-9_-]+:)?return[^>]*>(true|1)<\/(?:[a-z0-9_-]+:)?return>/i.test(responseXml);
     if (!success) {
-      // Some Rapid responses include error info inline. Pass them through.
       const errMatch = responseXml.match(/<faultstring[^>]*>([^<]+)<\/faultstring>/i)
                    || responseXml.match(/<message[^>]*>([^<]+)<\/message>/i);
-      throw new Error(errMatch ? errMatch[1] : "orders_new returned non-true; raw: " + responseXml.slice(0, 300));
+      throw new Error(errMatch ? errMatch[1] : "orders_new returned non-true. Raw: " + responseXml.slice(0, 1500));
     }
 
     order.rapidStatus = "dispatched";
     order.rapidDispatchedAt = new Date().toISOString();
     order.rapidError = null;
-    order.rapidOrderId = String(parseInt(String(orderId).replace(/[^0-9]/g, "")) || "");
+    order.rapidOrderId = returnedOrderId
+      || String(parseInt(String(orderId).replace(/[^0-9]/g, "")) || "");
     await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
     return json({ ok: true, status: "dispatched", rapidOrderId: order.rapidOrderId });
 
