@@ -396,9 +396,17 @@ export async function sendAdminOrderNotificationEmail(env, { order }) {
 </table>
 </body></html>`;
 
+  // Subject line categorization makes it obvious at a glance which orders
+  // need your attention (Invoice = manual verify + Mark Paid) vs which are
+  // already handling themselves (BTC Buddies / crypto = auto-confirms via
+  // webhook). Filterable in Zoho/Gmail so admin can triage faster.
+  const subjectPrefix = needsAction
+    ? `[INVOICE — VERIFY PAYMENT]`
+    : `[AUTO — ${methodLabel.toUpperCase()}]`;
+
   return sendEmail(env, {
     to: env.ADMIN_NOTIFICATION_EMAIL || DEFAULT_ADMIN_INBOX,
-    subject: `[Order] $${(Number(order.total) || 0).toFixed(2)} — ${orderId} — ${methodLabel}`,
+    subject: `${subjectPrefix} $${(Number(order.total) || 0).toFixed(2)} — ${orderId}`,
     html,
   });
 }

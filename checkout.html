@@ -152,6 +152,19 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .card-badge   { color: var(--green); border-color: rgba(74,154,106,0.4); }
 .free-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; padding: 0.2rem 0.4rem; border: 1px solid rgba(31,27,22,0.6); color: var(--gold); background: rgba(31,27,22,0.08); letter-spacing: 0.08em; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+/* Invoice sub-selector — appears under the Invoice payment-option when it's
+   the active choice. Lets the customer pick Cash App vs Zelle without
+   committing to a separate top-level option. */
+.invoice-sub-wrap { padding: 1rem 1.5rem 1.25rem; background: rgba(31,27,22,0.04); border-top: 1px solid var(--border); }
+.invoice-sub-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); margin-bottom: 0.7rem; }
+.invoice-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+.invoice-sub-opt { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; background: #FFFFFF; }
+.invoice-sub-opt:hover { border-color: rgba(31,27,22,0.3); }
+.invoice-sub-opt.selected { border-color: var(--cirrus); background: rgba(31,27,22,0.04); }
+.invoice-sub-opt input[type=radio] { accent-color: var(--cirrus); width: 15px; height: 15px; flex-shrink: 0; margin: 0; }
+.invoice-sub-icon { font-size: 1.1rem; }
+.invoice-sub-name { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
+
 .crypto-select-wrap { padding: 0 1.5rem 1.5rem; display: none; }
 .crypto-select-wrap.show { display: block; }
 .crypto-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
@@ -456,33 +469,48 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
 
           <div class="payment-methods" id="payment-methods-wrap">
-            <!-- Cash App -->
-            <label class="payment-option card-option selected" onclick="selectPayment('cashapp', event)">
-              <input type="radio" name="payment" value="cashapp" checked/>
-              <span class="payment-icon">💵</span>
+            <!-- Invoice: parent category for manual-confirm Cash App + Zelle -->
+            <label class="payment-option card-option selected" onclick="selectPayment('invoice', event)">
+              <input type="radio" name="payment" value="invoice" checked/>
+              <span class="payment-icon">📨</span>
               <div class="payment-info">
-                <div class="payment-name">Cash App <span class="card-badge">Direct</span></div>
-                <div class="payment-desc">Send payment via Cash App. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
+                <div class="payment-name">Invoice <span class="card-badge">Cash App or Zelle</span></div>
+                <div class="payment-desc">We send you payment instructions, you pay via Cash App or Zelle, we mark your order paid once we receive funds. Ships within 72 hours of payment received.</div>
               </div>
             </label>
-            <!-- Zelle -->
-            <label class="payment-option" onclick="selectPayment('zelle', event)">
-              <input type="radio" name="payment" value="zelle"/>
-              <span class="payment-icon">🏦</span>
-              <div class="payment-info">
-                <div class="payment-name">Zelle <span class="card-badge">Direct</span></div>
-                <div class="payment-desc">Send payment via Zelle bank transfer. Instructions shown on the next screen. Ships within 72 hours of payment received.</div>
+
+            <!-- Sub-selector: only shown when Invoice is the active method.
+                 Customer picks Cash App or Zelle here; whichever they pick
+                 becomes the actual payment method we record on the order
+                 (so admin still sees "Cash App" vs "Zelle" in the dashboard). -->
+            <div class="invoice-sub-wrap" id="invoice-sub" style="display:none;">
+              <p class="invoice-sub-label">Which payment method?</p>
+              <div class="invoice-sub-grid">
+                <label class="invoice-sub-opt selected" onclick="selectInvoiceMethod('cashapp', event)">
+                  <input type="radio" name="invoice-method" value="cashapp" checked/>
+                  <span class="invoice-sub-icon">💵</span>
+                  <span class="invoice-sub-name">Cash App</span>
+                </label>
+                <label class="invoice-sub-opt" onclick="selectInvoiceMethod('zelle', event)">
+                  <input type="radio" name="invoice-method" value="zelle"/>
+                  <span class="invoice-sub-icon">🏦</span>
+                  <span class="invoice-sub-name">Zelle</span>
+                </label>
               </div>
-            </label>
-            <!-- BTC Buddies (Zelle-based conversion service) -->
+            </div>
+
+            <!-- Zelle Express (formerly BTC Buddies). Same flow under the
+                 hood — Zelle to BTC Buddies who converts to BTC — but
+                 branded around the customer benefit: auto-confirmation. -->
             <label class="payment-option" onclick="selectPayment('btcbuddies', event)">
               <input type="radio" name="payment" value="btcbuddies"/>
-              <span class="payment-icon">🪙</span>
+              <span class="payment-icon">⚡</span>
               <div class="payment-info">
-                <div class="payment-name">BTC Buddies <span class="card-badge">Zelle → BTC</span></div>
-                <div class="payment-desc">Pay via Zelle through BTC Buddies — they convert your payment to BTC and send to us. Order confirms <strong>automatically</strong> once BTC lands (no manual approval needed). Ships within 72 hours.</div>
+                <div class="payment-name">Zelle Express <span class="card-badge">Auto-Confirm</span></div>
+                <div class="payment-desc">Pay via Zelle through our partner BTC Buddies. They convert your Zelle payment to BTC and send to us — your order <strong>auto-confirms</strong> in 10-30 min with no manual approval needed.</div>
               </div>
             </label>
+
             <!-- Crypto -->
             <label class="payment-option" onclick="selectPayment('crypto', event)">
               <input type="radio" name="payment" value="crypto"/>
@@ -1031,18 +1059,15 @@ function updatePaymentUI() {
     btn.textContent = 'Confirm Free Order →';
     btn.className = 'btn-submit free-mode';
     badges.innerHTML = `<span class="security-badge">🎉 Promo Applied</span><span class="security-badge">📦 Ships within 72h</span>`;
-  } else if (selectedPayment === 'cashapp') {
-    btn.textContent = 'Place Order — Pay by Cash App →';
+  } else if (selectedPayment === 'invoice') {
+    const sub = selectedInvoiceMethod === 'zelle' ? 'Zelle' : 'Cash App';
+    btn.textContent = `Place Order — Invoice via ${sub} →`;
     btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">💵 Cash App</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
-  } else if (selectedPayment === 'zelle') {
-    btn.textContent = 'Place Order — Pay by Zelle →';
-    btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">🏦 Zelle</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
+    badges.innerHTML = `<span class="security-badge">📨 ${sub} instructions</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships once paid</span>`;
   } else if (selectedPayment === 'btcbuddies') {
-    btn.textContent = 'Place Order — Pay via Zelle (BTC Buddies) →';
+    btn.textContent = 'Place Order — Zelle Express →';
     btn.className = 'btn-submit card-mode';
-    badges.innerHTML = `<span class="security-badge">🪙 Zelle → BTC Buddies</span><span class="security-badge">⚡ Auto-confirms</span><span class="security-badge">📦 Ships once paid</span>`;
+    badges.innerHTML = `<span class="security-badge">⚡ Auto-confirms via BTC Buddies</span><span class="security-badge">✓ No card data stored</span><span class="security-badge">📦 Ships within 72h</span>`;
   } else {
     btn.textContent = 'Place Order & Pay with Crypto →';
     btn.className = 'btn-submit';
@@ -1065,15 +1090,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // endpoints; the key never leaves the server.
 
 // Payment-method feature flags. Flip a value to true to bring a method back
-// without restructuring code. The HTML for hidden options is kept intact —
-// we just hide the visible radio + redirect the default selection.
-// In-flight orders that used a now-hidden method still resolve correctly on
-// the success page (the instruction blocks aren't removed).
+// without restructuring code. Note: cashapp + zelle are now SUB-METHODS of
+// the "invoice" top-level option, so they don't appear as their own radios
+// in the visible payment-methods list. The flags stay around for any future
+// orders that need to resolve on the success page (instruction blocks intact).
 const ENABLED_PAYMENT_METHODS = {
+  invoice:    true,   // parent: Cash App + Zelle direct (manual confirm)
+  btcbuddies: true,   // Zelle Express via BTC Buddies (auto-confirm)
+  crypto:     true,
+  // Sub-methods of invoice (kept on for back-compat on success page rendering)
   cashapp:    true,
   zelle:      true,
-  btcbuddies: true,
-  crypto:     true,
 };
 
 // ═══════════════════════════════════════════
@@ -1102,12 +1129,23 @@ let cart = (() => {
   return valid;
 })();
 let selectedCrypto = 'BTC';
-// Default to the first enabled method in display order. Falls back to crypto
-// if everything else is disabled (shouldn't happen but defensive).
+// Default to the first enabled top-level method.
 let selectedPayment = (() => {
-  const order = ['cashapp', 'zelle', 'btcbuddies', 'crypto'];
+  const order = ['invoice', 'btcbuddies', 'crypto'];
   return order.find(m => ENABLED_PAYMENT_METHODS[m]) || 'btcbuddies';
 })();
+// Which sub-method is selected when the customer picks Invoice. Defaults to
+// Cash App since the sub-selector starts with it pre-checked.
+let selectedInvoiceMethod = 'cashapp';
+
+// Sub-selector for Invoice. Customer picks Cash App vs Zelle without
+// committing to a separate top-level radio.
+function selectInvoiceMethod(method, e) {
+  selectedInvoiceMethod = method;
+  document.querySelectorAll('.invoice-sub-opt').forEach(o => o.classList.remove('selected'));
+  if (e && e.currentTarget) e.currentTarget.classList.add('selected');
+  updatePaymentUI();
+}
 
 function saveCart() { localStorage.setItem('sb-cart', JSON.stringify(cart)); }
 
@@ -1268,6 +1306,9 @@ function selectPayment(type, e) {
   document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
   if (e && e.currentTarget) e.currentTarget.classList.add('selected');
   document.getElementById('crypto-select').classList.toggle('show', type === 'crypto');
+  // Reveal the Cash App vs Zelle sub-selector only when Invoice is active.
+  const invoiceSub = document.getElementById('invoice-sub');
+  if (invoiceSub) invoiceSub.style.display = (type === 'invoice') ? 'block' : 'none';
   updatePaymentUI();
 }
 
@@ -1555,13 +1596,20 @@ async function submitOrder() {
     return;
   }
 
-  if (selectedPayment === 'cashapp' || selectedPayment === 'zelle') {
-    const isCash = selectedPayment === 'cashapp';
+  // The "Invoice" top-level option maps to either cashapp or zelle as the
+  // actual stored payment method depending on the sub-selector. Server-side
+  // continues to see distinct cashapp/zelle methods (so admin dashboard
+  // shows the right channel).
+  const isInvoiceCash = selectedPayment === 'invoice' && selectedInvoiceMethod === 'cashapp';
+  const isInvoiceZelle = selectedPayment === 'invoice' && selectedInvoiceMethod === 'zelle';
+  if (selectedPayment === 'cashapp' || selectedPayment === 'zelle' || isInvoiceCash || isInvoiceZelle) {
+    const isCash = isInvoiceCash || selectedPayment === 'cashapp';
     const methodLabel = isCash ? 'Cash App' : 'Zelle';
+    const storedMethod = isCash ? 'cashapp' : 'zelle';
 
-    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), selectedPayment);
+    await logOrderToServer(orderId, email, totalAmount, shipping, discount, getCartTotal(), storedMethod);
     await submitInvoiceOrder(email, orderId, totalAmount, methodLabel);
-    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: selectedPayment }));
+    localStorage.setItem('sb-pending-order', JSON.stringify({ orderId, email, total: totalAmount, items: cart, promo: appliedPromo?.code, method: storedMethod }));
     cart = []; saveCart(); updateCartCount();
 
     document.getElementById('order-section').style.display = 'none';
@@ -1569,7 +1617,7 @@ async function submitOrder() {
     document.getElementById('success-title').textContent = 'Order Received!';
     document.getElementById('success-body').innerHTML = '<strong>Your order has been placed successfully.</strong>';
 
-    renderSuccessNextSteps(selectedPayment, email);
+    renderSuccessNextSteps(storedMethod, email);
 
     if (isCash) {
       document.getElementById('pay-total-cashapp').textContent = '$' + totalAmount.toFixed(2);
