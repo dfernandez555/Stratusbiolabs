@@ -469,9 +469,32 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
           </div>
 
           <div class="payment-methods" id="payment-methods-wrap">
+            <!-- Order: Zelle Express first (best customer + admin experience),
+                 then Cryptocurrency, then Invoice as fallback. -->
+
+            <!-- Zelle Express (formerly BTC Buddies). Default-selected. -->
+            <label class="payment-option card-option selected" onclick="selectPayment('btcbuddies', event)">
+              <input type="radio" name="payment" value="btcbuddies" checked/>
+              <span class="payment-icon">⚡</span>
+              <div class="payment-info">
+                <div class="payment-name">Zelle Express <span class="card-badge">Auto-Confirm</span></div>
+                <div class="payment-desc">Pay via Zelle through our partner BTC Buddies. They convert your Zelle payment to BTC and send to us — your order <strong>auto-confirms</strong> in 10-30 min with no manual approval needed.</div>
+              </div>
+            </label>
+
+            <!-- Crypto -->
+            <label class="payment-option" onclick="selectPayment('crypto', event)">
+              <input type="radio" name="payment" value="crypto"/>
+              <span class="payment-icon">₿</span>
+              <div class="payment-info">
+                <div class="payment-name">Cryptocurrency <span class="crypto-badge">100+ Coins via NOWPayments</span></div>
+                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and more. Auto-confirms once your payment lands on the blockchain. Ships within 72 hours.</div>
+              </div>
+            </label>
+
             <!-- Invoice: parent category for manual-confirm Cash App + Zelle -->
-            <label class="payment-option card-option selected" onclick="selectPayment('invoice', event)">
-              <input type="radio" name="payment" value="invoice" checked/>
+            <label class="payment-option" onclick="selectPayment('invoice', event)">
+              <input type="radio" name="payment" value="invoice"/>
               <span class="payment-icon">📨</span>
               <div class="payment-info">
                 <div class="payment-name">Invoice <span class="card-badge">Cash App or Zelle</span></div>
@@ -498,28 +521,6 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
                 </label>
               </div>
             </div>
-
-            <!-- Zelle Express (formerly BTC Buddies). Same flow under the
-                 hood — Zelle to BTC Buddies who converts to BTC — but
-                 branded around the customer benefit: auto-confirmation. -->
-            <label class="payment-option" onclick="selectPayment('btcbuddies', event)">
-              <input type="radio" name="payment" value="btcbuddies"/>
-              <span class="payment-icon">⚡</span>
-              <div class="payment-info">
-                <div class="payment-name">Zelle Express <span class="card-badge">Auto-Confirm</span></div>
-                <div class="payment-desc">Pay via Zelle through our partner BTC Buddies. They convert your Zelle payment to BTC and send to us — your order <strong>auto-confirms</strong> in 10-30 min with no manual approval needed.</div>
-              </div>
-            </label>
-
-            <!-- Crypto -->
-            <label class="payment-option" onclick="selectPayment('crypto', event)">
-              <input type="radio" name="payment" value="crypto"/>
-              <span class="payment-icon">₿</span>
-              <div class="payment-info">
-                <div class="payment-name">Cryptocurrency <span class="crypto-badge">100+ Coins</span></div>
-                <div class="payment-desc">BTC, ETH, USDC, USDT, SOL and more via NOWPayments. Ships within 72 hours of payment confirmation.</div>
-              </div>
-            </label>
           </div>
 
           <!-- Crypto selector -->
@@ -1129,9 +1130,11 @@ let cart = (() => {
   return valid;
 })();
 let selectedCrypto = 'BTC';
-// Default to the first enabled top-level method.
+// Default to the first enabled top-level method in our preferred display
+// order (Zelle Express first since it's the best customer + admin experience
+// — auto-confirms, no manual verification, no personal bank risk).
 let selectedPayment = (() => {
-  const order = ['invoice', 'btcbuddies', 'crypto'];
+  const order = ['btcbuddies', 'crypto', 'invoice'];
   return order.find(m => ENABLED_PAYMENT_METHODS[m]) || 'btcbuddies';
 })();
 // Which sub-method is selected when the customer picks Invoice. Defaults to
