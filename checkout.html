@@ -198,6 +198,53 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .security-badges { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
 .security-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(141,152,179,0.5); display: flex; align-items: center; gap: 0.3rem; }
 
+/* ── CONFIRMATION MODAL ───────────────────────────────────────────────
+   Shown after the customer clicks Place Order. Restates the method, total,
+   and step-by-step. Forces an active confirmation before actually submitting
+   so customers don't accidentally fire off a payment flow they didn't intend.
+*/
+.confirm-overlay { position: fixed; inset: 0; background: rgba(31,27,22,0.6); z-index: 800; display: none; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.confirm-overlay.open { display: flex; }
+.confirm-modal { background: #EFEAE0; border: 1px solid var(--border); max-width: 520px; width: 100%; padding: 2.25rem 2rem 1.75rem; position: relative; max-height: 92dvh; overflow-y: auto; }
+.confirm-modal::before { content: ''; position: absolute; top: -1px; left: -1px; width: 32px; height: 1px; background: var(--fog); }
+.confirm-modal::after  { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 32px; background: var(--fog); }
+.confirm-close { position: absolute; top: 0.5rem; right: 0.5rem; width: 44px; height: 44px; background: none; border: none; font-size: 1.4rem; line-height: 1; color: var(--mist); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.15s, color 0.15s; }
+.confirm-close:hover, .confirm-close:active { background: rgba(31,27,22,0.06); color: var(--fog); }
+.confirm-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mist); margin: 0 0 0.7rem; }
+.confirm-title { font-family: 'Inter', sans-serif; font-size: 1.45rem; font-weight: 300; margin: 0 0 0.4rem; line-height: 1.2; color: var(--fog); }
+.confirm-sub { font-family: 'Inter', sans-serif; font-size: 0.86rem; color: var(--mist); margin: 0 0 1.5rem; line-height: 1.5; }
+
+.confirm-section { background: #E2DCCE; border: 1px solid var(--border); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.confirm-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.4rem 0; gap: 1rem; }
+.confirm-row + .confirm-row { border-top: 1px solid rgba(31,27,22,0.08); }
+.confirm-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); flex-shrink: 0; }
+.confirm-value { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--fog); text-align: right; }
+.confirm-value strong { font-weight: 500; }
+
+.confirm-steps { margin-bottom: 1.25rem; }
+.confirm-steps h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); margin: 0 0 0.85rem; font-weight: 500; }
+.confirm-steps ol { margin: 0; padding-left: 1.4rem; color: var(--fog); font-size: 0.88rem; line-height: 1.6; }
+.confirm-steps li { margin-bottom: 0.55rem; padding-left: 0.3rem; }
+.confirm-steps li strong { font-weight: 500; }
+
+.confirm-warning { background: rgba(229,165,57,0.10); border: 1px solid rgba(229,165,57,0.4); padding: 0.85rem 1rem; font-size: 0.83rem; line-height: 1.5; color: #6a4a0d; margin-bottom: 1.5rem; }
+.confirm-warning strong { color: #6a4a0d; }
+
+.confirm-actions { display: flex; gap: 0.7rem; }
+.confirm-btn { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem 1rem; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+.confirm-btn-secondary { background: transparent; color: var(--mist); border: 1px solid var(--border); }
+.confirm-btn-secondary:hover { color: var(--fog); border-color: var(--fog); }
+.confirm-btn-primary { background: var(--fog); color: var(--ink); }
+.confirm-btn-primary:hover:not(:disabled) { background: #3D352C; transform: translateY(-1px); }
+.confirm-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 540px) {
+  .confirm-modal { padding: 1.75rem 1.25rem 1.25rem; }
+  .confirm-title { font-size: 1.25rem; }
+  .confirm-actions { flex-direction: column; }
+  .confirm-btn { width: 100%; }
+}
+
 /* SUCCESS */
 .success-state { display: none; text-align: center; padding: 4rem 2rem 2rem; }
 .success-state.show { display: block; }
@@ -625,6 +672,44 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
             <p>🌡️ Temperature-controlled packaging</p>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION MODAL — shown after the customer clicks Place Order and
+       BEFORE the order actually submits. Restates the method they picked,
+       the total they'll pay, and the exact steps that will follow. Customer
+       has to actively click Confirm; "Go Back" returns them to the form. -->
+  <div class="confirm-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirmModal()">
+    <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <button class="confirm-close" aria-label="Close" onclick="closeConfirmModal()">✕</button>
+      <p class="confirm-eyebrow">// Review &amp; Confirm</p>
+      <h3 class="confirm-title" id="confirm-title">Review your payment</h3>
+      <p class="confirm-sub" id="confirm-sub">Please review before submitting.</p>
+
+      <div class="confirm-section">
+        <div class="confirm-row">
+          <span class="confirm-label">Payment Method</span>
+          <span class="confirm-value" id="confirm-method">—</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">Total</span>
+          <span class="confirm-value" id="confirm-total">$0.00</span>
+        </div>
+      </div>
+
+      <div class="confirm-steps">
+        <h4 id="confirm-steps-title">Here's what happens next:</h4>
+        <ol id="confirm-steps-list"></ol>
+      </div>
+
+      <div class="confirm-warning" id="confirm-warning" style="display:none;">
+        <strong>Note:</strong> <span id="confirm-warning-text">—</span>
+      </div>
+
+      <div class="confirm-actions">
+        <button type="button" class="confirm-btn confirm-btn-secondary" onclick="closeConfirmModal()">← Go Back</button>
+        <button type="button" class="confirm-btn confirm-btn-primary" id="confirm-submit-btn" onclick="executeOrderFromConfirmation()">Confirm &amp; Place Order</button>
       </div>
     </div>
   </div>
@@ -1505,6 +1590,11 @@ function showSpamReminderAndTrack(orderId) {
 // ═══════════════════════════════════════════
 // MAIN SUBMIT
 // ═══════════════════════════════════════════
+// ─── Two-step submit: confirmation modal then actual order placement ───
+// submitOrder() validates form + opens the confirmation modal so the customer
+// has to deliberately confirm before any payment flow fires. The original
+// order-placement work lives in executeOrder() now so it can be called from
+// the modal's Confirm button.
 async function submitOrder() {
   if (cart.length === 0) { alert('Your cart is empty. Please add products before checking out.'); return; }
   const v = validateForm();
@@ -1512,10 +1602,139 @@ async function submitOrder() {
     showFormErrors(v);
     return;
   }
-  // Clear any prior banner state on a successful pass.
   showFormErrors({ errors: [] });
   if (!RateLimit.check()) return;
 
+  // Open the confirmation modal. It populates itself with method-specific
+  // copy + step-by-step from openConfirmationModal().
+  openConfirmationModal();
+}
+
+// Method-specific confirmation copy. Each entry describes the chosen payment
+// in plain language with numbered next-steps so customers know exactly what
+// they're committing to before they click Confirm.
+function buildConfirmationContent() {
+  const subtotal = getCartTotal();
+  const shipping = subtotal >= 150 ? 0 : 9.99;
+  const discount = getDiscount(subtotal, shipping);
+  const total = Math.max(0, subtotal + shipping - discount);
+  const isFree = total === 0;
+
+  let methodLabel = '';
+  let steps = [];
+  let warning = null;
+
+  if (isFree) {
+    methodLabel = 'Free order (100% promo discount)';
+    steps = [
+      `Your order will be saved immediately.`,
+      `We'll begin processing right away — no payment required.`,
+      `You'll receive a confirmation email shortly.`,
+      `Your order ships within 72 hours.`,
+    ];
+  } else if (selectedPayment === 'btcbuddies') {
+    methodLabel = 'Zelle Express (via BTC Buddies)';
+    steps = [
+      `Your order will be saved immediately.`,
+      `The next screen will show you our BTC payment address (we use BTC Buddies as a converter).`,
+      `You'll go to <strong>btcbuddies.com</strong>, paste our BTC address, and pay them via <strong>Zelle</strong>.`,
+      `BTC Buddies converts your Zelle payment to BTC and sends it to us automatically.`,
+      `Your order <strong>auto-confirms in 10-30 min</strong> once BTC lands. Ships within 72 hours.`,
+    ];
+    warning = `BTC Buddies is a third-party service. They typically charge a small conversion fee that's added to your Zelle amount. Their fees are paid by you, not us.`;
+  } else if (selectedPayment === 'crypto') {
+    methodLabel = `Cryptocurrency (${selectedCrypto})`;
+    steps = [
+      `Your order will be saved immediately.`,
+      `You'll be redirected to NOWPayments to complete payment in ${selectedCrypto}.`,
+      `Send the exact ${selectedCrypto} amount NOWPayments shows you from your own wallet.`,
+      `Your order <strong>auto-confirms</strong> once blockchain confirmation lands (~10-60 min for BTC, faster for stablecoins).`,
+      `Ships within 72 hours of confirmation.`,
+    ];
+  } else if (selectedPayment === 'invoice') {
+    const isCash = selectedInvoiceMethod === 'cashapp';
+    methodLabel = isCash ? 'Invoice via Cash App (manual confirm)' : 'Invoice via Zelle (manual confirm)';
+    const channel = isCash ? 'Cash App' : 'Zelle';
+    const address = isCash ? '<strong>$dfernandez555</strong>' : '<strong>(909) 522-2875</strong>';
+    steps = [
+      `Your order will be saved immediately.`,
+      `The next screen will show you our ${channel} payment details: ${address}.`,
+      `Send your payment via ${channel} from your phone or bank app.`,
+      `We <strong>manually verify</strong> the payment and mark your order paid (usually within 24h).`,
+      `Ships within 72 hours of payment being confirmed.`,
+    ];
+    if (!isCash) {
+      warning = `Include your order ID in the Zelle memo so we can match your payment quickly.`;
+    } else {
+      warning = `Do NOT write anything in the Cash App note field (instructions on the next screen explain how to bypass the required note).`;
+    }
+  } else {
+    methodLabel = selectedPayment;
+    steps = [`Your order will be saved and you'll see payment details next.`];
+  }
+
+  return { total, methodLabel, steps, warning };
+}
+
+function openConfirmationModal() {
+  const { total, methodLabel, steps, warning } = buildConfirmationContent();
+  document.getElementById('confirm-method').textContent = methodLabel;
+  document.getElementById('confirm-total').innerHTML = `<strong>$${total.toFixed(2)}</strong>`;
+
+  const list = document.getElementById('confirm-steps-list');
+  list.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
+
+  const warnEl = document.getElementById('confirm-warning');
+  if (warning) {
+    document.getElementById('confirm-warning-text').textContent = warning;
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  // Customize the primary CTA based on flow.
+  const ctaBtn = document.getElementById('confirm-submit-btn');
+  if (total === 0) {
+    ctaBtn.textContent = 'Confirm Free Order';
+  } else if (selectedPayment === 'crypto') {
+    ctaBtn.textContent = 'Confirm & Continue to NOWPayments';
+  } else {
+    ctaBtn.textContent = 'Confirm & Place Order';
+  }
+  ctaBtn.disabled = false;
+
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  // Re-enable the submit button in case the customer wants to try again
+  // (without this they'd see "Processing..." stuck on it).
+  const btn = document.getElementById('submit-btn');
+  if (btn) btn.disabled = false;
+}
+
+// Esc to dismiss the confirmation modal — matches the same keyboard pattern
+// the admin dashboard uses on its modals.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('confirm-overlay')?.classList.contains('open')) {
+    closeConfirmModal();
+  }
+});
+
+// Called from the modal's Confirm button. Closes the modal and runs the
+// actual order placement.
+async function executeOrderFromConfirmation() {
+  // Disable the modal CTA while in flight so customer can't double-click.
+  const ctaBtn = document.getElementById('confirm-submit-btn');
+  if (ctaBtn) { ctaBtn.disabled = true; ctaBtn.textContent = 'Processing...'; }
+  closeConfirmModal();
+  await executeOrder();
+}
+
+// The actual order-placement logic. Was inline in submitOrder() before the
+// two-step confirmation pattern was added. Same code, no behavior change.
+async function executeOrder() {
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   const originalText = btn.textContent;
