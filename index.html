@@ -2,17 +2,36 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Stratus Biolabs — Precision Peptide Science</title>
+<meta name="description" content="Research-grade peptides for laboratory and academic use — GLP-class receptor agonists, GHRH-class analogs, signaling peptide analogs, and reconstitution supplies. ≥99% purity, Certificate of Analysis with every order. For research and identification purposes only. Not for human or animal consumption."/>
 
+<!-- Open Graph (controls link previews in iMessage, WhatsApp, Instagram DMs,
+     Facebook, Slack, LinkedIn, etc.) -->
 <meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Stratus Biolabs"/>
 <meta property="og:url" content="https://stratusbiolabs.com/"/>
 <meta property="og:title" content="Stratus Biolabs — Precision Peptide Science"/>
-<meta property="og:description" content="Research-grade peptides for laboratory and academic use. ≥99% purity. Certificate of Analysis with every order. For research and identification purposes only. Not for human or animal consumption."/>
+<meta property="og:description" content="Research-grade peptides. ≥99% purity. Certificate of Analysis with every order. For research use only."/>
 <meta property="og:image" content="https://stratusbiolabs.com/preview.jpg"/>
-<meta property="og:site_name" content="Stratus Biolabs"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Stratus Biolabs — research-grade peptides"/>
+
+<!-- Twitter / X Card (controls link preview when shared on X) -->
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="description" content="Stratus Biolabs supplies research-grade peptides for laboratory and academic use — GLP-class receptor agonists, GHRH-class analogs, signaling peptide analogs, and reconstitution supplies. ≥99% purity, Certificate of Analysis with every order. For research and identification purposes only. Not for human or animal consumption."/>
+<meta name="twitter:title" content="Stratus Biolabs — Precision Peptide Science"/>
+<meta name="twitter:description" content="Research-grade peptides. ≥99% purity. CoA with every order. For research use only."/>
+<meta name="twitter:image" content="https://stratusbiolabs.com/preview.jpg"/>
+
+<!-- iOS / Android: home-screen icon + browser theme color so the site
+     looks intentional when someone Adds to Home Screen or uses dark mode. -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.svg"/>
+<meta name="apple-mobile-web-app-title" content="Stratus Biolabs"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#1F1B16"/>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -57,6 +76,8 @@ nav {
 .nav-links { list-style: none; display: flex; gap: 2.25rem; }
 .nav-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); opacity: 0.78; transition: opacity 0.2s, color 0.2s; }
 .nav-links a:hover { opacity: 1; color: var(--crimson-text); }
+.nav-share { background: none; border: 1px solid var(--hairline); padding: 0.55rem 0.7rem; color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+.nav-share:hover, .nav-share:focus-visible { border-color: var(--ink); background: rgba(31,27,22,0.04); outline: none; }
 .nav-cta { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; background: var(--ink); color: var(--cream); padding: 0.75rem 1.5rem; transition: background 0.2s, transform 0.15s; }
 .nav-cta:hover { background: var(--crimson); color: var(--ink); transform: translateY(-1px); }
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
@@ -211,6 +232,9 @@ footer { border-top: 1px solid var(--hairline); padding: 2.5rem 3rem; display: f
     <li><a href="about.html">About</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
+  <button type="button" class="nav-share" data-share aria-label="Share this page" title="Share">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+  </button>
   <a href="catalog.html" class="nav-cta">View Catalog</a>
   <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')" aria-label="Open menu">
     <span></span><span></span><span></span>
@@ -412,6 +436,7 @@ document.querySelectorAll('.mobile-nav a').forEach(a => {
   a.addEventListener('click', () => document.getElementById('mob-nav').classList.remove('open'));
 });
 </script>
+<script src="/share.js" defer></script>
 <script src="/entry-gate.js" defer></script>
 </body>
 </html>
