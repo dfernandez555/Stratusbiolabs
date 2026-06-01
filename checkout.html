@@ -1182,7 +1182,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // orders that need to resolve on the success page (instruction blocks intact).
 const ENABLED_PAYMENT_METHODS = {
   invoice:    true,   // parent: Cash App + Zelle direct (manual confirm)
-  btcbuddies: true,   // Zelle Express via BTC Buddies (auto-confirm)
+  btcbuddies: false,  // HIDDEN — BTC Buddies processing too slow + unreliable
+                      // for our 20-min NOWPayments invoice window. Re-enable
+                      // once we (a) bump invoice expiry on NP API call and
+                      // (b) confirm a real test order processes cleanly.
+                      // HTML/JS/success-page code intact for instant restore.
   crypto:     true,
   // Sub-methods of invoice (kept on for back-compat on success page rendering)
   cashapp:    true,
@@ -1219,8 +1223,12 @@ let selectedCrypto = 'BTC';
 // order (Zelle Express first since it's the best customer + admin experience
 // — auto-confirms, no manual verification, no personal bank risk).
 let selectedPayment = (() => {
-  const order = ['btcbuddies', 'crypto', 'invoice'];
-  return order.find(m => ENABLED_PAYMENT_METHODS[m]) || 'btcbuddies';
+  // Order = preference for default selection. Zelle Express (btcbuddies) is
+  // the BEST default when available (auto-confirms, lowest admin burden).
+  // When it's disabled, fall through to Invoice (most familiar to customers
+  // without crypto). Crypto last — niche audience.
+  const order = ['btcbuddies', 'invoice', 'crypto'];
+  return order.find(m => ENABLED_PAYMENT_METHODS[m]) || 'invoice';
 })();
 // Which sub-method is selected when the customer picks Invoice. Defaults to
 // Cash App since the sub-selector starts with it pre-checked.
@@ -1912,6 +1920,12 @@ async function executeOrder() {
   }
   // The crypto-coin selector only shows for the crypto method.
   document.getElementById('crypto-select').classList.toggle('show', selectedPayment === 'crypto');
+  // The Cash App / Zelle sub-selector only shows when Invoice is active.
+  // When Zelle Express is hidden, Invoice becomes the default — the sub-
+  // selector needs to be visible immediately on page load, not waiting for
+  // a click event to reveal it.
+  const invoiceSub = document.getElementById('invoice-sub');
+  if (invoiceSub) invoiceSub.style.display = (selectedPayment === 'invoice') ? 'block' : 'none';
 })();
 
 updateCartCount();
