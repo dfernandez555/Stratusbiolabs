@@ -38,8 +38,9 @@
 html { scroll-behavior: smooth; overflow-x: hidden; }
 body { font-family: 'Inter', system-ui, sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; min-height: 100vh; min-height: 100dvh; }
 
-/* Nav (matches catalog.html pattern) */
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); gap: 1rem; }
+/* Nav (matches catalog.html pattern) — sticky so the disclaimer below
+   flows naturally without margin-top math. */
+nav { position: sticky; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); gap: 1rem; }
 .logo { font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--fog); text-decoration: none; }
 .logo span { color: var(--cirrus); }
 .nav-links { list-style: none; display: flex; gap: 2rem; }
@@ -53,8 +54,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .mobile-nav a { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); display: block; }
 .mobile-nav.open { display: flex; }
 
-/* Disclaimer banner — same style as catalog */
-.disclaimer { margin-top: calc(60px + env(safe-area-inset-top)); background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+/* Disclaimer banner — same style as catalog. Flows naturally below the
+   sticky nav (no margin-top math). */
+.disclaimer { background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
 .disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
 .disclaimer p { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; min-width: 0; flex: 1; }
 

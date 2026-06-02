@@ -44,10 +44,10 @@
 html { scroll-behavior: smooth; }
 body { font-family: 'Inter', system-ui, sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; max-width: 100vw; }
 
-/* Top padding includes safe-area-inset-top so nav contents sit BELOW the
-   iPhone notch instead of being clipped underneath it. Without this the
-   disclaimer banner below ends up partially obscured by the notch area. */
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+/* Sticky (not fixed) so the disclaimer right below it can flow naturally
+   without depending on a margin-top hack. padding-top includes safe-area-
+   inset-top so nav contents sit BELOW the iPhone notch / Dynamic Island. */
+nav { position: sticky; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
 .logo { font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
 .logo span { color: var(--cirrus); }
 .nav-links { list-style: none; display: flex; gap: 2rem; }
@@ -60,13 +60,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .nav-search input::placeholder { color: var(--mist); }
 .nav-search input:focus { border-color: var(--cirrus); width: 220px; background: rgba(31,27,22,0.04); }
 .nav-search svg { position: absolute; left: 0.5rem; opacity: 0.4; pointer-events: none; }
-.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(239,234,224,0.95); border-bottom: 1px solid var(--border); padding: 1rem 2rem; z-index: 99; flex-direction: column; }
+.mobile-nav { display: none; position: fixed; top: calc(58px + env(safe-area-inset-top)); left: 0; right: 0; background: rgba(239,234,224,0.95); border-bottom: 1px solid var(--border); padding: 1rem 2rem; z-index: 99; flex-direction: column; }
 .mobile-nav a { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); display: block; }
 .mobile-nav.open { display: flex; }
 
-/* Margin clears the fixed nav. Adding safe-area-inset-top so the banner
-   stays below the now-larger nav on iPhones with notches. */
-.disclaimer { margin-top: calc(60px + env(safe-area-inset-top)); background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
+/* Sits naturally below the sticky nav in document flow — no margin-top
+   math needed (which was unreliable on iOS Safari with Dynamic Island). */
+.disclaimer { background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
 .disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
 .disclaimer p { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
 
@@ -76,7 +76,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .page-title em { font-style: italic; color: var(--cirrus); }
 .header-sub { font-size: 0.82rem; font-weight: 200; color: var(--mist); }
 
-.filters { padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 50; background: rgba(239,234,224,0.92); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 0.7rem; }
+.filters { padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: calc(56px + env(safe-area-inset-top)); z-index: 50; background: rgba(239,234,224,0.92); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 0.7rem; }
 .search-wrap { position: relative; }
 .search-wrap input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 0.65rem 0.9rem 0.65rem 2.3rem; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--fog); outline: none; transition: border-color 0.3s; }
 .search-wrap input::placeholder { color: var(--mist); }
