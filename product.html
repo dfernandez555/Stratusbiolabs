@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title id="page-title">Product — Stratus Biolabs</title>
+<meta name="description" id="page-description" content="Research-grade peptide product detail. ≥99% purity. CoA with every order. For research use only."/>
+
+<!-- Open Graph (filled in by JS once we know which product we're showing) -->
+<meta property="og:type" content="product"/>
+<meta property="og:site_name" content="Stratus Biolabs"/>
+<meta property="og:url" id="og-url" content="https://stratusbiolabs.com/product"/>
+<meta property="og:title" id="og-title" content="Stratus Biolabs Product"/>
+<meta property="og:description" id="og-description" content="Research-grade peptide. ≥99% purity. For research use only."/>
+<meta property="og:image" content="https://stratusbiolabs.com/preview.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.svg"/>
+<meta name="apple-mobile-web-app-title" content="Stratus Biolabs"/>
+<meta name="theme-color" content="#1F1B16"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #EFEAE0; --fog: #1F1B16; --mist: #7A746C;
+  --stratus: #E2DCCE; --nimbus: #D5CDBC; --cirrus: #1F1B16;
+  --silver: #7A746C; --gold: #1F1B16; --white: #FFFFFF;
+  --border: rgba(31,27,22,0.12);
+  --green: #4a9a6a;
+}
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; min-height: 100vh; min-height: 100dvh; }
+
+/* Nav (matches catalog.html pattern) */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); gap: 1rem; }
+.logo { font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--fog); text-decoration: none; }
+.logo span { color: var(--cirrus); }
+.nav-links { list-style: none; display: flex; gap: 2rem; }
+.nav-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.3s; }
+.nav-links a:hover { color: var(--cirrus); }
+.cart-icon { position: relative; cursor: pointer; background: none; border: none; color: var(--fog); padding: 0; }
+.cart-count { position: absolute; top: -6px; right: -8px; background: var(--cirrus); color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--mist); }
+.mobile-nav { display: none; position: fixed; top: calc(58px + env(safe-area-inset-top)); left: 0; right: 0; background: rgba(239,234,224,0.95); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem 1rem; z-index: 99; flex-direction: column; }
+.mobile-nav a { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); display: block; }
+.mobile-nav.open { display: flex; }
+
+/* Disclaimer banner — same style as catalog */
+.disclaimer { margin-top: calc(60px + env(safe-area-inset-top)); background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+.disclaimer p { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; min-width: 0; flex: 1; }
+
+/* Back link */
+.back-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1.5rem 2rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); text-decoration: none; transition: color 0.2s; }
+.back-link:hover { color: var(--cirrus); }
+
+/* Product layout */
+.product-wrap { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 5rem; }
+.product-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 3rem; align-items: start; margin-top: 1.5rem; }
+
+/* Left: hero / visual */
+.product-hero { background: var(--stratus); border: 1px solid var(--border); aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 2rem; }
+.product-hero::before { content: ''; position: absolute; top: -1px; left: -1px; width: 36px; height: 1px; background: var(--cirrus); }
+.product-hero::after { content: ''; position: absolute; top: -1px; left: -1px; width: 1px; height: 36px; background: var(--cirrus); }
+.hero-sku { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mist); margin-bottom: 1.2rem; }
+.hero-mark { font-family: 'Inter', sans-serif; font-size: 5rem; font-weight: 200; letter-spacing: -0.04em; color: var(--fog); line-height: 1; margin-bottom: 0.5rem; text-align: center; }
+.hero-name { font-family: 'Inter', sans-serif; font-size: 1.4rem; font-weight: 400; color: var(--fog); margin-bottom: 0.4rem; text-align: center; }
+.hero-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); }
+
+/* Right: details */
+.product-info { display: flex; flex-direction: column; gap: 0; }
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--cirrus); margin-bottom: 1rem; }
+.product-title { font-family: 'Inter', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; line-height: 1.05; letter-spacing: -0.01em; color: var(--fog); margin-bottom: 0.4rem; }
+.product-subtitle { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 300; color: var(--mist); margin-bottom: 1.6rem; }
+.product-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.product-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; padding: 0.32rem 0.6rem; border: 1px solid var(--border); color: var(--mist); letter-spacing: 0.12em; text-transform: uppercase; }
+
+.product-price-row { display: flex; align-items: baseline; gap: 1rem; padding: 1rem 0 1.5rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+.product-price { font-family: 'Inter', sans-serif; font-size: 2.4rem; font-weight: 400; color: var(--fog); line-height: 1; }
+.product-size { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; color: var(--mist); }
+
+.add-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; padding: 1.05rem 1.6rem; background: var(--fog); color: var(--ink); border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-bottom: 0.8rem; width: 100%; }
+.add-btn:hover { background: #3D352C; transform: translateY(-1px); }
+.share-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.95rem 1.4rem; background: transparent; color: var(--fog); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.share-btn:hover { border-color: var(--fog); background: rgba(31,27,22,0.04); }
+
+/* Sections */
+.section { padding: 2rem 0; border-top: 1px solid var(--border); }
+.section-head { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mist); margin-bottom: 1rem; }
+.section-body { font-size: 0.94rem; line-height: 1.7; color: var(--fog); }
+.section-body p { margin-bottom: 0.85rem; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { font-weight: 500; }
+.applications { list-style: none; padding: 0; margin: 0; }
+.applications li { padding: 0.7rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); font-size: 0.92rem; line-height: 1.55; display: flex; gap: 0.7rem; align-items: flex-start; }
+.applications li::before { content: '→'; font-family: 'JetBrains Mono', monospace; color: var(--mist); margin-top: 0.05rem; flex-shrink: 0; }
+.applications li:last-child { border-bottom: none; }
+.spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem; }
+.spec-row { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); }
+.spec-label { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist); }
+.spec-value { font-family: 'Inter', sans-serif; font-size: 0.92rem; color: var(--fog); word-break: break-word; }
+.spec-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+
+/* RUO callout */
+.ruo-callout { margin-top: 2rem; padding: 1.25rem 1.5rem; background: rgba(31,27,22,0.04); border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.6; color: var(--fog); }
+.ruo-callout strong { color: var(--fog); font-weight: 500; }
+
+/* Not-found state */
+.notfound { padding: 6rem 2rem; text-align: center; }
+.notfound h1 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 300; margin-bottom: 0.6rem; }
+.notfound p { color: var(--mist); margin-bottom: 1.5rem; }
+
+footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-logo span { color: var(--cirrus); }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+.footer-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); text-decoration: none; }
+.footer-copy { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; color: rgba(141,152,179,0.55); }
+
+@media (max-width: 768px) {
+  .nav-links { display: none !important; }
+  .hamburger { display: flex !important; }
+  .product-wrap { padding: 1rem 1rem 4rem; }
+  .product-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .product-hero { aspect-ratio: 4 / 3; }
+  .hero-mark { font-size: 3.5rem; }
+  .spec-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; }
+  .disclaimer { padding: 0.55rem 1rem; gap: 0.6rem; }
+  .disclaimer p { font-size: 0.52rem; letter-spacing: 0.08em; line-height: 1.4; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Stratus <span>Bio</span>labs</a>
+  <ul class="nav-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <button class="cart-icon" onclick="window.location.href='checkout.html'" aria-label="View cart">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span class="cart-count" id="cart-count">0</span>
+  </button>
+  <button class="hamburger" onclick="document.getElementById('mob-nav').classList.toggle('open')" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mob-nav">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="about.html">About</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</div>
+
+<div class="disclaimer">
+  <div class="disclaimer-dot"></div>
+  <p>All products for research use only — not for human or veterinary use.</p>
+</div>
+
+<a href="catalog.html" class="back-link">← Back to Catalog</a>
+
+<div id="product-root" class="product-wrap">
+  <!-- Filled in by renderProduct() based on URL ?id=... -->
+</div>
+
+<!-- Compliance & Disclaimers (Ally Pay-mandated verbiage; do not edit copy) -->
+<section class="compliance-disclaimer" style="background:#E2DCCE;padding:2.5rem 2rem;border-top:1px solid rgba(31,27,22,0.12);">
+  <div style="max-width:900px;margin:0 auto;">
+    <p style="font-family:'JetBrains Mono', monospace;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:#7A746C;margin:0 0 1.25rem;text-align:center;">// Compliance &amp; Disclaimers</p>
+    <div style="font-family:'Inter', sans-serif;font-size:0.85rem;line-height:1.75;color:#1F1B16;">
+      <p style="margin:0 0 0.75rem;"><strong>All products currently listed on this site are for research purposes ONLY.</strong></p>
+      <p style="margin:0 0 0.75rem;">All products sold on this website are intended for research and identification purposes only.</p>
+      <p style="margin:0 0 0.75rem;">These products are not intended for human dosing, injections, or ingestion.</p>
+      <p style="margin:0;">Peptides are strictly for laboratory, academic, or institutional research and not for human or animal consumption.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" class="footer-logo">Stratus <span>Bio</span>labs</a>
+  <ul class="footer-links">
+    <li><a href="catalog.html">Catalog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Stratus Biolabs. For Research Use Only.</span>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// PRODUCT DATA — single source of truth for product detail pages.
+// Each entry corresponds to one SBL- SKU in catalog.html.
+// Keys must match the URL ?id=<key> parameter and SKU_TABLE in pricing.js.
+// To add a product: append an entry here, add a card in catalog.html.
+// ═══════════════════════════════════════════════════════════
+const PRODUCTS = {
+  "rt10": {
+    sku: "SBL-RT10",
+    name: "G3-R",
+    chemical: "Triple GIP / GLP-1 / Glucagon Receptor Agonist",
+    category: "GLP-class Analog",
+    tags: ["Triple Agonist", "Receptor Pharmacology", "Incretin Research"],
+    price: 100,
+    sizeKey: "10mg",
+    sizeDisplay: "10 mg / Lyophilized",
+    description: [
+      "G3-R is a long-acting peptide analog engineered for simultaneous agonism at the GIP, GLP-1, and glucagon receptors. Used in research on multi-receptor incretin pharmacology and the metabolic effects of poly-pharmacology at the GLP / GIP / glucagon receptor family.",
+      "Synthesized at our partner facility under controlled SPPS conditions with preparative HPLC purification. Each batch is verified by analytical HPLC (≥99% area) and mass spectrometry."
+    ],
+    applications: [
+      "Multi-receptor incretin pharmacology in vitro",
+      "Receptor-binding affinity comparison studies",
+      "Structure-activity relationship (SAR) research vs. single-receptor agonists",
+      "Pharmacokinetic studies of long-acting peptide analogs",
+    ],
+    specs: {
+      "Purity": "≥99% (HPLC)",
+      "Mass": "Verified by ESI-MS / MALDI-TOF",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "tsm10": {
+    sku: "SBL-TSM10",
+    name: "Tesamorelin",
+    chemical: "Stabilized GHRH Analog",
+    category: "GHRH-class Analog",
+    tags: ["GHRH Analog", "Pharmacokinetics", "Receptor Pharmacology"],
+    price: 110,
+    sizeKey: "10mg",
+    sizeDisplay: "10 mg / Lyophilized",
+    description: [
+      "Tesamorelin is a synthetic 44-amino-acid analog of human growth hormone-releasing hormone (GHRH) with N-terminal modification that improves enzymatic stability. Used in research on GHRH receptor pharmacology and the in-vitro pharmacokinetics of stabilized GHRH analogs.",
+      "Each lot is HPLC-purified and characterized by mass spectrometry. CoA documents purity, identity, and lot-specific storage recommendations.",
+    ],
+    applications: [
+      "GHRH receptor binding and signaling studies",
+      "Stability and degradation kinetics research",
+      "Comparative pharmacology vs. native GHRH (1-44)",
+      "In vitro investigations of GH-axis regulation",
+    ],
+    specs: {
+      "Sequence": "Modified GHRH(1-44)",
+      "Purity": "≥99% (HPLC)",
+      "Mass": "Verified by MS",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "nj500": {
+    sku: "SBL-NJ500",
+    name: "NAD+",
+    chemical: "Nicotinamide Adenine Dinucleotide",
+    category: "Cofactor",
+    tags: ["Cofactor", "Bioenergetics", "Metabolic Research"],
+    price: 75,
+    sizeKey: "500mg",
+    sizeDisplay: "500 mg / Lyophilized",
+    description: [
+      "Nicotinamide adenine dinucleotide (NAD+) in its oxidized form. A central cofactor in cellular redox reactions and the substrate for sirtuins, PARPs, and CD38. Used in research on cellular bioenergetics, NAD-pathway enzymology, and aging biology.",
+      "Lyophilized and supplied at high purity for in-vitro applications. Each batch is HPLC-verified.",
+    ],
+    applications: [
+      "Sirtuin enzymology and substrate kinetics",
+      "PARP-1 / CD38 activity assays",
+      "Cellular bioenergetics and redox-state research",
+      "NAD-pathway investigations in cell lysates",
+    ],
+    specs: {
+      "Purity": "≥98% (HPLC)",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "Solubility": "Water, PBS, buffers",
+      "CoA": "Included with every order",
+    },
+  },
+  "cu50": {
+    sku: "SBL-CU50",
+    name: "GHK-CU",
+    chemical: "Copper-Binding Tripeptide (Gly-His-Lys-Cu²⁺)",
+    category: "Tripeptide / Copper Complex",
+    tags: ["Tripeptide", "Copper Complex", "Signaling Research"],
+    price: 65,
+    sizeKey: "50mg",
+    sizeDisplay: "50 mg / Lyophilized",
+    description: [
+      "Glycyl-L-histidyl-L-lysine bound to copper(II). A naturally-occurring tripeptide that complexes with Cu²⁺. Used in research on copper-tripeptide signaling and collagen biology.",
+      "Supplied as the Cu²⁺ complex. Each batch is HPLC-verified for the tripeptide moiety with copper content within the documented range.",
+    ],
+    applications: [
+      "Copper-tripeptide signaling studies",
+      "Collagen / extracellular matrix biology research",
+      "Cu²⁺ redox chemistry in peptide systems",
+      "Comparative SAR research with related tripeptides",
+    ],
+    specs: {
+      "Sequence": "Gly-His-Lys · Cu²⁺",
+      "Purity": "≥98% (HPLC, tripeptide)",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "bbg70": {
+    sku: "SBL-BBG70",
+    name: "GLOW",
+    chemical: "Proprietary Multi-Peptide Blend",
+    category: "Proprietary Blend",
+    tags: ["Proprietary Blend", "Characterization Research"],
+    price: 120,
+    sizeKey: "70mg",
+    sizeDisplay: "70 mg / Lyophilized",
+    description: [
+      "GLOW is a proprietary multi-peptide research blend supplied for synthesis verification and characterization studies. Each component is identified by analytical HPLC and mass spectrometry.",
+      "Use cases include comparator material for analytical methods development and reference standards for blend-identification workflows.",
+    ],
+    applications: [
+      "Analytical method development for peptide blends",
+      "Synthesis verification and identity confirmation",
+      "Reference / comparator material for HPLC validation",
+      "Stability research on multi-component peptide formulations",
+    ],
+    specs: {
+      "Composition": "Proprietary",
+      "Identity": "HPLC + MS verified per component",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "kbt80": {
+    sku: "SBL-KBT80",
+    name: "KLOW",
+    chemical: "Proprietary Multi-Peptide Blend",
+    category: "Proprietary Blend",
+    tags: ["Proprietary Blend", "Characterization Research"],
+    price: 140,
+    sizeKey: "80mg",
+    sizeDisplay: "80 mg / Lyophilized",
+    description: [
+      "KLOW is a proprietary multi-peptide research blend supplied for synthesis verification and characterization studies. Each component is identified by analytical HPLC and mass spectrometry.",
+      "Use cases include comparator material for analytical methods development and reference standards for blend-identification workflows.",
+    ],
+    applications: [
+      "Analytical method development for peptide blends",
+      "Synthesis verification and identity confirmation",
+      "Reference / comparator material for HPLC validation",
+      "Stability research on multi-component peptide formulations",
+    ],
+    specs: {
+      "Composition": "Proprietary",
+      "Identity": "HPLC + MS verified per component",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "xa30": {
+    sku: "SBL-XA30",
+    name: "Semax",
+    chemical: "Synthetic Heptapeptide (ACTH(4-10) Analog)",
+    category: "ACTH Analog",
+    tags: ["ACTH Analog", "BDNF Pathway", "Neuro Research"],
+    price: 85,
+    sizeKey: "30mg",
+    sizeDisplay: "30 mg / Lyophilized",
+    description: [
+      "Semax is a synthetic heptapeptide derived from a fragment of adrenocorticotropic hormone (ACTH 4-10) with a Pro-Gly-Pro C-terminal extension. Used in research on BDNF-pathway modulation and the in-vitro pharmacology of ACTH-derived peptide analogs.",
+      "Each batch is HPLC-purified and verified by mass spectrometry.",
+    ],
+    applications: [
+      "BDNF expression studies in cell lines",
+      "ACTH-derived peptide pharmacology research",
+      "Comparative SAR research with related ACTH fragments",
+      "In vitro stability and degradation kinetics",
+    ],
+    specs: {
+      "Sequence": "Met-Glu-His-Phe-Pro-Gly-Pro",
+      "Purity": "≥99% (HPLC)",
+      "Mass": "Verified by MS",
+      "Format": "Lyophilized powder",
+      "Storage": "-20°C, desiccated, dark",
+      "CoA": "Included with every order",
+    },
+  },
+  "wa3": {
+    sku: "SBL-WA3",
+    name: "Bacteriostatic Water",
+    chemical: "0.9% Benzyl Alcohol in Sterile Water",
+    category: "Laboratory Supply",
+    tags: ["Reconstitution", "Laboratory Supply"],
+    price: 8,
+    sizeKey: "3mL",
+    sizeDisplay: "3 mL vial",
+    description: [
+      "Sterile water with 0.9% benzyl alcohol as a bacteriostatic preservative. Used for laboratory reconstitution of lyophilized peptides for in-vitro work.",
+      "Supplied in a 3 mL multi-use vial with rubber septum suitable for repeated needle access in a sterile environment.",
+    ],
+    applications: [
+      "Reconstitution of lyophilized peptides for in-vitro experiments",
+      "Buffer preparation in research workflows",
+      "Storage of reconstituted peptide stocks under refrigeration",
+    ],
+    specs: {
+      "Composition": "Water for injection + 0.9% benzyl alcohol",
+      "Format": "3 mL multi-dose vial",
+      "Sterility": "Sterile filtered, USP-grade",
+      "Storage": "Ambient before opening; 2-8°C after first puncture",
+    },
+  },
+  "wa10": {
+    sku: "SBL-WA10",
+    name: "Bacteriostatic Water",
+    chemical: "0.9% Benzyl Alcohol in Sterile Water",
+    category: "Laboratory Supply",
+    tags: ["Reconstitution", "Laboratory Supply"],
+    price: 15,
+    sizeKey: "10mL",
+    sizeDisplay: "10 mL vial",
+    description: [
+      "Sterile water with 0.9% benzyl alcohol as a bacteriostatic preservative. Used for laboratory reconstitution of lyophilized peptides for in-vitro work.",
+      "Supplied in a 10 mL multi-use vial with rubber septum suitable for repeated needle access in a sterile environment.",
+    ],
+    applications: [
+      "Reconstitution of lyophilized peptides for in-vitro experiments",
+      "Buffer preparation in research workflows",
+      "Storage of reconstituted peptide stocks under refrigeration",
+    ],
+    specs: {
+      "Composition": "Water for injection + 0.9% benzyl alcohol",
+      "Format": "10 mL multi-dose vial",
+      "Sterility": "Sterile filtered, USP-grade",
+      "Storage": "Ambient before opening; 2-8°C after first puncture",
+    },
+  },
+};
+
+function escapeHtml(s) {
+  if (s == null) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
+}
+
+// Read ?id=<slug> from URL.
+function getProductId() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("id") || "").toLowerCase().trim();
+}
+
+function renderProduct() {
+  const id = getProductId();
+  const p = PRODUCTS[id];
+  const root = document.getElementById("product-root");
+
+  if (!p) {
+    document.getElementById("page-title").textContent = "Product not found — Stratus Biolabs";
+    root.innerHTML = `
+      <div class="notfound">
+        <h1>Product not found</h1>
+        <p>We couldn't find a product matching this URL.</p>
+        <a href="catalog.html" class="add-btn" style="display:inline-block;width:auto;">Back to Catalog</a>
+      </div>`;
+    return;
+  }
+
+  // Update meta tags
+  const fullTitle = `${p.name} (${p.sku}) — Stratus Biolabs`;
+  const desc = `${p.name} — ${p.chemical}. ${p.sizeDisplay}. Research-grade. CoA with every order. For research use only.`;
+  document.title = fullTitle;
+  document.getElementById("page-title").textContent = fullTitle;
+  document.getElementById("page-description").setAttribute("content", desc);
+  document.getElementById("og-url").setAttribute("content", `https://stratusbiolabs.com/product?id=${id}`);
+  document.getElementById("og-title").setAttribute("content", fullTitle);
+  document.getElementById("og-description").setAttribute("content", desc);
+
+  // Initials for the hero "mark" — first letter of each word in name, max 2.
+  const mark = p.name.split(/[\s\-_]+/).slice(0, 2).map(w => w[0]).join("");
+
+  // Build the page
+  root.innerHTML = `
+    <div class="product-grid">
+      <div>
+        <div class="product-hero">
+          <div class="hero-sku">${escapeHtml(p.sku)}</div>
+          <div class="hero-mark">${escapeHtml(mark)}</div>
+          <div class="hero-name">${escapeHtml(p.name)}</div>
+          <div class="hero-meta">${escapeHtml(p.sizeDisplay)}</div>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <div class="eyebrow">// ${escapeHtml(p.category)}</div>
+        <h1 class="product-title">${escapeHtml(p.name)}</h1>
+        <p class="product-subtitle">${escapeHtml(p.chemical)}</p>
+
+        <div class="product-tags">
+          ${p.tags.map(t => `<span class="product-tag">${escapeHtml(t)}</span>`).join("")}
+        </div>
+
+        <div class="product-price-row">
+          <span class="product-price">$${p.price}</span>
+          <span class="product-size">${escapeHtml(p.sizeDisplay)}</span>
+        </div>
+
+        <button class="add-btn" onclick="addThisToCart()">Add to Cart →</button>
+        <button type="button" class="share-btn" data-share data-share-text="${escapeHtml(p.name)} — research-grade peptide from Stratus Biolabs">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share This Product
+        </button>
+
+        <div class="section">
+          <div class="section-head">// Description</div>
+          <div class="section-body">${p.description.map(para => `<p>${escapeHtml(para)}</p>`).join("")}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">// Research Applications</div>
+          <ul class="applications">
+            ${p.applications.map(a => `<li>${escapeHtml(a)}</li>`).join("")}
+          </ul>
+        </div>
+
+        <div class="section">
+          <div class="section-head">// Specifications</div>
+          <div class="spec-grid">
+            ${Object.entries(p.specs).map(([k, v]) => `
+              <div class="spec-row">
+                <span class="spec-label">${escapeHtml(k)}</span>
+                <span class="spec-value">${escapeHtml(v)}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+
+        <div class="ruo-callout">
+          <strong>For research use only.</strong> This product is not intended for human dosing, injections, or ingestion. It is supplied strictly for laboratory, academic, or institutional research and not for human or animal consumption.
+        </div>
+      </div>
+    </div>`;
+}
+
+// Add to cart — same shape as catalog.html. The checkout page reads from
+// localStorage and validates against the server-side SKU_TABLE, so we just
+// push a properly-shaped line item here.
+function addThisToCart() {
+  const id = getProductId();
+  const p = PRODUCTS[id];
+  if (!p) return;
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem("sb-cart") || "[]"); }
+  catch { cart = []; }
+  if (!Array.isArray(cart)) cart = [];
+
+  // Existing line item match check (same product + size)
+  const variant = `${p.sku} · ${p.name} · ${p.sizeDisplay}`;
+  const existing = cart.find(i => i.sku === p.sku && i.sizeKey === p.sizeKey);
+  if (existing) {
+    existing.qty = Math.min(99, (existing.qty || 1) + 1);
+  } else {
+    cart.push({ name: p.name, variant, price: p.price, qty: 1, sku: p.sku, sizeKey: p.sizeKey });
+  }
+  localStorage.setItem("sb-cart", JSON.stringify(cart));
+  updateCartCount();
+  // Visual confirmation: show a toast (using share.js's toast styling pattern)
+  showAddedToast(p.name);
+}
+
+function updateCartCount() {
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem("sb-cart") || "[]"); } catch {}
+  if (!Array.isArray(cart)) cart = [];
+  const total = cart.reduce((s, i) => s + (i.qty || 0), 0);
+  const el = document.getElementById("cart-count");
+  if (el) el.textContent = Math.min(total, 99);
+}
+
+function showAddedToast(name) {
+  let t = document.getElementById("__add-toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "__add-toast";
+    t.style.cssText = "position:fixed;left:50%;bottom:calc(1.5rem + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(120%);background:#4a9a6a;color:#fff;font-family:'Inter',system-ui,sans-serif;font-size:0.88rem;padding:0.95rem 1.5rem;letter-spacing:0.01em;box-shadow:0 8px 24px rgba(31,27,22,0.25);z-index:9999;opacity:0;pointer-events:none;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.2s;max-width:90vw;text-align:center;";
+    document.body.appendChild(t);
+  }
+  t.textContent = "✓ Added " + name + " to cart";
+  requestAnimationFrame(() => {
+    t.style.transform = "translateX(-50%) translateY(0)";
+    t.style.opacity = "1";
+  });
+  setTimeout(() => {
+    t.style.transform = "translateX(-50%) translateY(120%)";
+    t.style.opacity = "0";
+  }, 2200);
+}
+
+// Initial render
+renderProduct();
+updateCartCount();
+</script>
+<script src="/share.js" defer></script>
+<script src="/entry-gate.js" defer></script>
+</body>
+</html>

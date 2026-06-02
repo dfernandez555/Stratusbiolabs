@@ -44,7 +44,10 @@
 html { scroll-behavior: smooth; }
 body { font-family: 'Inter', system-ui, sans-serif; background: var(--ink); color: var(--fog); overflow-x: hidden; max-width: 100vw; }
 
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+/* Top padding includes safe-area-inset-top so nav contents sit BELOW the
+   iPhone notch instead of being clipped underneath it. Without this the
+   disclaimer banner below ends up partially obscured by the notch area. */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: calc(1rem + env(safe-area-inset-top)) 2rem 1rem 2rem; background: rgba(239,234,224,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
 .logo { font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); text-decoration: none; }
 .logo span { color: var(--cirrus); }
 .nav-links { list-style: none; display: flex; gap: 2rem; }
@@ -61,7 +64,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 .mobile-nav a { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist); text-decoration: none; padding: 0.75rem 0; border-bottom: 1px solid rgba(31,27,22,0.08); display: block; }
 .mobile-nav.open { display: flex; }
 
-.disclaimer { margin-top: 60px; background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
+/* Margin clears the fixed nav. Adding safe-area-inset-top so the banner
+   stays below the now-larger nav on iPhones with notches. */
+.disclaimer { margin-top: calc(60px + env(safe-area-inset-top)); background: rgba(31,27,22,0.07); border-bottom: 1px solid rgba(31,27,22,0.2); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
 .disclaimer-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
 .disclaimer p { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
 
@@ -85,7 +90,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; j
 
 .catalog-main { padding: 1.5rem 2rem; }
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-.product-card { background: var(--ink); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; position: relative; transition: background 0.3s; }
+.product-card { background: var(--ink); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; position: relative; transition: background 0.3s; cursor: pointer; }
+.product-card .prod-name { transition: color 0.2s; }
+.product-card:hover .prod-name { color: var(--cirrus); }
 .product-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg,transparent,var(--cirrus),transparent); transform:scaleX(0); transition:transform 0.3s; }
 .product-card:hover { background: rgba(31,27,22,0.55); }
 .product-card:hover::before { transform: scaleX(1); }
@@ -577,11 +584,45 @@ document.querySelectorAll('.product-card').forEach(card => {
   }
 
   btn.removeAttribute('href');
-  btn.onclick = () => {
+  btn.onclick = (e) => {
+    // Don't let the click bubble up to the card-level navigation handler.
+    e.stopPropagation();
     const s = getSelection();
     addToCart(name, s.variant, s.price, sku, s.sizeKey);
   };
   btn.textContent = 'Add to Cart';
+});
+
+// Card-level navigation: clicking anywhere on a product card (outside the
+// Add to Cart button or variant dropdown) opens the product detail page.
+// The slug is the SKU lower-cased and stripped of the "SBL-" prefix —
+// must match the keys in product.html's PRODUCTS object.
+//   SBL-RT10  -> rt10
+//   SBL-WA3   -> wa3
+document.querySelectorAll('.product-card').forEach(card => {
+  const sku = card.querySelector('.prod-id')?.textContent.trim() || '';
+  if (!sku) return;
+  const slug = sku.toLowerCase().replace(/^sbl-/, '');
+  card.setAttribute('role', 'link');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-label', `View details for ${card.querySelector('.prod-name')?.textContent.trim() || sku}`);
+  card.addEventListener('click', (e) => {
+    // Skip if the click landed on (or inside) the order button or variant select.
+    if (e.target.closest('.order-btn') || e.target.closest('.variant-select')) return;
+    window.location.href = `product.html?id=${encodeURIComponent(slug)}`;
+  });
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      // Same skip rule for keyboard activation on inner controls.
+      if (e.target.closest('.order-btn') || e.target.closest('.variant-select')) return;
+      e.preventDefault();
+      window.location.href = `product.html?id=${encodeURIComponent(slug)}`;
+    }
+  });
+  // Also stop propagation on the variant select so changing it doesn't open
+  // the detail page (clicks inside <select> still bubble in some browsers).
+  const sel = card.querySelector('.variant-select');
+  if (sel) sel.addEventListener('click', (e) => e.stopPropagation());
 });
 // Token-based search across SKU + display name + keyword data-name.
 // Every whitespace-separated token in the query must match SOMEWHERE in the
