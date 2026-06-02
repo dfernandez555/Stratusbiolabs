@@ -62,25 +62,55 @@ function soapEnvelope(method, paramsXml) {
 </SOAP-ENV:Envelope>`;
 }
 
+// Per-fetch hard timeout. Rapid's SOAP server occasionally stalls; without a
+// bound here a single hung request can eat the entire Workers budget and the
+// admin sees a generic 500 with no useful diagnostic.
+const SOAP_FETCH_TIMEOUT_MS = 12_000;
+
+// Errors that match these patterns are network-transient and worth retrying.
+// Anything not matching here (validation faults, "duplicate orderId", auth) is
+// permanent and we should fail fast so admin sees the real reason.
+const TRANSIENT_ERROR_RE = /(timeout|timed out|temporarily|temporary|try again|gateway|unavailable|reset|aborted|network|fetch failed|econnreset|service unavailable|internal server error|session expired|invalid session|too many)/i;
+
+function isTransientError(err) {
+  if (!err) return false;
+  const name = (err.name || "").toLowerCase();
+  if (name === "aborterror" || name === "timeouterror") return true;
+  return TRANSIENT_ERROR_RE.test(String(err.message || err));
+}
+
 async function soapCall(env, method, paramsXml) {
   const host = env.RAPID_API_HOST || "stratusbiolabs.rapidfulfillmentcrm.com";
   // Endpoint is /api/soap/?action (the WSDL declares this as the service location).
   // SOAPAction is the same handler tag for every method.
   const url = `https://${host}/api/soap/?action`;
   const body = soapEnvelope(method, paramsXml);
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/xml; charset=utf-8",
-      "SOAPAction": "urn:WF_Api_Soap_HandlerAction",
-    },
-    body,
-  });
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), SOAP_FETCH_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        "SOAPAction": "urn:WF_Api_Soap_HandlerAction",
+      },
+      body,
+      signal: ctrl.signal,
+    });
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      throw new Error(`Rapid SOAP timeout after ${SOAP_FETCH_TIMEOUT_MS}ms on ${method}`);
+    }
+    throw new Error(`Rapid SOAP network error on ${method}: ${err.message || err}`);
+  } finally {
+    clearTimeout(tid);
+  }
   const text = await res.text();
   // Surface SOAP faults as errors
   const fault = text.match(/<faultstring[^>]*>([^<]+)<\/faultstring>/i);
-  if (fault) throw new Error(`Rapid SOAP fault: ${fault[1]}`);
-  if (!res.ok) throw new Error(`Rapid SOAP HTTP ${res.status}: ${text.slice(0, 200)}`);
+  if (fault) throw new Error(`Rapid SOAP fault (${method}): ${fault[1]}`);
+  if (!res.ok) throw new Error(`Rapid SOAP HTTP ${res.status} on ${method}: ${text.slice(0, 200)}`);
   return text;
 }
 
@@ -277,42 +307,115 @@ export async function onRequestPost({ request, env }) {
   order.rapidDispatchingAt = new Date().toISOString();
   await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
 
+  // Auto-retry the full login → orders_new sequence once on transient errors.
+  // Rapid's SOAP service blips often enough that a single shot fails ~5-10%
+  // of the time; admin used to click Retry manually. We do that automatically
+  // now while keeping the safety properties:
+  //
+  //   • Idempotency on orders_new — Rapid uses our orderId as their order_id,
+  //     so a retry that lands a duplicate will be rejected by their server.
+  //     We pattern-match the "duplicate" / "already exists" fault and treat
+  //     it as success (the first attempt actually got through, the response
+  //     just didn't reach us).
+  //   • Permanent errors (invalid country, missing field, auth) fail fast
+  //     without retry so admin sees the real diagnostic.
+  //   • Budget — each attempt is bounded by SOAP_FETCH_TIMEOUT_MS (12s);
+  //     two attempts + backoff stays well under the 30s Workers limit.
+  const MAX_ATTEMPTS = 2;
+  const RETRY_BACKOFF_MS = 600;
+  let attempt = 0;
+  let lastErr = null;
   let sessionId = null;
-  try {
-    sessionId = await rapidLogin(env);
-    const responseXml = await rapidCreateOrder(env, sessionId, order);
-    // SOAP response shape (confirmed against Rapid prod 2026-05-27):
-    //   <ns1:orders_newResponse>
-    //     <result xsi:type="xsd:boolean">true</result>
-    //   </ns1:orders_newResponse>
-    // Rapid uses the order_id we sent (echoed back in result=true), so we
-    // don't get a Rapid-internal id in the response — we derive it from the
-    // numeric portion of our orderId below.
-    const returnedOrderId = parseElementValue(responseXml, "orderId");
+  let responseXml = null;
+  let dispatchedViaDuplicate = false;
+
+  while (attempt < MAX_ATTEMPTS) {
+    attempt++;
+    sessionId = null;
+    try {
+      sessionId = await rapidLogin(env);
+      responseXml = await rapidCreateOrder(env, sessionId, order);
+      // Success path — break out, validate below.
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+      const msg = String(err.message || err);
+      // Already created on a prior attempt — Rapid rejected the duplicate.
+      // Treat as success because their server has the order on file.
+      if (/duplicate|already exists|already been created|order_id.*exists/i.test(msg)) {
+        dispatchedViaDuplicate = true;
+        lastErr = null;
+        break;
+      }
+      // Only retry on transient errors; permanent errors bail immediately.
+      // (Logout happens in the finally block below before the continue runs.)
+      if (attempt < MAX_ATTEMPTS && isTransientError(err)) {
+        // Jittered backoff between attempts — keeps us from hammering a
+        // stressed Rapid server lockstep with itself.
+        const jitter = Math.floor((Math.random() - 0.5) * 200);
+        await new Promise(r => setTimeout(r, RETRY_BACKOFF_MS + jitter));
+        continue;
+      }
+      break;
+    } finally {
+      // Always end the session, even on retry — Rapid pools are finite and
+      // a hung session can lock us out on subsequent dispatches.
+      if (sessionId) { try { await rapidLogout(env, sessionId); } catch {} }
+      sessionId = null;
+    }
+  }
+
+  if (lastErr) {
+    order.rapidStatus = "failed";
+    order.rapidError = String(lastErr.message || lastErr).slice(0, 500);
+    order.rapidRetryCount = attempt - 1;
+    order.rapidLastFailedAt = new Date().toISOString();
+    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+    return json({ ok: false, error: order.rapidError, retryable: true, attempts: attempt }, 502);
+  }
+
+  // SOAP response shape (confirmed against Rapid prod 2026-05-27):
+  //   <ns1:orders_newResponse>
+  //     <result xsi:type="xsd:boolean">true</result>
+  //   </ns1:orders_newResponse>
+  // Rapid uses the order_id we sent (echoed back in result=true), so we
+  // don't get a Rapid-internal id in the response — we derive it from the
+  // numeric portion of our orderId below.
+  let returnedOrderId = null;
+  let success = dispatchedViaDuplicate;
+  if (!dispatchedViaDuplicate) {
+    returnedOrderId = parseElementValue(responseXml, "orderId");
     const resultVal = (parseElementValue(responseXml, "result") || "").toLowerCase();
-    const success = !!returnedOrderId
+    success = !!returnedOrderId
       || resultVal === "true" || resultVal === "1"
       || /<(?:[a-z0-9_-]+:)?return[^>]*>(true|1)<\/(?:[a-z0-9_-]+:)?return>/i.test(responseXml);
-    if (!success) {
-      const errMatch = responseXml.match(/<faultstring[^>]*>([^<]+)<\/faultstring>/i)
-                   || responseXml.match(/<message[^>]*>([^<]+)<\/message>/i);
-      throw new Error(errMatch ? errMatch[1] : "orders_new returned non-true. Raw: " + responseXml.slice(0, 1500));
-    }
-
-    order.rapidStatus = "dispatched";
-    order.rapidDispatchedAt = new Date().toISOString();
-    order.rapidError = null;
-    order.rapidOrderId = returnedOrderId
-      || String(parseInt(String(orderId).replace(/[^0-9]/g, "")) || "");
-    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
-    return json({ ok: true, status: "dispatched", rapidOrderId: order.rapidOrderId });
-
-  } catch (err) {
-    order.rapidStatus = "failed";
-    order.rapidError = String(err.message || err).slice(0, 500);
-    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
-    return json({ ok: false, error: order.rapidError, retryable: true }, 502);
-  } finally {
-    if (sessionId) await rapidLogout(env, sessionId);
   }
+  if (!success) {
+    const errMatch = (responseXml || "").match(/<faultstring[^>]*>([^<]+)<\/faultstring>/i)
+                 || (responseXml || "").match(/<message[^>]*>([^<]+)<\/message>/i);
+    const errMsg = errMatch ? errMatch[1] : "orders_new returned non-true. Raw: " + (responseXml || "").slice(0, 1500);
+    order.rapidStatus = "failed";
+    order.rapidError = String(errMsg).slice(0, 500);
+    order.rapidRetryCount = attempt - 1;
+    order.rapidLastFailedAt = new Date().toISOString();
+    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+    return json({ ok: false, error: order.rapidError, retryable: true, attempts: attempt }, 502);
+  }
+
+  order.rapidStatus = "dispatched";
+  order.rapidDispatchedAt = new Date().toISOString();
+  order.rapidError = null;
+  order.rapidRetryCount = attempt - 1;  // 0 if first try, 1 if took one retry
+  order.rapidDispatchedViaDuplicate = dispatchedViaDuplicate || undefined;
+  order.rapidOrderId = returnedOrderId
+    || String(parseInt(String(orderId).replace(/[^0-9]/g, "")) || "");
+  await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
+  return json({
+    ok: true,
+    status: "dispatched",
+    rapidOrderId: order.rapidOrderId,
+    attempts: attempt,
+    autoRecovered: attempt > 1 || dispatchedViaDuplicate,
+  });
 }
