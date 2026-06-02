@@ -10,7 +10,7 @@
 // browser could submit a $0 cart for $1000 of products and we'd log $0.
 
 import { computeCart } from "../_lib/pricing.js";
-import { sendAdminOrderNotificationEmail } from "../_lib/resend.js";
+import { sendAdminOrderNotificationEmail, sendInvoiceOrderEmail } from "../_lib/resend.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -162,6 +162,27 @@ export async function onRequestPost({ request, env }) {
   } catch (e) {
     // Best effort; admin can still see the order in /admin even if the
     // notification email failed.
+  }
+
+  // Customer-facing order email for Cash App / Zelle direct orders. BTC
+  // Buddies orders get their email from /api/create-btc-invoice (which
+  // includes the BTC address). Crypto / free orders skip here (NOWPayments
+  // handles its own customer comms; free has no payment instructions to
+  // send). Previously this path was missing entirely for Invoice orders —
+  // customers placed an order and never received any email confirmation.
+  if (paymentMethod === "cashapp" || paymentMethod === "zelle") {
+    try {
+      const r = await sendInvoiceOrderEmail(env, { order: record });
+      if (r && r.ok) {
+        record.orderEmailSentAt = new Date().toISOString();
+        record.orderEmailId = r.id;
+      } else if (r && r.error) {
+        record.orderEmailError = r.error;
+      }
+      await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(record));
+    } catch (e) {
+      // Best-effort; order still created.
+    }
   }
 
   // Return statusToken so the browser can build the /track URL on the

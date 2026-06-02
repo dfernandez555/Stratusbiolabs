@@ -313,6 +313,142 @@ export async function sendPaymentConfirmedEmail(env, { order }) {
 }
 
 /**
+ * Customer-facing order email for Invoice-style payments (Cash App or Zelle
+ * direct). Includes payment instructions inline so the customer can pay
+ * even after closing the success-page tab.
+ *
+ * Previously only BTC Buddies orders triggered a customer email (sent from
+ * create-btc-invoice.js). Invoice orders silently relied on the success
+ * page — so any customer who closed the tab got nothing.
+ */
+export async function sendInvoiceOrderEmail(env, { order }) {
+  const orderId = order.orderId;
+  const method = String(order.paymentMethod || "").toLowerCase();
+  const isCash = method === "cashapp";
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemRows = items.map(it => `
+    <tr>
+      <td style="padding:8px 0;font-size:14px;color:#1F1B16;">
+        ${esc(it.name)} ${it.sizeKey ? `<span style="color:#7A746C;font-size:12px;">(${esc(it.sizeKey)})</span>` : ""}
+      </td>
+      <td style="padding:8px 0;font-size:14px;color:#7A746C;text-align:right;">× ${esc(it.qty)}</td>
+      <td style="padding:8px 0;font-size:14px;color:#1F1B16;text-align:right;font-family:monospace;">$${((Number(it.price) || 0) * (Number(it.qty) || 1)).toFixed(2)}</td>
+    </tr>
+  `).join("");
+
+  // Method-specific payment instructions block.
+  const payInstructions = isCash
+    ? `
+      <div style="background:#EFEAE0;border:1px solid rgba(31,27,22,0.12);padding:20px;">
+        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:14px;">// Pay via Cash App</div>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Send to</td>
+            <td style="padding:6px 0;font-size:18px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$dfernandez555</strong></td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Amount</td>
+            <td style="padding:6px 0;font-size:16px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+          </tr>
+        </table>
+        <p style="margin:14px 0 0;font-size:12px;color:#7A746C;line-height:1.6;">
+          <strong style="color:#1F1B16;">Important:</strong> Do NOT write anything in the Cash App note field. Tap the sparkle (✨) icon at the top right of the &ldquo;Note (required)&rdquo; field to bypass it. Keeping the note blank keeps the transaction private.
+        </p>
+      </div>`
+    : `
+      <div style="background:#EFEAE0;border:1px solid rgba(31,27,22,0.12);padding:20px;">
+        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:14px;">// Pay via Zelle</div>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Send to</td>
+            <td style="padding:6px 0;font-size:18px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>(909) 522-2875</strong></td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Amount</td>
+            <td style="padding:6px 0;font-size:16px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Memo</td>
+            <td style="padding:6px 0;font-size:13px;color:#1F1B16;text-align:right;font-family:monospace;">${esc(orderId)}</td>
+          </tr>
+        </table>
+        <p style="margin:14px 0 0;font-size:12px;color:#7A746C;line-height:1.6;">
+          <strong style="color:#1F1B16;">Important:</strong> Include your order ID <strong>${esc(orderId)}</strong> in the Zelle memo so we can match the payment to your order. Most banks (Chase, BofA, Wells Fargo, etc.) support Zelle via their mobile app.
+        </p>
+      </div>`;
+
+  const methodLabel = isCash ? "Cash App" : "Zelle";
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Order Received — ${esc(orderId)}</title></head>
+<body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:32px 32px 24px;">
+    <div style="font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:8px;">// Order Received</div>
+    <h1 style="margin:0 0 4px;font-size:28px;font-weight:300;color:#1F1B16;line-height:1.2;">Thank you for your order.</h1>
+    <div style="font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.1em;">Order ${esc(orderId)}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.6;">
+    <p style="margin:0;">We've received your order. To complete it, please send your <strong>${esc(methodLabel)}</strong> payment using the details below. We'll mark your order paid within 24 hours of receiving funds, and ship within 72 hours of payment confirmation.</p>
+  </td></tr>
+
+  <tr><td style="padding:0 32px;">
+    ${payInstructions}
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 0;">
+    <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:12px;">// Order Summary</div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid rgba(31,27,22,0.12);">
+      ${itemRows}
+      <tr style="border-top:1px solid rgba(31,27,22,0.12);">
+        <td style="padding:8px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Subtotal</td>
+        <td></td>
+        <td style="padding:8px 0;text-align:right;font-family:monospace;font-size:14px;">$${(Number(order.subtotal) || 0).toFixed(2)}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Shipping</td>
+        <td></td>
+        <td style="padding:4px 0;text-align:right;font-family:monospace;font-size:14px;">${Number(order.shipping) === 0 ? "Free" : "$" + (Number(order.shipping) || 0).toFixed(2)}</td>
+      </tr>
+      ${Number(order.discount) > 0 ? `<tr>
+        <td style="padding:4px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Discount${order.promoCode ? " (" + esc(order.promoCode) + ")" : ""}</td>
+        <td></td>
+        <td style="padding:4px 0;text-align:right;font-family:monospace;font-size:14px;">-$${(Number(order.discount) || 0).toFixed(2)}</td>
+      </tr>` : ""}
+      <tr style="border-top:1px solid rgba(31,27,22,0.12);">
+        <td style="padding:10px 0;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;font-family:monospace;"><strong>Total</strong></td>
+        <td></td>
+        <td style="padding:10px 0;text-align:right;font-family:monospace;font-size:16px;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;font-size:12px;color:#7A746C;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Payment Method</td>
+        <td></td>
+        <td style="padding:6px 0;text-align:right;font-size:13px;">${esc(methodLabel)} (direct)</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
+    <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
+    <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
+    <p style="margin:12px 0 0;">Questions? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID. <strong>Tip:</strong> if you don't see this email later, check your spam folder.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: order.customerEmail,
+    subject: `Your Stratus Biolabs order ${orderId} — ${methodLabel} payment instructions`,
+    html,
+  });
+}
+
+/**
  * Admin notification — fired from log-order whenever a new order is created.
  * Per-method actionability hint helps you decide whether to do anything:
  *   - btcbuddies / crypto / free → auto-confirms; FYI only
