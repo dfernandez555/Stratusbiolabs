@@ -950,6 +950,14 @@ function renderOrderDetails(o) {
     } else if (isPaid && !isDispatched) {
       acts.push(`<button class="modal-btn modal-btn-warn" onclick="unmarkPaid('${o.orderId}')">Un-mark Paid</button>`);
     }
+    // Resend Email — useful if the customer says they never got their order
+    // confirmation (bounced, marked spam, etc.) or the original email send
+    // failed. Available for any order with a customer-facing template
+    // (Cash App / Zelle / BTC Buddies). Skipped on cancelled orders.
+    const canResendEmail = ['cashapp','zelle','btcbuddies'].includes(String(o.paymentMethod||'').toLowerCase());
+    if (canResendEmail) {
+      acts.push(`<button class="modal-btn modal-btn-secondary" onclick="resendOrderEmail('${o.orderId}')">Resend Email</button>`);
+    }
     acts.push(`<button class="modal-btn modal-btn-danger" onclick="cancelOrder('${o.orderId}', ${isDispatched ? 'true' : 'false'})">Cancel Order</button>`);
   }
   document.getElementById('details-actions').innerHTML = acts.join('') ||
@@ -961,6 +969,24 @@ function escapeHtml(s) {
   if (s == null) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                    .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
+async function resendOrderEmail(orderId) {
+  if (!confirm(`Resend the customer order email for ${orderId}?\n\nThis will send a fresh copy of the payment instructions to the email address on file.`)) return;
+  try {
+    const res = await fetch('/api/admin/resend-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      body: JSON.stringify({ orderId }),
+    });
+    const d = await res.json();
+    if (!d.ok) { showToast('Resend failed: ' + (d.error || 'unknown'), 'error'); return; }
+    showToast(`Order email re-sent for ${orderId}.`, 'success');
+    // Re-fetch details so admin sees the lastResendAt timestamp update.
+    if (_detailsCtx && _detailsCtx.orderId === orderId) openDetails(orderId);
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+  }
 }
 
 async function unmarkPaid(orderId) {
