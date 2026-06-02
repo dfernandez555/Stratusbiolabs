@@ -55,6 +55,18 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 .toggle-btn:hover { border-color: var(--crimson-text); color: var(--crimson-text); }
 
 .month-picker { font-family: 'JetBrains Mono', monospace; background: var(--cream-2); border: 1px solid var(--hairline); color: var(--ink); padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+
+/* Date-range filter strip — lives in the lead area, lets admin pick a
+   rolling window or jump to a preset. Replaces the old single-month picker. */
+.range-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.8rem; }
+.range-bar .date-input { font-family: 'JetBrains Mono', monospace; background: var(--cream-2); border: 1px solid var(--hairline); color: var(--ink); padding: 0.45rem 0.6rem; font-size: 0.75rem; min-width: 8.5rem; }
+.range-bar .date-sep { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+.range-bar .preset { font-family: 'JetBrains Mono', monospace; background: transparent; border: 1px solid var(--hairline); color: var(--ink); padding: 0.45rem 0.7rem; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.range-bar .preset:hover { border-color: var(--ink); }
+.range-bar .preset.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.range-bar .apply-btn { font-family: 'JetBrains Mono', monospace; background: var(--ink); color: var(--cream); border: 1px solid var(--ink); padding: 0.45rem 0.9rem; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
+.range-bar .apply-btn:hover { background: var(--crimson); }
+.range-bar .spacer { flex: 1; min-width: 0.5rem; }
 .empty { color: var(--muted); padding: 2rem; text-align: center; font-style: italic; }
 
 #dashboard { display: none; }
@@ -296,7 +308,25 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
 
 <div id="dashboard">
   <h1>Stratus <em>Admin</em></h1>
-  <p class="lead">Reporting period: <span class="month" id="month-display">—</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <input type="month" id="month-picker" class="month-picker" onchange="loadStats()"/> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <button class="toggle-btn" onclick="syncAllFromRapid(this)" title="Pull fresh statuses from Rapid Fulfillment for every order in KV. Cancellations or shipments made directly in their CRM will sync back here.">Sync from Rapid</button></p>
+  <p class="lead">Reporting period: <span class="month" id="month-display">—</span></p>
+  <!-- Date-range bar: presets jump to common rolling windows, two date inputs
+       support custom ranges. Apply triggers loadStats() with from/to query
+       params. Sync button stays here for ergonomics. -->
+  <div class="range-bar" id="range-bar">
+    <button type="button" class="preset" data-preset="today">Today</button>
+    <button type="button" class="preset" data-preset="7d">Last 7 Days</button>
+    <button type="button" class="preset active" data-preset="30d">Last 30 Days</button>
+    <button type="button" class="preset" data-preset="mtd">Month to Date</button>
+    <button type="button" class="preset" data-preset="ytd">Year to Date</button>
+    <button type="button" class="preset" data-preset="all">All Time</button>
+    <span class="date-sep">|</span>
+    <input type="date" id="from-date" class="date-input" aria-label="From date"/>
+    <span class="date-sep">to</span>
+    <input type="date" id="to-date" class="date-input" aria-label="To date"/>
+    <button type="button" class="apply-btn" onclick="applyCustomRange()">Apply</button>
+    <span class="spacer"></span>
+    <button class="toggle-btn" onclick="syncAllFromRapid(this)" title="Pull fresh statuses from Rapid Fulfillment for every order in KV. Cancellations or shipments made directly in their CRM will sync back here.">Sync from Rapid</button>
+  </div>
 
   <div class="kpis">
     <div class="kpi">
@@ -320,7 +350,7 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   <h2>Affiliate revenue this period</h2>
   <table id="aff-rev-table">
     <thead><tr><th>Affiliate</th><th>Code</th><th>Platform</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Owed (15%)</th></tr></thead>
-    <tbody id="aff-rev-body"><tr><td colspan="6" class="empty">No revenue yet this month.</td></tr></tbody>
+    <tbody id="aff-rev-body"><tr><td colspan="6" class="empty">No revenue in this period.</td></tr></tbody>
   </table>
 
   <h2>Affiliates</h2>
@@ -339,7 +369,7 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   <h2>Recent orders</h2>
   <table id="orders-table">
     <thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Code</th><th>Pay</th><th class="num">Total</th><th class="num">Commission</th><th>Payment</th><th>Rapid</th><th></th></tr></thead>
-    <tbody id="orders-body"><tr><td colspan="10" class="empty">No orders yet this month.</td></tr></tbody>
+    <tbody id="orders-body"><tr><td colspan="10" class="empty">No orders in this period.</td></tr></tbody>
   </table>
 </div>
 
@@ -459,12 +489,80 @@ function enter() {
 }
 document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') enter(); });
 
-async function loadStats() {
-  const picker = document.getElementById('month-picker');
-  const month = picker.value || new Date().toISOString().slice(0, 7);
-  picker.value = month;
+// ── Date range state ────────────────────────────────────────────────
+// Default window is "Last 30 Days". presets[*] returns {from, to} as
+// YYYY-MM-DD strings in the user's local interpretation (date inputs are
+// already local-day). Server treats both as UTC days for filtering.
+function fmtDate(d) {
+  // YYYY-MM-DD using the local date (matches what <input type="date"> expects).
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+function rangeForPreset(preset) {
+  const today = new Date();
+  switch (preset) {
+    case 'today': return { from: fmtDate(today), to: fmtDate(today) };
+    case '7d': {
+      const f = new Date(today); f.setDate(f.getDate() - 6); return { from: fmtDate(f), to: fmtDate(today) };
+    }
+    case '30d': {
+      const f = new Date(today); f.setDate(f.getDate() - 29); return { from: fmtDate(f), to: fmtDate(today) };
+    }
+    case 'mtd': {
+      const f = new Date(today.getFullYear(), today.getMonth(), 1); return { from: fmtDate(f), to: fmtDate(today) };
+    }
+    case 'ytd': {
+      const f = new Date(today.getFullYear(), 0, 1); return { from: fmtDate(f), to: fmtDate(today) };
+    }
+    case 'all': {
+      // Wide window — bounded by stats.js's 24-month cap. Start at site launch.
+      return { from: '2026-01-01', to: fmtDate(today) };
+    }
+    default: return null;
+  }
+}
+function setActivePreset(name) {
+  document.querySelectorAll('.range-bar .preset').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === name);
+  });
+}
+let currentRange = rangeForPreset('30d');
 
-  const res = await fetch('/api/admin/stats?month=' + month, { headers: { 'X-Admin-Password': password } });
+// Wire preset buttons (called once on script load).
+document.querySelectorAll('.range-bar .preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const r = rangeForPreset(btn.dataset.preset);
+    if (!r) return;
+    currentRange = r;
+    setActivePreset(btn.dataset.preset);
+    document.getElementById('from-date').value = r.from;
+    document.getElementById('to-date').value = r.to;
+    loadStats();
+  });
+});
+
+// Apply button reads the two date inputs and reloads with that custom range.
+function applyCustomRange() {
+  const from = document.getElementById('from-date').value;
+  const to   = document.getElementById('to-date').value;
+  if (!from || !to) { alert('Pick both From and To dates.'); return; }
+  if (from > to)    { alert('From date must be on or before To date.'); return; }
+  currentRange = { from, to };
+  setActivePreset(null);  // custom — no preset is active
+  loadStats();
+}
+
+async function loadStats() {
+  // First ever call may pre-date currentRange (e.g. enter() from login).
+  if (!currentRange) currentRange = rangeForPreset('30d');
+  // Keep the date inputs reflecting the live range.
+  document.getElementById('from-date').value = currentRange.from;
+  document.getElementById('to-date').value = currentRange.to;
+
+  const qs = `from=${encodeURIComponent(currentRange.from)}&to=${encodeURIComponent(currentRange.to)}`;
+  const res = await fetch('/api/admin/stats?' + qs, { headers: { 'X-Admin-Password': password } });
   if (res.status === 401) {
     document.getElementById('gate-error').textContent = 'Wrong password.';
     sessionStorage.removeItem('admin-pw');
@@ -475,7 +573,11 @@ async function loadStats() {
 
   document.getElementById('gate').classList.add('hide');
   document.getElementById('dashboard').classList.add('show');
-  document.getElementById('month-display').textContent = d.month;
+  // Human-friendly range label. Pure local-time formatting so the user sees
+  // what they picked, not the UTC representation.
+  const fromLabel = new Date(d.from + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const toLabel   = new Date(d.to + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  document.getElementById('month-display').textContent = d.from === d.to ? fromLabel : `${fromLabel} — ${toLabel}`;
 
   document.getElementById('kpi-revenue').textContent  = FMT_USD(d.summary.totalRevenue);
   document.getElementById('kpi-orders').textContent   = d.summary.orderCount;
@@ -493,7 +595,7 @@ async function loadStats() {
           <td data-label="Owed" class="num">$${FMT_USD(a.commissionOwed)}</td></tr>
     `).join('');
   } else {
-    affRevBody.innerHTML = '<tr><td colspan="6" class="empty full-cell">No revenue yet this month.</td></tr>';
+    affRevBody.innerHTML = '<tr><td colspan="6" class="empty full-cell">No revenue in this period.</td></tr>';
   }
 
   const affBody = document.getElementById('aff-body');
@@ -574,7 +676,7 @@ async function loadStats() {
           <td class="action-cell">${actionBtn}</td></tr>`;
     }).join('');
   } else {
-    ordBody.innerHTML = '<tr><td colspan="10" class="empty full-cell">No orders yet this month.</td></tr>';
+    ordBody.innerHTML = '<tr><td colspan="10" class="empty full-cell">No orders in this period.</td></tr>';
   }
 }
 

@@ -1,9 +1,15 @@
 // Cloudflare Pages Function — admin stats dashboard backend.
 //
-// GET /api/admin/stats?month=YYYY-MM (optional, defaults to current month)
-// Header: X-Admin-Password: <password>  OR  ?password=<password>
+// GET /api/admin/stats
+//   ?from=YYYY-MM-DD   (inclusive, defaults to 30 days ago)
+//   ?to=YYYY-MM-DD     (inclusive, defaults to today)
+//   ?month=YYYY-MM     (back-compat — covers the whole month)
+// Header: X-Admin-Password: <password>
 //
-// Returns aggregated revenue, affiliate breakdown, and recent orders.
+// Returns aggregated revenue, affiliate breakdown, and recent orders for the
+// selected date range. Internally we fetch by month-index (the same KV layout
+// the previous /admin used) and then filter by exact createdAt date so a
+// rolling range that spans month boundaries still works.
 //
 // Admin password is stored as a Cloudflare Pages env var: ADMIN_PASSWORD.
 
@@ -24,22 +30,97 @@ function isAuthed(request, env) {
   return hdr === env.ADMIN_PASSWORD;
 }
 
+// "2026-05-28" -> Date at start-of-day UTC. Returns null for invalid input.
+function parseDateStartUTC(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || "")) return null;
+  const d = new Date(s + "T00:00:00.000Z");
+  return isNaN(d.getTime()) ? null : d;
+}
+function parseDateEndUTC(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || "")) return null;
+  // End-of-day inclusive: 23:59:59.999.
+  const d = new Date(s + "T23:59:59.999Z");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// Enumerate all "YYYY-MM" buckets between fromDate and toDate (inclusive),
+// so we can list each one's KV index. Cap at 24 months to keep a single
+// stats call bounded.
+function monthsBetween(fromDate, toDate) {
+  const months = [];
+  const cur = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
+  let guard = 0;
+  while (cur.getTime() <= end.getTime() && guard < 24) {
+    months.push(cur.toISOString().slice(0, 7));
+    cur.setUTCMonth(cur.getUTCMonth() + 1);
+    guard++;
+  }
+  return months;
+}
+
 export async function onRequestGet({ request, env }) {
   if (!isAuthed(request, env)) return unauth();
   if (!env.STRATUS_DATA) return json({ ok: false, error: "Storage not configured" }, 503);
 
   const url = new URL(request.url);
-  const month = url.searchParams.get("month") || new Date().toISOString().slice(0, 7);
+  const monthParam = url.searchParams.get("month");
+  let fromStr = url.searchParams.get("from");
+  let toStr = url.searchParams.get("to");
 
-  // List order IDs for the requested month.
-  const idx = await env.STRATUS_DATA.list({ prefix: `order-month:${month}:`, limit: 1000 });
-  const orderIds = idx.keys.map(k => k.name.split(":").pop());
+  // Back-compat: ?month=YYYY-MM covers the full month.
+  if (!fromStr && !toStr && monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+    fromStr = monthParam + "-01";
+    // Last day of month — let Date math sort it out
+    const [yy, mm] = monthParam.split("-").map(Number);
+    const lastDay = new Date(Date.UTC(yy, mm, 0)).getUTCDate(); // mm=1-indexed input, day 0 = last day of prev month
+    toStr = `${monthParam}-${String(lastDay).padStart(2, "0")}`;
+  }
+
+  // Default range: last 30 days through today (rolling).
+  if (!fromStr || !toStr) {
+    const now = new Date();
+    const from = new Date(now);
+    from.setUTCDate(from.getUTCDate() - 29); // inclusive of today = 30 days
+    if (!fromStr) fromStr = from.toISOString().slice(0, 10);
+    if (!toStr)   toStr   = now.toISOString().slice(0, 10);
+  }
+
+  const fromDate = parseDateStartUTC(fromStr);
+  const toDate   = parseDateEndUTC(toStr);
+  if (!fromDate || !toDate || fromDate > toDate) {
+    return json({ ok: false, error: "Invalid date range. Use ?from=YYYY-MM-DD&to=YYYY-MM-DD." }, 400);
+  }
+
+  // Walk every month bucket the range touches.
+  const months = monthsBetween(fromDate, toDate);
+
+  // List + dedupe order IDs across all touched months.
+  const seenIds = new Set();
+  for (const m of months) {
+    const idx = await env.STRATUS_DATA.list({ prefix: `order-month:${m}:`, limit: 1000 });
+    for (const k of idx.keys) {
+      const id = k.name.split(":").pop();
+      if (id) seenIds.add(id);
+    }
+  }
+  const orderIds = Array.from(seenIds);
 
   // Fetch order records in parallel.
   const orderRecs = await Promise.all(
     orderIds.map(id => env.STRATUS_DATA.get(`order:${id}`).then(s => s ? JSON.parse(s) : null))
   );
-  const orders = orderRecs.filter(Boolean).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  // Filter to exact date range (KV month-index is coarse; we narrow to the day).
+  const fromMs = fromDate.getTime();
+  const toMs   = toDate.getTime();
+  const orders = orderRecs
+    .filter(Boolean)
+    .filter(o => {
+      const t = Date.parse(o.createdAt || "");
+      return !isNaN(t) && t >= fromMs && t <= toMs;
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   // Aggregate. Cancelled orders are listed in recentOrders so admin can see
   // them, but they don't count toward revenue, order count, or affiliate
@@ -83,7 +164,10 @@ export async function onRequestGet({ request, env }) {
 
   return json({
     ok: true,
-    month,
+    from: fromStr,
+    to: toStr,
+    // Keep "month" populated so existing UI code that reads it doesn't break.
+    month: fromStr.slice(0, 7) === toStr.slice(0, 7) ? fromStr.slice(0, 7) : `${fromStr} → ${toStr}`,
     summary: {
       totalRevenue: Math.round(totalRevenue * 100) / 100,
       orderCount,
