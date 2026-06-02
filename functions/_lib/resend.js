@@ -367,13 +367,9 @@ export async function sendInvoiceOrderEmail(env, { order }) {
             <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Amount</td>
             <td style="padding:6px 0;font-size:16px;color:#1F1B16;text-align:right;font-family:monospace;"><strong>$${(Number(order.total) || 0).toFixed(2)}</strong></td>
           </tr>
-          <tr>
-            <td style="padding:6px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#7A746C;font-family:monospace;">Memo</td>
-            <td style="padding:6px 0;font-size:13px;color:#1F1B16;text-align:right;font-family:monospace;">${esc(orderId)}</td>
-          </tr>
         </table>
         <p style="margin:14px 0 0;font-size:12px;color:#7A746C;line-height:1.6;">
-          <strong style="color:#1F1B16;">Important:</strong> Include your order ID <strong>${esc(orderId)}</strong> in the Zelle memo so we can match the payment to your order. Most banks (Chase, BofA, Wells Fargo, etc.) support Zelle via their mobile app.
+          <strong style="color:#1F1B16;">Important — Do NOT write anything in the Zelle memo or comments field.</strong> Keeping the memo blank keeps the transaction private. We'll match your payment by the amount and the sender name from your bank, so please make sure the name on your Zelle account matches the name on your shipping address (or email us at <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID if they differ). Most banks (Chase, BofA, Wells Fargo, etc.) support Zelle via their mobile app.
         </p>
       </div>`;
 

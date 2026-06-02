@@ -585,14 +585,14 @@ async function loadStats() {
 //   Other     -> free-form
 const CHANNEL_HINTS = {
   'Cash App':              'Sender’s Cash App display name (the customer didn’t leave a memo)',
-  'Zelle':                 'Zelle transaction ID or confirmation number',
+  'Zelle':                 'Sender’s bank Zelle name (memo is blank — we match by amount + name)',
   'BTC Buddies (Zelle)':    'NOWPayments payment_id or BTC tx hash (normally auto-marked by webhook — use this if webhook missed it)',
   'NOWPayments (crypto)':  'NOWPayments payment_id or coin tx hash (normally auto-marked by webhook)',
   'Other':                 'Free-form reference — anything that identifies the payment',
 };
 const CHANNEL_PLACEHOLDERS = {
   'Cash App':              'e.g. John Smith',
-  'Zelle':                 'e.g. ABC123XYZ',
+  'Zelle':                 'e.g. John Smith',
   'BTC Buddies (Zelle)':    'e.g. np-12345678 or 0xabc...',
   'NOWPayments (crypto)':  'e.g. np-12345678',
   'Other':                 'e.g. wire ref / venmo handle / etc.',
