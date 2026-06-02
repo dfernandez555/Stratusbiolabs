@@ -93,6 +93,16 @@ nav { position: sticky; top: 0; left: 0; right: 0; z-index: 100; display: flex; 
 .product-card { background: var(--ink); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; position: relative; transition: background 0.3s; cursor: pointer; }
 .product-card .prod-name { transition: color 0.2s; }
 .product-card:hover .prod-name { color: var(--cirrus); }
+
+/* Out-of-stock card state: greyed-out price/visual, disabled Add to Cart,
+   "OUT OF STOCK" badge in the top-right. Card itself stays clickable so
+   visitors can still read the product detail page. */
+.product-card[data-out-of-stock="true"] { opacity: 0.78; }
+.product-card[data-out-of-stock="true"] .prod-vial { filter: grayscale(0.6); opacity: 0.55; }
+.product-card[data-out-of-stock="true"] .prod-price,
+.product-card[data-out-of-stock="true"] .prod-price span { color: var(--mist); text-decoration: line-through; text-decoration-color: rgba(31,27,22,0.35); }
+.product-card[data-out-of-stock="true"] .order-btn { background: rgba(31,27,22,0.35); color: rgba(239,234,224,0.75); cursor: not-allowed; pointer-events: none; }
+.oos-badge { position: absolute; top: 0.8rem; right: 0.8rem; font-family: 'JetBrains Mono', monospace; font-size: 0.52rem; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.28rem 0.55rem; background: var(--cirrus); color: var(--ink); z-index: 2; }
 .product-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg,transparent,var(--cirrus),transparent); transform:scaleX(0); transition:transform 0.3s; }
 .product-card:hover { background: rgba(31,27,22,0.55); }
 .product-card:hover::before { transform: scaleX(1); }
@@ -350,7 +360,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; just
       <div class="prod-footer"><div class="prod-price">$100<span>SBL-RT10 · G3-R · 10 MG · Lyophilized</span></div><a href="contact.html" class="order-btn">Order →</a></div>
     </div>
 
-    <div class="product-card" data-cat="ghrh" data-size-key="10mg" data-name="SBL-TSM10 Tesamorelin stabilized GHRH analog pharmacokinetics">
+    <div class="product-card" data-cat="ghrh" data-size-key="10mg" data-out-of-stock="true" data-name="SBL-TSM10 Tesamorelin stabilized GHRH analog pharmacokinetics">
       <div class="prod-id">SBL-TSM10</div><div class="prod-name">Tesamorelin</div>
       <div class="prod-tags"><span class="tag">GHRH Analog</span><span class="tag">Pharmacokinetics</span></div>
       <p class="prod-desc">Stabilized GHRH analog. Investigated in GHRH receptor pharmacology and pharmacokinetics research. For research use only.</p>
@@ -544,6 +554,21 @@ document.querySelectorAll('.product-card').forEach(card => {
   const sku  = card.querySelector('.prod-id')?.textContent.trim()  || '';
   const priceEl = card.querySelector('.prod-price');
   if (!priceEl) return;
+
+  // Out-of-stock: rebrand the button + inject a badge, then bail out
+  // before wiring any add-to-cart handler. The card-level click still
+  // routes to the product page (set up further down).
+  if (card.dataset.outOfStock === "true") {
+    btn.removeAttribute('href');
+    btn.textContent = 'Out of Stock';
+    btn.setAttribute('aria-disabled', 'true');
+    btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); };
+    const badge = document.createElement('span');
+    badge.className = 'oos-badge';
+    badge.textContent = 'Out of Stock';
+    card.appendChild(badge);
+    return;
+  }
   const fullVariant = priceEl.querySelector('span')?.textContent.trim() || '';
   const priceText = priceEl.childNodes[0]?.textContent?.trim() || '0';
 

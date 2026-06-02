@@ -238,6 +238,16 @@ nav { position: sticky; top: 0; left: 0; right: 0; z-index: 100; display: flex; 
 .ruo-callout { margin-top: 2rem; padding: 1.25rem 1.5rem; background: rgba(31,27,22,0.04); border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.6; color: var(--fog); }
 .ruo-callout strong { color: var(--fog); font-weight: 500; }
 
+/* Out-of-stock display: swap the Add-to-Cart button for a disabled state
+   plus an "Out of Stock" callout, and grey the price so the visitor
+   immediately understands they can't buy this right now. */
+.oos-banner { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1rem; background: rgba(31,27,22,0.06); border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 0.8rem; }
+.oos-banner .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fog); flex-shrink: 0; }
+.add-btn[disabled], .add-btn.is-disabled { background: rgba(31,27,22,0.35); color: rgba(239,234,224,0.75); cursor: not-allowed; }
+.add-btn[disabled]:hover, .add-btn.is-disabled:hover { transform: none; background: rgba(31,27,22,0.35); }
+.product-price.is-oos { color: var(--mist); text-decoration: line-through; text-decoration-color: rgba(31,27,22,0.35); }
+.product-hero.is-oos .hero-vial-scale { filter: grayscale(0.6); opacity: 0.55; }
+
 /* Not-found state */
 .notfound { padding: 6rem 2rem; text-align: center; }
 .notfound h1 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 300; margin-bottom: 0.6rem; }
@@ -370,6 +380,7 @@ const PRODUCTS = {
     price: 110,
     sizeKey: "10mg",
     sizeDisplay: "10 mg / Lyophilized",
+    outOfStock: true,
     description: [
       "Tesamorelin is a synthetic 44-amino-acid analog of human growth hormone-releasing hormone (GHRH) with N-terminal modification that improves enzymatic stability. Used in research on GHRH receptor pharmacology and the in-vitro pharmacokinetics of stabilized GHRH analogs.",
       "Each lot is HPLC-purified and characterized by mass spectrometry. CoA documents purity, identity, and lot-specific storage recommendations.",
@@ -674,11 +685,24 @@ function renderProduct() {
   // page reads as the same SKU. Style key falls back to navy.
   const vialHtml = makeVial(p.name, p.sizeDisplay, VIAL_BY_ID[id] || "navy");
 
+  // Out-of-stock state: greyed visuals, disabled Add to Cart, banner above
+  // the button. Server-side computeCart also rejects this SKU so a stale
+  // browser can't sneak it past.
+  const isOOS = !!p.outOfStock;
+  const oosBanner = isOOS ? `
+    <div class="oos-banner">
+      <span class="dot"></span>
+      <span>Out of Stock — Restock pending</span>
+    </div>` : "";
+  const addBtnHtml = isOOS
+    ? `<button class="add-btn is-disabled" disabled aria-disabled="true">Out of Stock</button>`
+    : `<button class="add-btn" onclick="addThisToCart()">Add to Cart →</button>`;
+
   // Build the page
   root.innerHTML = `
     <div class="product-grid">
       <div>
-        <div class="product-hero">
+        <div class="product-hero${isOOS ? ' is-oos' : ''}">
           <div class="hero-sku">${escapeHtml(p.sku)}</div>
           ${vialHtml}
           <div class="hero-name">${escapeHtml(p.name)}</div>
@@ -696,11 +720,12 @@ function renderProduct() {
         </div>
 
         <div class="product-price-row">
-          <span class="product-price">$${p.price}</span>
+          <span class="product-price${isOOS ? ' is-oos' : ''}">$${p.price}</span>
           <span class="product-size">${escapeHtml(p.sizeDisplay)}</span>
         </div>
 
-        <button class="add-btn" onclick="addThisToCart()">Add to Cart →</button>
+        ${oosBanner}
+        ${addBtnHtml}
         <button type="button" class="share-btn" data-share data-share-text="${escapeHtml(p.name)} — research-grade peptide from Stratus Biolabs">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           Share This Product
@@ -743,6 +768,14 @@ function addThisToCart() {
   const id = getProductId();
   const p = PRODUCTS[id];
   if (!p) return;
+  // Belt-and-suspenders: even if the disabled button is bypassed via DevTools,
+  // refuse to add an out-of-stock SKU to the cart. Server-side computeCart
+  // would reject the order anyway, but failing here avoids a confusing
+  // checkout-time rejection.
+  if (p.outOfStock) {
+    alert(`${p.name} is currently out of stock. Please check back later.`);
+    return;
+  }
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem("sb-cart") || "[]"); }
   catch { cart = []; }

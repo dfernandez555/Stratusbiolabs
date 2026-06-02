@@ -1196,6 +1196,14 @@ const ENABLED_PAYMENT_METHODS = {
 // ═══════════════════════════════════════════
 // CART STATE
 // ═══════════════════════════════════════════
+// SKUs that are currently out of stock — mirrors pricing.js SKU_TABLE flags.
+// Items added to cart before a SKU went OOS get filtered out below so the
+// customer doesn't get a server-side rejection at checkout submit.
+const OUT_OF_STOCK_SKUS = new Set([
+  'SBL-TSM10', // Tesamorelin — restock pending
+]);
+let _oosItemsRemoved = [];
+
 // Load + sanitize cart. A historical bug (~May 22) stored the SKU as the sizeKey
 // for single-size products. Items with sizeKey === sku (or with size keys that
 // don't match the server's SKU_TABLE format) fail server-side validation and
@@ -1206,18 +1214,30 @@ let cart = (() => {
   try { raw = JSON.parse(localStorage.getItem('sb-cart') || '[]'); }
   catch { raw = []; }
   if (!Array.isArray(raw)) return [];
-  const valid = raw.filter(i =>
-    i && typeof i === 'object' &&
-    i.sku && i.sizeKey &&
-    i.sku !== i.sizeKey &&            // catches the historical bug
-    /^\d+(mg|mL)$/.test(i.sizeKey)    // canonical format: "10mg", "3mL", etc.
-  );
+  const valid = raw.filter(i => {
+    if (!i || typeof i !== 'object') return false;
+    if (!i.sku || !i.sizeKey) return false;
+    if (i.sku === i.sizeKey) return false;              // historical bug
+    if (!/^\d+(mg|mL)$/.test(i.sizeKey)) return false;  // canonical format
+    // Out-of-stock filter — record what we dropped so we can flash a notice.
+    if (OUT_OF_STOCK_SKUS.has(i.sku)) { _oosItemsRemoved.push(i.name); return false; }
+    return true;
+  });
   if (valid.length !== raw.length) {
     // Silently rewrite localStorage so the bad items don't keep coming back.
     localStorage.setItem('sb-cart', JSON.stringify(valid));
   }
   return valid;
 })();
+
+// Notify the user once if we yanked an OOS item out of their cart.
+if (_oosItemsRemoved.length > 0) {
+  // Defer to after DOM ready so the alert / toast renders cleanly.
+  window.addEventListener('DOMContentLoaded', () => {
+    const names = [...new Set(_oosItemsRemoved)].join(', ');
+    alert(`${names} is currently out of stock and has been removed from your cart. Please check back later.`);
+  });
+}
 let selectedCrypto = 'BTC';
 // Default to the first enabled top-level method in our preferred display
 // order (Zelle Express first since it's the best customer + admin experience

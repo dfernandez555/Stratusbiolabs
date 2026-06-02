@@ -15,9 +15,12 @@
 //                     Used by the `at_cost` promo type (family/staff pricing)
 //                     and by the masteradmin accounting view to compute margin.
 //                     Update both when contract terms change.
+// `outOfStock: true` blocks the SKU from being ordered at all — computeCart
+// rejects it, and the catalog/product pages render it as unavailable. Flip
+// back to false (or remove the field) when inventory arrives.
 export const SKU_TABLE = {
   "SBL-RT10":  { name: "G3-R",                 sizes: { "10mg":  100 }, wholesaleSizes: { "10mg":  30 } },
-  "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 }, wholesaleSizes: { "10mg":  29 } },
+  "SBL-TSM10": { name: "Tesamorelin",          sizes: { "10mg":  110 }, wholesaleSizes: { "10mg":  29 }, outOfStock: true },
   "SBL-NJ500": { name: "NAD+",                 sizes: { "500mg":  75 }, wholesaleSizes: { "500mg": 26 } },
   "SBL-CU50":  { name: "GHK-CU",               sizes: { "50mg":   65 }, wholesaleSizes: { "50mg":  11 } },
   "SBL-BBG70": { name: "GLOW",                 sizes: { "70mg":  120 }, wholesaleSizes: { "70mg":  35 } },
@@ -79,6 +82,11 @@ export async function computeCart({ items, promoCode }, env) {
 
     const product = SKU_TABLE[sku];
     if (!product) return { ok: false, error: `Unknown product: ${sku}` };
+    // Out-of-stock guard: even if the UI is stale or someone POSTs directly,
+    // we reject the order so no $-collected-without-fulfillment happens.
+    if (product.outOfStock) {
+      return { ok: false, error: `${product.name} is currently out of stock. Please remove it from your cart.` };
+    }
     const unitPrice = product.sizes[sizeKey];
     if (unitPrice == null) return { ok: false, error: `Unknown size '${sizeKey}' for ${sku}` };
     const lineTotal = round2(unitPrice * qty);
