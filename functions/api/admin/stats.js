@@ -30,17 +30,38 @@ function isAuthed(request, env) {
   return hdr === env.ADMIN_PASSWORD;
 }
 
-// "2026-05-28" -> Date at start-of-day UTC. Returns null for invalid input.
+// Parse either:
+//   - "2026-05-28"                  (calendar date — treated as UTC start/end)
+//   - "2026-05-28T07:00:00.000Z"    (full ISO — used when the admin UI sends
+//                                    local-day boundaries already converted
+//                                    to UTC, so the filter respects the
+//                                    admin's local timezone — Martin's
+//                                    7:19 PM PT order didn't show up under
+//                                    a "to=2026-06-03" UTC-end-of-day filter)
+// Returns Date or null for invalid input.
 function parseDateStartUTC(s) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || "")) return null;
-  const d = new Date(s + "T00:00:00.000Z");
-  return isNaN(d.getTime()) ? null : d;
+  s = String(s || "");
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + "T00:00:00.000Z");
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
 }
 function parseDateEndUTC(s) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || "")) return null;
-  // End-of-day inclusive: 23:59:59.999.
-  const d = new Date(s + "T23:59:59.999Z");
-  return isNaN(d.getTime()) ? null : d;
+  s = String(s || "");
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + "T23:59:59.999Z");
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
 }
 
 // Enumerate all "YYYY-MM" buckets between fromDate and toDate (inclusive),

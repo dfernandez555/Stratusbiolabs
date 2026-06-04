@@ -561,7 +561,16 @@ async function loadStats() {
   document.getElementById('from-date').value = currentRange.from;
   document.getElementById('to-date').value = currentRange.to;
 
-  const qs = `from=${encodeURIComponent(currentRange.from)}&to=${encodeURIComponent(currentRange.to)}`;
+  // Convert the local YYYY-MM-DD picks to UTC ISO timestamps. We pass FULL
+  // ISO so the server filters at the admin's local-day boundaries instead
+  // of UTC midnight. Without this, any order placed after ~5 PM Pacific on
+  // the last day of the range gets silently dropped from the response.
+  // ('T00:00:00' / 'T23:59:59.999' without Z = LOCAL time. .toISOString() then
+  // converts to UTC.)
+  const fromIso = new Date(currentRange.from + 'T00:00:00').toISOString();
+  const toIso   = new Date(currentRange.to   + 'T23:59:59.999').toISOString();
+
+  const qs = `from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`;
   const res = await fetch('/api/admin/stats?' + qs, { headers: { 'X-Admin-Password': password } });
   if (res.status === 401) {
     document.getElementById('gate-error').textContent = 'Wrong password.';
@@ -573,11 +582,12 @@ async function loadStats() {
 
   document.getElementById('gate').classList.add('hide');
   document.getElementById('dashboard').classList.add('show');
-  // Human-friendly range label. Pure local-time formatting so the user sees
-  // what they picked, not the UTC representation.
-  const fromLabel = new Date(d.from + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  const toLabel   = new Date(d.to + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  document.getElementById('month-display').textContent = d.from === d.to ? fromLabel : `${fromLabel} — ${toLabel}`;
+  // Human-friendly range label. Pure local-time formatting from the LOCAL
+  // YYYY-MM-DD the admin picked (currentRange) — not the UTC ISO we sent
+  // to the server, which would otherwise drift by a day at timezone edges.
+  const fromLabel = new Date(currentRange.from + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const toLabel   = new Date(currentRange.to   + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  document.getElementById('month-display').textContent = currentRange.from === currentRange.to ? fromLabel : `${fromLabel} — ${toLabel}`;
 
   document.getElementById('kpi-revenue').textContent  = FMT_USD(d.summary.totalRevenue);
   document.getElementById('kpi-orders').textContent   = d.summary.orderCount;
