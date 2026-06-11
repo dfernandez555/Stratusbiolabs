@@ -87,8 +87,11 @@ nav {
 @media (max-width: 400px) {
   .disclaimer p { font-size: 0.5rem; letter-spacing: 0.06em; }
 }
-.logo { font-family: 'Inter', sans-serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink); }
-.logo em { font-style: normal; color: inherit; }
+/* Two-tone logo to match the catalog/product page treatment: outer
+   "STRATUS / LABS" in white (subtle against the cream background) and
+   the middle "BIO" in dark ink for emphasis. */
+.logo { font-family: 'Inter', sans-serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: #FFFFFF; }
+.logo em { font-style: normal; color: var(--ink); }
 .nav-links { list-style: none; display: flex; gap: 2.25rem; }
 .nav-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); opacity: 0.78; transition: opacity 0.2s, color 0.2s; }
 .nav-links a:hover { opacity: 1; color: var(--crimson-text); }
