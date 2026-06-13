@@ -144,8 +144,37 @@ export async function rapidGetOrderStatus(env, orderIdNumeric) {
                          parseElementValue(xml, "order_status") ||
                          parseElementValue(xml, "state") ||
                          "").toLowerCase().trim();
-    const shippedAt = parseElementValue(xml, "shipped_at") || parseElementValue(xml, "shipping_date") || null;
-    const trackingNumber = parseElementValue(xml, "tracking_number") || parseElementValue(xml, "tracking") || null;
+    const shippedAt = parseElementValue(xml, "shipped_at") ||
+                      parseElementValue(xml, "shipping_date") ||
+                      parseElementValue(xml, "ship_date") ||
+                      parseElementValue(xml, "dispatched_at") ||
+                      parseElementValue(xml, "shipdate") ||
+                      null;
+
+    // Try every conventional name Rapid (or generic CRMs) may use for the
+    // tracking number. Rapid's CRM definitely shows tracking on shipped
+    // orders — if we still pull null after this expanded list, the WSDL
+    // probably uses a nested structure (e.g. <shipments><tracking>) which
+    // would require an actual schema lookup or sample response inspection.
+    const TRACKING_KEYS = [
+      "tracking_number", "tracking", "trackingNumber",
+      "track_number", "track_id", "tracking_id",
+      "shipping_tracking_number", "shipment_tracking",
+      "shipment_tracking_number", "carrier_tracking_number",
+      "carrier_tracking", "waybill", "waybill_number",
+      "consignment", "consignment_number", "airbill", "airwaybill",
+    ];
+    let trackingNumber = null;
+    for (const k of TRACKING_KEYS) {
+      const v = parseElementValue(xml, k);
+      if (v && String(v).trim()) { trackingNumber = String(v).trim(); break; }
+    }
+
+    // Try to also surface the carrier name if Rapid reports it separately.
+    const carrierName = parseElementValue(xml, "carrier") ||
+                        parseElementValue(xml, "shipping_carrier") ||
+                        parseElementValue(xml, "courier") ||
+                        null;
 
     // Normalize to our vocabulary
     let normalized = "unknown";
@@ -159,6 +188,10 @@ export async function rapidGetOrderStatus(env, orderIdNumeric) {
       rawStatus: orderStatus || null,
       shippedAt: shippedAt,
       trackingNumber: trackingNumber,
+      carrierName: carrierName,
+      // Snippet of raw XML so admin can verify what fields Rapid actually
+      // sent — useful when debugging "why didn't tracking come through?"
+      rawXmlExcerpt: xml ? xml.slice(0, 1500) : null,
     };
   } catch (e) {
     return { ok: false, error: String(e.message || e) };

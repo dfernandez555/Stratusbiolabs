@@ -48,7 +48,7 @@ function reconcile(order, rapidStatus) {
     changed = true;
   }
 
-  // Shipped on Rapid side → record tracking and shippedAt
+  // Shipped on Rapid side → record tracking, shippedAt, and carrier.
   if (rapidStatus.status === "shipped") {
     if (rapidStatus.shippedAt && !order.shippedAt) {
       updates.shippedAt = rapidStatus.shippedAt;
@@ -56,6 +56,10 @@ function reconcile(order, rapidStatus) {
     }
     if (rapidStatus.trackingNumber && order.trackingNumber !== rapidStatus.trackingNumber) {
       updates.trackingNumber = rapidStatus.trackingNumber;
+      changed = true;
+    }
+    if (rapidStatus.carrierName && order.carrierName !== rapidStatus.carrierName) {
+      updates.carrierName = rapidStatus.carrierName;
       changed = true;
     }
   }

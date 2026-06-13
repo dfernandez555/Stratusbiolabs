@@ -13,6 +13,8 @@
 //
 // Admin password is stored as a Cloudflare Pages env var: ADMIN_PASSWORD.
 
+import { SKU_TABLE, SHIPPING_COST } from "../../_lib/pricing.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -150,8 +152,26 @@ export async function onRequestGet({ request, env }) {
   let totalRevenue = 0, orderCount = liveOrders.length;
   const byAffiliate = {}; // affiliateId -> { affiliateId, code, revenue, orders, commissionOwed }
 
+  // P&L counters. We compute COGS (cost of goods sold) at the SKU+size level
+  // using wholesaleSizes from pricing.js, which is our authoritative cost
+  // source. Shipping income (what customers paid us for shipping) is tracked
+  // separately so we can later subtract the actual carrier cost when we
+  // start logging it.
+  let totalShippingIncome = 0;
+  let totalDiscount = 0;
+  let totalCommissionsOwed = 0;
+  let totalCogs = 0;
+  let unitsSold = 0;
+
+  // Per-SKU aggregation: SKU -> { sku, name, units, revenue, cogs, grossProfit, marginPct }
+  const bySku = {};
+
   for (const o of liveOrders) {
     totalRevenue += o.total || 0;
+    totalShippingIncome += Number(o.shipping) || 0;
+    totalDiscount += Number(o.discount) || 0;
+    totalCommissionsOwed += Number(o.commissionOwed) || 0;
+
     if (o.affiliateId) {
       const key = o.affiliateId;
       if (!byAffiliate[key]) byAffiliate[key] = { affiliateId: key, code: o.promoCode, revenue: 0, orders: 0, commissionOwed: 0 };
@@ -159,7 +179,76 @@ export async function onRequestGet({ request, env }) {
       byAffiliate[key].orders += 1;
       byAffiliate[key].commissionOwed += o.commissionOwed || 0;
     }
+
+    // Walk line items for per-SKU revenue + COGS.
+    const items = Array.isArray(o.items) ? o.items : [];
+    for (const it of items) {
+      const sku  = String(it.sku || "");
+      const size = String(it.sizeKey || "");
+      const qty  = Math.max(0, parseInt(it.qty) || 0);
+      const unitPrice = Number(it.price) || 0;
+      if (!sku || qty === 0) continue;
+
+      const skuMeta = SKU_TABLE[sku] || {};
+      const skuName = skuMeta.name || sku;
+      const wholesale = skuMeta.wholesaleSizes && skuMeta.wholesaleSizes[size];
+      const unitCost = typeof wholesale === "number" ? wholesale : 0;
+
+      const lineRevenue = unitPrice * qty;
+      const lineCogs    = unitCost  * qty;
+
+      if (!bySku[sku]) {
+        bySku[sku] = {
+          sku,
+          name: skuName,
+          units: 0,
+          revenue: 0,
+          cogs: 0,
+          grossProfit: 0,
+          marginPct: 0,
+          missingCost: false,
+        };
+      }
+      bySku[sku].units   += qty;
+      bySku[sku].revenue += lineRevenue;
+      bySku[sku].cogs    += lineCogs;
+      if (typeof wholesale !== "number") bySku[sku].missingCost = true;
+
+      totalCogs  += lineCogs;
+      unitsSold  += qty;
+    }
   }
+
+  // Finalize per-SKU computed columns.
+  for (const k of Object.keys(bySku)) {
+    const row = bySku[k];
+    row.grossProfit = row.revenue - row.cogs;
+    row.marginPct = row.revenue > 0 ? (row.grossProfit / row.revenue) * 100 : 0;
+    row.revenue     = Math.round(row.revenue * 100) / 100;
+    row.cogs        = Math.round(row.cogs * 100) / 100;
+    row.grossProfit = Math.round(row.grossProfit * 100) / 100;
+    row.marginPct   = Math.round(row.marginPct * 10) / 10;
+  }
+  const salesBySku = Object.values(bySku).sort((a, b) => b.revenue - a.revenue);
+
+  // P&L summary. "Net" is gross profit minus accrued affiliate commissions —
+  // it does NOT include operating expenses (software, rent, salaries) since
+  // those live in Wave/QuickBooks, not in our KV.
+  const grossProfit = totalRevenue - totalCogs;
+  const grossMarginPct = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+  const netBeforeOpex = grossProfit - totalCommissionsOwed;
+
+  const profitSummary = {
+    revenue:           Math.round(totalRevenue * 100) / 100,
+    cogs:              Math.round(totalCogs * 100) / 100,
+    grossProfit:       Math.round(grossProfit * 100) / 100,
+    grossMarginPct:    Math.round(grossMarginPct * 10) / 10,
+    shippingIncome:    Math.round(totalShippingIncome * 100) / 100,
+    discount:          Math.round(totalDiscount * 100) / 100,
+    affiliateCommissions: Math.round(totalCommissionsOwed * 100) / 100,
+    netBeforeOpex:     Math.round(netBeforeOpex * 100) / 100,
+    unitsSold,
+  };
 
   // Hydrate affiliate names from affiliate records.
   for (const key of Object.keys(byAffiliate)) {
@@ -195,6 +284,8 @@ export async function onRequestGet({ request, env }) {
       affiliateCount: affiliates.filter(a => a.status === "active").length,
       pendingPayoutTotal: Math.round(Object.values(byAffiliate).reduce((s, x) => s + x.commissionOwed, 0) * 100) / 100,
     },
+    profitSummary,
+    salesBySku,
     affiliatesByRevenue: Object.values(byAffiliate)
       .sort((a, b) => b.revenue - a.revenue)
       .map(x => ({ ...x, revenue: Math.round(x.revenue * 100) / 100, commissionOwed: Math.round(x.commissionOwed * 100) / 100 })),

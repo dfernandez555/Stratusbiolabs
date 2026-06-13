@@ -347,6 +347,41 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
     </div>
   </div>
 
+  <!-- ─── P&L summary strip ─────────────────────────────────────────
+       Revenue minus authoritative COGS (wholesale × units) for the active
+       date range. Net is gross profit minus accrued affiliate commissions.
+       OpEx (software, banking, shipping costs) lives in Wave/QuickBooks. -->
+  <h2>Profit &amp; Loss</h2>
+  <div class="kpis" style="grid-template-columns:repeat(5,1fr);">
+    <div class="kpi">
+      <div class="kpi-label">// Revenue</div>
+      <div class="kpi-value">$<span id="pl-revenue">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// COGS</div>
+      <div class="kpi-value">$<span id="pl-cogs">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Gross Profit</div>
+      <div class="kpi-value">$<span id="pl-gross">0</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Margin</div>
+      <div class="kpi-value"><span id="pl-margin">0</span>%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">// Net (pre-OpEx)</div>
+      <div class="kpi-value">$<span id="pl-net">0</span></div>
+    </div>
+  </div>
+
+  <h2>Sales by SKU</h2>
+  <p class="lead" style="margin-top:-0.6rem;margin-bottom:1rem;">Units sold × wholesale cost = COGS. Margin tracks profitability per product so you can spot which SKUs to push and which to drop.</p>
+  <table id="sku-sales-table">
+    <thead><tr><th>SKU</th><th>Product</th><th class="num">Units</th><th class="num">Revenue</th><th class="num">COGS</th><th class="num">Gross Profit</th><th class="num">Margin</th></tr></thead>
+    <tbody id="sku-sales-body"><tr><td colspan="7" class="empty">No sales in this period.</td></tr></tbody>
+  </table>
+
   <h2>Affiliate revenue this period</h2>
   <table id="aff-rev-table">
     <thead><tr><th>Affiliate</th><th>Code</th><th>Platform</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Owed (15%)</th></tr></thead>
@@ -388,6 +423,7 @@ table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
         <option value="Zelle">Zelle</option>
         <option value="BTC Buddies (Zelle)">BTC Buddies (Zelle → BTC)</option>
         <option value="NOWPayments (crypto)">NOWPayments (crypto)</option>
+        <option value="MoonPay (card → USDC)">MoonPay (card → USDC)</option>
         <option value="Other">Other</option>
       </select>
     </div>
@@ -594,6 +630,33 @@ async function loadStats() {
   document.getElementById('kpi-affs').textContent     = d.summary.affiliateCount;
   document.getElementById('kpi-payouts').textContent  = FMT_USD(d.summary.pendingPayoutTotal);
 
+  // P&L summary
+  const pl = d.profitSummary || {};
+  document.getElementById('pl-revenue').textContent = FMT_USD(pl.revenue || 0);
+  document.getElementById('pl-cogs').textContent    = FMT_USD(pl.cogs || 0);
+  document.getElementById('pl-gross').textContent   = FMT_USD(pl.grossProfit || 0);
+  document.getElementById('pl-margin').textContent  = (pl.grossMarginPct || 0).toFixed(1);
+  document.getElementById('pl-net').textContent     = FMT_USD(pl.netBeforeOpex || 0);
+
+  // Sales by SKU
+  const skuBody = document.getElementById('sku-sales-body');
+  const skuRows = d.salesBySku || [];
+  if (skuRows.length) {
+    skuBody.innerHTML = skuRows.map(r => `
+      <tr>
+        <td data-label="SKU"><span class="code">${r.sku}</span></td>
+        <td data-label="Product">${r.name}${r.missingCost ? ' <span style="color:#9a6a17;font-size:0.65rem;letter-spacing:0.1em;font-family:JetBrains Mono,monospace;">(no cost on file)</span>' : ''}</td>
+        <td data-label="Units" class="num">${r.units}</td>
+        <td data-label="Revenue" class="num">$${FMT_USD(r.revenue)}</td>
+        <td data-label="COGS" class="num">$${FMT_USD(r.cogs)}</td>
+        <td data-label="Gross Profit" class="num">$${FMT_USD(r.grossProfit)}</td>
+        <td data-label="Margin" class="num">${r.marginPct.toFixed(1)}%</td>
+      </tr>
+    `).join('');
+  } else {
+    skuBody.innerHTML = '<tr><td colspan="7" class="empty full-cell">No sales in this period.</td></tr>';
+  }
+
   const affRevBody = document.getElementById('aff-rev-body');
   if (d.affiliatesByRevenue.length) {
     affRevBody.innerHTML = d.affiliatesByRevenue.map(a => `
@@ -700,6 +763,7 @@ const CHANNEL_HINTS = {
   'Zelle':                 'Sender’s bank Zelle name (memo is blank — we match by amount + name)',
   'BTC Buddies (Zelle)':    'NOWPayments payment_id or BTC tx hash (normally auto-marked by webhook — use this if webhook missed it)',
   'NOWPayments (crypto)':  'NOWPayments payment_id or coin tx hash (normally auto-marked by webhook)',
+  'MoonPay (card → USDC)': 'MoonPay transaction ID (normally auto-marked by webhook — use this only if webhook missed it)',
   'Other':                 'Free-form reference — anything that identifies the payment',
 };
 const CHANNEL_PLACEHOLDERS = {
@@ -707,6 +771,7 @@ const CHANNEL_PLACEHOLDERS = {
   'Zelle':                 'e.g. John Smith',
   'BTC Buddies (Zelle)':    'e.g. np-12345678 or 0xabc...',
   'NOWPayments (crypto)':  'e.g. np-12345678',
+  'MoonPay (card → USDC)': 'e.g. mp-abc12345 or full tx hash',
   'Other':                 'e.g. wire ref / venmo handle / etc.',
 };
 let _markPaidCtx = null;  // { orderId, total, expectedChannel }
