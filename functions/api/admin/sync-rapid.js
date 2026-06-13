@@ -18,6 +18,7 @@
 // — that's what /api/admin/order action=cancel does.
 
 import { rapidGetOrderStatus, orderIdToRapidNumeric } from "../../_lib/rapid.js";
+import { sendOrderShippedEmail } from "../../_lib/resend.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -80,12 +81,48 @@ async function syncOne(env, orderId) {
   }
 
   const { changed, updates } = reconcile(order, rapidStatus);
-  if (changed) {
-    const merged = { ...order, ...updates };
+
+  // Customer notification — fire a "shipped" email the FIRST time we detect
+  // a tracking number on this order. The idempotency key is
+  // `orderShippedEmailSentAt`, set after a successful send. We only attempt
+  // it if Rapid reported shipped AND we have a tracking number AND we have
+  // not already emailed the customer for THIS order. The merged record below
+  // carries our stamp + a copy of the email error if it failed.
+  let shippedEmailResult = null;
+  let shippedEmailUpdates = {};
+  const nowHasTracking = rapidStatus.status === "shipped" && rapidStatus.trackingNumber;
+  const alreadyEmailed = !!order.orderShippedEmailSentAt;
+
+  if (nowHasTracking && !alreadyEmailed && order.customerEmail) {
+    // Build a "candidate" order object that includes the new tracking/
+    // shippedAt so the email template has the freshest data.
+    const candidate = { ...order, ...updates };
+    try {
+      shippedEmailResult = await sendOrderShippedEmail(env, {
+        order: candidate,
+        trackingNumber: rapidStatus.trackingNumber,
+        shippedAt: rapidStatus.shippedAt || candidate.shippedAt,
+      });
+      if (shippedEmailResult && shippedEmailResult.ok) {
+        shippedEmailUpdates.orderShippedEmailSentAt = new Date().toISOString();
+        shippedEmailUpdates.orderShippedEmailId = shippedEmailResult.id;
+      } else if (shippedEmailResult && shippedEmailResult.error) {
+        shippedEmailUpdates.orderShippedEmailError = shippedEmailResult.error.slice(0, 200);
+      }
+    } catch (e) {
+      shippedEmailUpdates.orderShippedEmailError = String(e.message || e).slice(0, 200);
+    }
+  }
+
+  const finalUpdates = { ...updates, ...shippedEmailUpdates };
+  const anyUpdate = changed || Object.keys(shippedEmailUpdates).length > 0;
+
+  if (anyUpdate) {
+    const merged = { ...order, ...finalUpdates };
     await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(merged));
-  } else if (updates.rapidLastSyncedAt) {
+  } else if (finalUpdates.rapidLastSyncedAt) {
     // Still update the sync timestamp even if nothing changed.
-    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify({ ...order, ...updates }));
+    await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify({ ...order, ...finalUpdates }));
   }
 
   return {
@@ -94,7 +131,8 @@ async function syncOne(env, orderId) {
     changed,
     rapidStatus: rapidStatus.status,
     rawStatus: rapidStatus.rawStatus,
-    updates: changed ? updates : null,
+    updates: anyUpdate ? finalUpdates : null,
+    shippedEmailSent: !!(shippedEmailResult && shippedEmailResult.ok),
   };
 }
 

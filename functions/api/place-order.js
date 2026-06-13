@@ -410,6 +410,27 @@ export async function onRequestPost({ request, env }) {
   order.rapidDispatchedViaDuplicate = dispatchedViaDuplicate || undefined;
   order.rapidOrderId = returnedOrderId
     || String(parseInt(String(orderId).replace(/[^0-9]/g, "")) || "");
+
+  // Customer notification — fired the FIRST time a dispatch succeeds.
+  // Idempotent via `orderDispatchedEmailSentAt` so admin "Retry Dispatch"
+  // on an already-dispatched order doesn't re-send to the customer. We
+  // best-effort the send: failure here doesn't unmark the dispatch.
+  let dispatchedEmailResult = null;
+  if (order.customerEmail && !order.orderDispatchedEmailSentAt) {
+    try {
+      const { sendOrderDispatchedEmail } = await import("../_lib/resend.js");
+      dispatchedEmailResult = await sendOrderDispatchedEmail(env, { order });
+      if (dispatchedEmailResult && dispatchedEmailResult.ok) {
+        order.orderDispatchedEmailSentAt = new Date().toISOString();
+        order.orderDispatchedEmailId = dispatchedEmailResult.id;
+      } else if (dispatchedEmailResult && dispatchedEmailResult.error) {
+        order.orderDispatchedEmailError = dispatchedEmailResult.error.slice(0, 200);
+      }
+    } catch (e) {
+      order.orderDispatchedEmailError = String(e.message || e).slice(0, 200);
+    }
+  }
+
   await env.STRATUS_DATA.put(`order:${orderId}`, JSON.stringify(order));
   return json({
     ok: true,
@@ -417,5 +438,6 @@ export async function onRequestPost({ request, env }) {
     rapidOrderId: order.rapidOrderId,
     attempts: attempt,
     autoRecovered: attempt > 1 || dispatchedViaDuplicate,
+    dispatchedEmailSent: !!(dispatchedEmailResult && dispatchedEmailResult.ok),
   });
 }

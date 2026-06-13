@@ -444,6 +444,174 @@ export async function sendInvoiceOrderEmail(env, { order }) {
   });
 }
 
+// Detect the carrier from a tracking number and return the corresponding
+// tracking URL. Falls back to AfterShip's universal tracker (which auto-
+// detects the carrier on their end) when none of our patterns match.
+//
+// We don't ask Rapid which carrier they used — they don't surface that
+// reliably — so we infer from the tracking-number format. Patterns are
+// the well-known prefixes/lengths used by the major US shippers.
+function carrierLinkFor(trackingNumber) {
+  const t = String(trackingNumber || "").trim().replace(/\s+/g, "");
+  if (!t) return { carrier: null, url: null };
+
+  // UPS: starts with "1Z" followed by 16 alphanumeric chars
+  if (/^1Z[0-9A-Z]{16}$/i.test(t)) {
+    return { carrier: "UPS", url: `https://www.ups.com/track?tracknum=${encodeURIComponent(t)}` };
+  }
+  // FedEx: 12 or 15 numeric digits
+  if (/^[0-9]{12}$/.test(t) || /^[0-9]{15}$/.test(t)) {
+    return { carrier: "FedEx", url: `https://www.fedex.com/fedextrack/?tracknumbers=${encodeURIComponent(t)}` };
+  }
+  // USPS: 22 numeric digits, OR starts with 9 with 22 digits, OR USPS prefixes (EA, ER, EC, etc.)
+  if (/^[0-9]{20,22}$/.test(t) || /^9[0-9]{15,21}$/.test(t) || /^[A-Z]{2}[0-9]{9}US$/i.test(t)) {
+    return { carrier: "USPS", url: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(t)}` };
+  }
+  // DHL: 10 or 11 numeric digits (commonly used by DHL Express)
+  if (/^[0-9]{10,11}$/.test(t)) {
+    return { carrier: "DHL", url: `https://www.dhl.com/en/express/tracking.html?AWB=${encodeURIComponent(t)}` };
+  }
+
+  // Unknown — universal tracker (AfterShip auto-detects from their end)
+  return { carrier: null, url: `https://www.aftership.com/track/${encodeURIComponent(t)}` };
+}
+
+/**
+ * Customer-facing notification — fired from place-order.js the moment we
+ * successfully dispatch to Rapid Fulfillment. Tells the customer their order
+ * has been handed off and to expect a separate shipping email soon.
+ *
+ * Idempotent at the caller level via `order.orderDispatchedEmailSentAt`.
+ */
+export async function sendOrderDispatchedEmail(env, { order }) {
+  const orderId = order.orderId;
+  const tUrl    = trackUrl(env, order);
+  const items   = Array.isArray(order.items) ? order.items : [];
+
+  const itemsHtml = items.map(it => `
+    <tr>
+      <td style="padding:6px 0;font-size:14px;color:#1F1B16;">${esc(it.name)} <span style="color:#7A746C;">·</span> <span style="color:#7A746C;font-family:monospace;font-size:12px;">${esc(it.sizeKey || "")}</span></td>
+      <td style="padding:6px 0;font-size:14px;color:#7A746C;text-align:right;">× ${esc(it.qty || 1)}</td>
+    </tr>`).join("");
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Order Dispatched — ${esc(orderId)}</title></head>
+<body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:32px 32px 24px;">
+    <div style="font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#4a9a6a;font-family:monospace;margin-bottom:8px;">// Order Dispatched</div>
+    <h1 style="margin:0 0 4px;font-size:28px;font-weight:300;color:#1F1B16;line-height:1.2;">Your order is on its way.</h1>
+    <div style="font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.1em;">Order ${esc(orderId)}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.7;">
+    <p style="margin:0 0 16px;">Your order has been handed off to our fulfillment partner and is being prepared for shipment. You'll receive a separate email with your tracking number as soon as the carrier picks it up — typically within 24-72 hours.</p>
+    <p style="margin:0;color:#7A746C;font-size:13px;">No further action is needed on your end.</p>
+  </td></tr>
+
+  ${items.length ? `<tr><td style="padding:0 32px 16px;">
+    <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:10px;">// In this shipment</div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid rgba(31,27,22,0.12);">
+      ${itemsHtml}
+    </table>
+  </td></tr>` : ""}
+
+  ${tUrl ? `<tr><td style="padding:8px 32px 0;">
+    <a href="${esc(tUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:#1F1B16;color:#EFEAE0;text-decoration:none;">View Order Status →</a>
+  </td></tr>` : ""}
+
+  <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
+    <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
+    <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
+    <p style="margin:12px 0 0;">Questions? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: order.customerEmail,
+    subject: `Your Stratus Biolabs order ${orderId} is being prepared for shipment`,
+    html,
+  });
+}
+
+/**
+ * Customer-facing notification — fired from sync-rapid.js the first time
+ * we detect that Rapid has shipped the order (status=shipped, tracking
+ * number populated). Auto-detects carrier from the tracking number format
+ * and includes a direct tracking link.
+ *
+ * Idempotent at the caller level via `order.orderShippedEmailSentAt`.
+ */
+export async function sendOrderShippedEmail(env, { order, trackingNumber, shippedAt }) {
+  const orderId = order.orderId;
+  const tUrl    = trackUrl(env, order);
+  const tn      = trackingNumber || order.trackingNumber || "";
+  const { carrier, url: carrierUrl } = carrierLinkFor(tn);
+
+  const carrierLabel = carrier ? `via <strong>${esc(carrier)}</strong>` : "with the carrier";
+  const shippedDate = shippedAt || order.shippedAt;
+  let shippedDateLabel = "";
+  try {
+    if (shippedDate) {
+      shippedDateLabel = new Date(shippedDate).toLocaleDateString("en-US", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric",
+      });
+    }
+  } catch { /* fall through */ }
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Shipped — ${esc(orderId)}</title></head>
+<body style="margin:0;padding:0;background:#EFEAE0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#1F1B16;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFEAE0;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(31,27,22,0.12);">
+  <tr><td style="padding:32px 32px 24px;">
+    <div style="font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#4a9a6a;font-family:monospace;margin-bottom:8px;">// Shipped</div>
+    <h1 style="margin:0 0 4px;font-size:28px;font-weight:300;color:#1F1B16;line-height:1.2;">Your order has shipped.</h1>
+    <div style="font-family:monospace;font-size:13px;color:#7A746C;letter-spacing:0.1em;">Order ${esc(orderId)}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px 24px;color:#1F1B16;font-size:15px;line-height:1.7;">
+    <p style="margin:0 0 16px;">Your order is on the move ${carrierLabel}${shippedDateLabel ? ` &mdash; picked up <strong>${esc(shippedDateLabel)}</strong>` : ""}.</p>
+  </td></tr>
+
+  ${tn ? `<tr><td style="padding:0 32px 16px;">
+    <div style="background:rgba(31,27,22,0.05);border:1px solid rgba(31,27,22,0.12);padding:16px;">
+      <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#7A746C;font-family:monospace;margin-bottom:6px;">// Tracking Number</div>
+      <div style="font-family:monospace;font-size:16px;color:#1F1B16;letter-spacing:0.02em;word-break:break-all;"><strong>${esc(tn)}</strong></div>
+      ${carrier ? `<div style="margin-top:6px;font-size:12px;color:#7A746C;">Carrier: ${esc(carrier)}</div>` : ""}
+    </div>
+  </td></tr>` : ""}
+
+  ${carrierUrl ? `<tr><td style="padding:8px 32px 0;">
+    <a href="${esc(carrierUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:#1F1B16;color:#EFEAE0;text-decoration:none;margin-right:8px;margin-bottom:8px;">Track With ${esc(carrier || "Carrier")} →</a>
+    ${tUrl ? `<a href="${esc(tUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:transparent;color:#1F1B16;border:1px solid rgba(31,27,22,0.18);text-decoration:none;margin-bottom:8px;">Order Status</a>` : ""}
+  </td></tr>` : (tUrl ? `<tr><td style="padding:8px 32px 0;">
+    <a href="${esc(tUrl)}" style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;padding:14px 22px;background:#1F1B16;color:#EFEAE0;text-decoration:none;">View Order Status →</a>
+  </td></tr>` : "")}
+
+  <tr><td style="padding:24px 32px 32px;font-size:11px;color:#7A746C;line-height:1.6;border-top:1px solid rgba(31,27,22,0.12);margin-top:24px;">
+    <p style="margin:0 0 8px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">// For Research Use Only</p>
+    <p style="margin:0;">All products supplied by Stratus Biolabs are intended for laboratory, academic, or institutional research only. Not for human or animal consumption.</p>
+    <p style="margin:12px 0 0;">Questions about your shipment? Reply to this email or write to <a href="mailto:info@stratusbiolabs.com" style="color:#1F1B16;">info@stratusbiolabs.com</a> with your order ID.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+
+  return sendEmail(env, {
+    to: order.customerEmail,
+    subject: `Your Stratus Biolabs order ${orderId} has shipped${carrier ? ` (${carrier})` : ""}`,
+    html,
+  });
+}
+
 /**
  * Admin notification — fired from log-order whenever a new order is created.
  * Per-method actionability hint helps you decide whether to do anything:
